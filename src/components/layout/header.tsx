@@ -4,14 +4,11 @@ import { BrandLogo } from "@/components/layout/brand-logo";
 import { DesktopNavigation } from "@/components/layout/desktop-navigation";
 import { HeaderActions } from "@/components/layout/header-actions";
 import { MobileMenu } from "@/components/layout/mobile-menu";
-import { WishlistCount } from "./wishlist-count";
 import { useState } from "react";
-import { useEffect } from "react";
-
-const [mobileMenuOpen, setMobileMenuOpen] =
-  useState(false);
 
 export function Header() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <header
       className="
@@ -47,7 +44,6 @@ export function Header() {
         {/* =====================================================
             DESKTOP NAVIGATION
         ===================================================== */}
-
         <div className="hidden lg:block">
           <DesktopNavigation />
         </div>
@@ -55,7 +51,6 @@ export function Header() {
         {/* =====================================================
             CENTER LOGO
         ===================================================== */}
-
         <div className="absolute left-1/2 -translate-x-1/2">
           <BrandLogo />
         </div>
@@ -63,10 +58,12 @@ export function Header() {
         {/* =====================================================
             HEADER ACTIONS
         ===================================================== */}
-
         <div className="ml-auto flex items-center">
           <HeaderActions />
 
+          {/* ===================================================
+              MOBILE MENU
+          =================================================== */}
           <div className="lg:hidden">
             <MobileMenu
               isOpen={mobileMenuOpen}
