@@ -224,3 +224,136 @@ export const newsletter = {
 
   href: "#newsletter",
 } as const;
+
+
+/* =========================================================
+   HERO SLIDES
+========================================================= */
+
+export const homeHeroSlides = [
+  {
+    id: "hero-01",
+
+    eyebrow: "New Season",
+
+    title: {
+      lineOne: "Timeless",
+      lineTwo: "Elegance",
+    },
+
+    description: "Modern designs rooted in tradition.",
+
+    action: {
+      label: "Shop New Arrivals",
+      href: "/collections/new-arrivals",
+    },
+
+    desktopImage: {
+      src: "/images/hero/hero-01-desktop.jpg",
+      alt: "Elegant blush pink Indian fashion ensemble",
+    },
+
+    mobileImage: {
+      src: "/images/hero/hero-01-mobile.jpg",
+      alt: "Elegant blush pink Indian fashion ensemble",
+    },
+  },
+
+  {
+    id: "hero-02",
+
+    eyebrow: "Festive Edit",
+
+    title: {
+      lineOne: "Made for",
+      lineTwo: "Celebrations",
+    },
+
+    description:
+      "Exquisite silhouettes for your most special moments.",
+
+    action: {
+      label: "Explore Festive Edit",
+      href: "/collections/festive",
+    },
+
+    desktopImage: {
+      src: "/images/hero/hero-02-desktop.jpg",
+      alt: "Luxury burgundy festive Indian fashion ensemble",
+    },
+
+    mobileImage: {
+      src: "/images/hero/hero-02-mobile.jpg",
+      alt: "Luxury burgundy festive Indian fashion ensemble",
+    },
+  },
+
+  {
+    id: "hero-03",
+
+    eyebrow: "The Signature Edit",
+
+    title: {
+      lineOne: "Effortless",
+      lineTwo: "Grace",
+    },
+
+    description:
+      "Thoughtfully designed for every chapter of modern femininity.",
+
+    action: {
+      label: "Discover the Edit",
+      href: "/collections/contemporary",
+    },
+
+    desktopImage: {
+      src: "/images/hero/hero-03-desktop.jpg",
+      alt: "Elegant sage green contemporary Indian fashion ensemble",
+    },
+
+    mobileImage: {
+      src: "/images/hero/hero-03-mobile.jpg",
+      alt: "Elegant sage green contemporary Indian fashion ensemble",
+    },
+  },
+] as const;
+
+
+export const featuredCategories = [
+  {
+    id: "festive",
+    title: "Festive",
+    href: "/collections/festive",
+    image: {
+      src: "/images/categories/festive.jpg",
+      alt: "Ayesha Fashion festive collection",
+    },
+  },
+  {
+    id: "ethnic",
+    title: "Ethnic",
+    href: "/collections/ethnic",
+    image: {
+      src: "/images/categories/ethnic.jpg",
+      alt: "Ayesha Fashion ethnic collection",
+    },
+  },
+  {
+    id: "contemporary",
+    title: "Contemporary",
+    href: "/collections/contemporary",
+    image: {
+      src: "/images/categories/contemporary.jpg",
+      alt: "Ayesha Fashion contemporary collection",
+    },
+  },
+  {
+    id: "new-arrivals",
+    title: "New Arrivals",
+    href: "/collections/new-arrivals",
+    image: {
+      src: "/images/categories/new-arrivals.jpg",
+      alt: "Ayesha Fashion new arrivals collection",
+    },
+  },
+] as const;

@@ -1,22 +1,48 @@
 import Link from "next/link";
 
-import { mainNavigation } from "@/config/navigation";
+const navigation = [
+  {
+    label: "New Arrivals",
+    href: "/collections/new-arrivals",
+  },
+  {
+    label: "Shop",
+    href: "/shop",
+  },
+  {
+    label: "Collections",
+    href: "/collections",
+  },
+  {
+    label: "Best Sellers",
+    href: "/collections/best-sellers",
+  },
+];
 
 export function DesktopNavigation() {
   return (
     <nav
-      className="hidden items-center gap-7 xl:flex"
-      aria-label="Main navigation"
+      aria-label="Primary navigation"
+      className="flex items-center gap-8 xl:gap-9"
     >
-      {mainNavigation.map((item) => (
+      {navigation.map((item) => (
         <Link
           key={item.href}
           href={item.href}
-          className="group relative py-2 text-[11px] font-semibold uppercase tracking-[0.13em] text-[var(--color-charcoal)] transition-colors duration-300 hover:text-[var(--color-text-secondary)]"
+          className="
+            text-[9px]
+            font-semibold
+            uppercase
+            tracking-[0.18em]
+            text-[var(--color-charcoal)]
+            transition-colors
+            duration-300
+            hover:text-[var(--color-rose-dark)]
+            lg:text-[9.5px]
+            xl:text-[10px]
+          "
         >
           {item.label}
-
-          <span className="absolute inset-x-0 bottom-0 h-px origin-left scale-x-0 bg-[var(--color-charcoal)] transition-transform duration-300 group-hover:scale-x-100" />
         </Link>
       ))}
     </nav>

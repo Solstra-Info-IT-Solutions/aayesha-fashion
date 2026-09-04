@@ -20,6 +20,6 @@ export const siteConfig = {
   social: {
     instagram: "",
     facebook: "",
-    whatsapp: "",
+    whatsapp: `https://wa.me/918788158087`,
   },
 } as const;

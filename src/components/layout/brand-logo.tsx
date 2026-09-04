@@ -1,35 +1,42 @@
 import Link from "next/link";
 
-import { siteConfig } from "@/config/site";
-
-interface BrandLogoProps {
-  className?: string;
-  compact?: boolean;
-}
-
-export function BrandLogo({
-  className,
-  compact = false,
-}: BrandLogoProps) {
+export function BrandLogo() {
   return (
     <Link
       href="/"
-      className={`group inline-flex flex-col items-center text-center ${className ?? ""}`}
-      aria-label={`${siteConfig.name} home`}
+      aria-label="Ayesha Fashion home"
+      className="
+        flex
+        flex-col
+        items-center
+        leading-none
+        text-[var(--color-charcoal)]
+      "
     >
       <span
-        className={`font-display leading-none tracking-[0.04em] text-[var(--color-charcoal)] transition-opacity duration-300 group-hover:opacity-70 ${
-          compact ? "text-2xl" : "text-3xl"
-        }`}
+        className="
+          font-display
+          text-[27px]
+          font-medium
+          tracking-[-0.025em]
+          sm:text-[30px]
+        "
       >
         Aayesha
       </span>
 
-      {!compact && (
-        <span className="mt-1 text-[8px] font-semibold uppercase tracking-[0.42em] text-[var(--color-text-secondary)]">
-          Fashion
-        </span>
-      )}
+      <span
+        className="
+          mt-1
+          text-[6px]
+          font-medium
+          uppercase
+          tracking-[0.4em]
+          text-[var(--color-text-muted)]
+        "
+      >
+        Fashion
+      </span>
     </Link>
   );
 }

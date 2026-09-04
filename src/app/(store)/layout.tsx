@@ -1,5 +1,6 @@
 import { AnnouncementBar } from "@/components/layout/announcement-bar";
 import { Header } from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
 
 export default function StoreLayout({
   children,
@@ -7,7 +8,7 @@ export default function StoreLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <>
+    <div className="min-h-screen">
       <AnnouncementBar />
 
       <Header />
@@ -15,6 +16,8 @@ export default function StoreLayout({
       <main className="min-h-screen bg-[var(--color-ivory)]">
         {children}
       </main>
-    </>
+
+      <Footer />
+    </div>
   );
 }

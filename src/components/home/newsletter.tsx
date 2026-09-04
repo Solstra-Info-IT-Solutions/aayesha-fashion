@@ -10,7 +10,9 @@ export function Newsletter() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(
+    event: FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault();
 
     const trimmedEmail = email.trim();
@@ -26,54 +28,106 @@ export function Newsletter() {
   return (
     <section
       id="newsletter"
-      className="bg-[var(--color-charcoal)] text-white"
+      className="bg-[var(--color-cream)] text-[var(--color-charcoal)]"
     >
       <Container>
-        <div className="py-14 sm:py-16 lg:py-20">
-          {/* TOP LABEL */}
-          <div className="flex items-center justify-between border-t border-white/15 pt-5">
-            <div className="flex items-center gap-3">
-              <span className="h-px w-7 bg-[var(--color-rose)]" />
+        <div className="py-16 sm:py-20 lg:py-24 xl:py-28">
+          {/* =====================================================
+              TOP LINE
+          ===================================================== */}
 
-              <p className="text-[8px] font-semibold uppercase tracking-[0.3em] text-white/55 sm:text-[9px]">
-                {newsletter.eyebrow}
-              </p>
+          <div className="border-t border-[var(--color-border-dark)] pt-5 sm:pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <span className="h-px w-9 bg-[var(--color-rose-dark)]" />
+
+                <p className="text-[8px] font-semibold uppercase tracking-[0.3em] text-[var(--color-text-secondary)] sm:text-[9px]">
+                  {newsletter.eyebrow}
+                </p>
+              </div>
+
+              <span className="font-display text-lg text-[var(--color-text-muted)] sm:text-xl">
+                13
+              </span>
             </div>
-
-            <span className="font-display text-base text-white/35 sm:text-lg">
-              09
-            </span>
           </div>
 
-          {/* HEADER */}
-          <div className="mt-10 max-w-2xl">
-            <h2 className="font-display text-[2.9rem] font-medium leading-[0.92] tracking-[-0.04em] text-white sm:text-[3.8rem] md:text-[4.5rem] lg:text-[5rem]">
+          {/* =====================================================
+              INTRO
+          ===================================================== */}
+
+          <div className="mx-auto mt-10 max-w-3xl text-center sm:mt-12">
+            <h2
+              className="
+                font-display
+                text-[3rem]
+                font-medium
+                leading-[0.9]
+                tracking-[-0.045em]
+                text-[var(--color-charcoal)]
+                sm:text-[4rem]
+                md:text-[4.8rem]
+                lg:text-[5.4rem]
+              "
+            >
               {newsletter.title.lineOne}
 
-              <span className="block italic text-[var(--color-rose-light)]">
+              <span className="block italic text-[var(--color-rose-dark)]">
                 {newsletter.title.lineTwo}
               </span>
             </h2>
 
-            <p className="mt-5 max-w-lg text-sm leading-6 text-white/55 sm:text-[15px] sm:leading-7">
+            <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-[var(--color-text-secondary)] sm:text-[15px] sm:leading-8">
               {newsletter.description}
             </p>
           </div>
 
-          {/* FORM AREA */}
-          <div className="mt-10 max-w-4xl sm:mt-12">
+          {/* =====================================================
+              FORM
+          ===================================================== */}
+
+          <div className="mx-auto mt-10 max-w-3xl sm:mt-12">
             {submitted ? (
-              <div className="flex items-center gap-4 border border-white/20 bg-white/[0.03] px-5 py-4 sm:px-6 sm:py-5">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-rose)] text-[var(--color-charcoal)]">
-                  <Check size={15} strokeWidth={2} />
+              <div
+                className="
+                  flex
+                  items-center
+                  justify-center
+                  gap-4
+                  border
+                  border-[var(--color-border-dark)]
+                  bg-[var(--color-ivory)]
+                  px-6
+                  py-6
+                  text-center
+                "
+              >
+                <span
+                  className="
+                    flex
+                    h-9
+                    w-9
+                    shrink-0
+                    items-center
+                    justify-center
+                    border
+                    border-[var(--color-rose)]
+                    bg-[var(--color-rose-light)]
+                    text-[var(--color-charcoal)]
+                  "
+                >
+                  <Check
+                    size={16}
+                    strokeWidth={1.5}
+                  />
                 </span>
 
                 <div>
-                  <p className="font-display text-xl text-white sm:text-2xl">
+                  <p className="text-sm font-semibold text-[var(--color-charcoal)]">
                     Welcome to the Private Edit.
                   </p>
 
-                  <p className="mt-1 text-xs text-white/45">
+                  <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
                     You&apos;re now part of Ayesha Fashion.
                   </p>
                 </div>
@@ -81,14 +135,22 @@ export function Newsletter() {
             ) : (
               <form
                 onSubmit={handleSubmit}
-                className="flex flex-col gap-3 sm:flex-row sm:items-stretch"
+                className="flex flex-col gap-3 sm:flex-row"
               >
-                {/* INPUT */}
-                <div className="flex min-h-14 flex-1 items-center border border-white/20 bg-white/[0.025] px-5 transition-colors duration-300 focus-within:border-white/45 sm:min-h-16 sm:px-6">
+                {/* EMAIL */}
+
+                <div className="flex min-h-14 flex-1 items-center border border-[var(--color-border-dark)] bg-[var(--color-ivory)] px-5 transition-colors duration-300 focus-within:border-[var(--color-charcoal)] sm:min-h-16">
                   <div className="w-full">
                     <label
                       htmlFor="newsletter-email"
-                      className="mb-1.5 block text-[7px] font-semibold uppercase tracking-[0.22em] text-white/35 sm:text-[8px]"
+                      className="
+                        block
+                        text-[7px]
+                        font-semibold
+                        uppercase
+                        tracking-[0.24em]
+                        text-[var(--color-text-muted)]
+                      "
                     >
                       Email Address
                     </label>
@@ -98,19 +160,56 @@ export function Newsletter() {
                       name="email"
                       type="email"
                       value={email}
-                      onChange={(event) => setEmail(event.target.value)}
+                      onChange={(event) =>
+                        setEmail(event.target.value)
+                      }
                       placeholder={newsletter.placeholder}
                       autoComplete="email"
                       required
-                      className="w-full border-none bg-transparent p-0 text-sm text-white outline-none placeholder:text-white/25 sm:text-[15px]"
+                      className="
+                        mt-1
+                        w-full
+                        border-none
+                        bg-transparent
+                        p-0
+                        text-sm
+                        text-[var(--color-charcoal)]
+                        outline-none
+                        placeholder:text-[var(--color-text-muted)]
+                        sm:text-[15px]
+                      "
                     />
                   </div>
                 </div>
 
-                {/* SUBMIT */}
+                {/* BUTTON */}
+
                 <button
                   type="submit"
-                  className="group flex min-h-14 items-center justify-between gap-8 border border-[var(--color-rose)] bg-[var(--color-rose)] px-5 text-[9px] font-semibold uppercase tracking-[0.2em] text-[var(--color-charcoal)] transition-all duration-300 hover:bg-[var(--color-rose-dark)] sm:min-h-16 sm:min-w-[190px] sm:px-6"
+                  className="
+                    group
+                    flex
+                    min-h-14
+                    items-center
+                    justify-between
+                    gap-8
+                    border
+                    border-[var(--color-charcoal)]
+                    bg-[var(--color-charcoal)]
+                    px-5
+                    text-[9px]
+                    font-semibold
+                    uppercase
+                    tracking-[0.2em]
+                    text-white
+                    transition-all
+                    duration-300
+                    hover:border-[var(--color-rose-dark)]
+                    hover:bg-[var(--color-rose-dark)]
+                    sm:min-h-16
+                    sm:min-w-[190px]
+                    sm:px-6
+                  "
                 >
                   <span>
                     {newsletter.buttonLabel}
@@ -119,27 +218,29 @@ export function Newsletter() {
                   <ArrowUpRight
                     size={16}
                     strokeWidth={1.4}
-                    className="transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                    className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-0.5"
                   />
                 </button>
               </form>
             )}
 
-            {/* NOTE */}
             {!submitted && (
-              <p className="mt-3 max-w-xl text-[7px] leading-5 text-white/25 sm:text-[8px]">
+              <p className="mt-4 text-center text-[8px] uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
                 {newsletter.note}
               </p>
             )}
           </div>
 
-          {/* BOTTOM BRAND */}
-          <div className="mt-12 flex items-center justify-between border-t border-white/15 pt-5 sm:mt-14">
-            <p className="text-[8px] font-semibold uppercase tracking-[0.26em] text-white/30">
+          {/* =====================================================
+              BRAND SIGN-OFF
+          ===================================================== */}
+
+          <div className="mt-12 flex items-center justify-between border-t border-[var(--color-border-dark)] pt-5 sm:mt-14">
+            <p className="text-[8px] font-semibold uppercase tracking-[0.28em] text-[var(--color-text-muted)]">
               Ayesha Fashion
             </p>
 
-            <p className="font-display text-lg text-white/55">
+            <p className="font-display text-lg italic text-[var(--color-charcoal)]">
               Ayesha
             </p>
           </div>

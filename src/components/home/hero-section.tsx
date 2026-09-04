@@ -1,327 +1,410 @@
+"use client";
+
 import Image from "next/image";
-import { LinkButton } from "@/components/ui/button";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Pause,
+  Play,
+} from "lucide-react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
-import { ArrowUpRight } from "lucide-react";
+import { homeHeroSlides } from "@/data/home";
 
-import { homeHero } from "@/data/home";
+const AUTOPLAY_DELAY = 6000;
 
 export function HeroSection() {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
+
+  const totalSlides = homeHeroSlides.length;
+
+  /* =========================================================
+     NAVIGATION
+  ========================================================= */
+
+  const goToSlide = useCallback(
+    (index: number) => {
+      setActiveIndex(
+        (index + totalSlides) % totalSlides
+      );
+    },
+    [totalSlides]
+  );
+
+  const nextSlide = useCallback(() => {
+    setActiveIndex(
+      (current) => (current + 1) % totalSlides
+    );
+  }, [totalSlides]);
+
+  const previousSlide = useCallback(() => {
+    setActiveIndex(
+      (current) =>
+        (current - 1 + totalSlides) % totalSlides
+    );
+  }, [totalSlides]);
+
+  /* =========================================================
+     AUTOPLAY
+  ========================================================= */
+
+  useEffect(() => {
+    if (isPaused) {
+      return;
+    }
+
+    const interval = window.setInterval(
+      nextSlide,
+      AUTOPLAY_DELAY
+    );
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [isPaused, nextSlide]);
+
+  /* =========================================================
+     KEYBOARD
+  ========================================================= */
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "ArrowRight") {
+        nextSlide();
+      }
+
+      if (event.key === "ArrowLeft") {
+        previousSlide();
+      }
+    }
+
+    window.addEventListener(
+      "keydown",
+      handleKeyDown
+    );
+
+    return () => {
+      window.removeEventListener(
+        "keydown",
+        handleKeyDown
+      );
+    };
+  }, [nextSlide, previousSlide]);
+
+  /* =========================================================
+     REDUCED MOTION
+  ========================================================= */
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    );
+
+    if (mediaQuery.matches) {
+      setIsPaused(true);
+    }
+  }, []);
+
+  /* =========================================================
+     TOUCH / SWIPE
+  ========================================================= */
+
+  function handleTouchStart(
+    event: React.TouchEvent<HTMLDivElement>
+  ) {
+    touchStartX.current =
+      event.touches[0]?.clientX ?? null;
+
+    touchEndX.current =
+      touchStartX.current;
+  }
+
+  function handleTouchMove(
+    event: React.TouchEvent<HTMLDivElement>
+  ) {
+    touchEndX.current =
+      event.touches[0]?.clientX ?? null;
+  }
+
+  function handleTouchEnd() {
+    if (
+      touchStartX.current === null ||
+      touchEndX.current === null
+    ) {
+      return;
+    }
+
+    const distance =
+      touchStartX.current -
+      touchEndX.current;
+
+    if (Math.abs(distance) >= 50) {
+      if (distance > 0) {
+        nextSlide();
+      } else {
+        previousSlide();
+      }
+    }
+
+    touchStartX.current = null;
+    touchEndX.current = null;
+  }
+
   return (
-    <section className="relative isolate overflow-hidden bg-[var(--color-charcoal)]">
-      {/* =========================================================
-          BACKGROUND EDITORIAL IMAGE
-      ========================================================== */}
-      <div className="absolute inset-0">
-        <Image
-          src={homeHero.image.src}
-          alt={homeHero.image.alt}
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-[68%_center]"
-        />
-      </div>
+    <section
+      aria-label="Ayesha Fashion featured banners"
+      className="relative w-full overflow-hidden bg-[var(--color-warm-gray)]"
+    >
+      {/* =====================================================
+          BANNER STAGE
 
-      {/* =========================================================
-          CINEMATIC OVERLAYS
-      ========================================================== */}
-
-      {/* Desktop editorial gradient */}
-      <div
-        className="
-          absolute inset-0
-          bg-[linear-gradient(
-            90deg,
-            rgba(18,19,19,0.72)_0%,
-            rgba(18,19,19,0.48)_32%,
-            rgba(18,19,19,0.12)_58%,
-            rgba(18,19,19,0.08)_100%
-          )]
-        "
-      />
-
-      {/* Bottom readability gradient */}
-      <div
-        className="
-          absolute inset-0
-          bg-gradient-to-t
-          from-black/60
-          via-black/10
-          to-transparent
-        "
-      />
-
-      {/* Mobile overlay */}
-      <div
-        className="
-          absolute inset-0
-          bg-gradient-to-t
-          from-black/85
-          via-black/35
-          to-black/10
-          lg:hidden
-        "
-      />
-
-      {/* =========================================================
-          HERO CONTENT
-      ========================================================== */}
+          The parent MUST have an aspect ratio because all
+          slides are absolutely positioned.
+      ===================================================== */}
 
       <div
         className="
-          relative z-10
-          flex
-          min-h-[calc(100svh-128px)]
-          flex-col
-          justify-between
-          px-6
-          py-8
-          sm:px-8
-          sm:py-10
-          lg:min-h-[calc(100svh-140px)]
-          lg:px-14
-          lg:py-12
-          xl:px-20
+          relative
+          aspect-[4/5]
+          w-full
+          overflow-hidden
+          md:aspect-[16/11]
         "
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
-        {/* =======================================================
-            TOP EDITORIAL INFORMATION
-        ======================================================== */}
+        {/* ===================================================
+            SLIDES
+        =================================================== */}
 
-        <div className="flex items-center justify-between">
-          {/* Left */}
-          <div className="flex items-center gap-4">
-            <span className="h-px w-8 bg-[var(--color-rose)] sm:w-10" />
+        {homeHeroSlides.map((slide, index) => {
+          const isActive =
+            index === activeIndex;
 
-            <p
-              className="
-                text-[9px]
-                font-semibold
-                uppercase
-                tracking-[0.28em]
-                text-white/80
-                sm:text-[10px]
-                sm:tracking-[0.32em]
-              "
+          return (
+            <div
+              key={slide.id}
+              aria-hidden={!isActive}
+              className={[
+                "absolute inset-0",
+                "transition-opacity duration-1000 ease-in-out",
+                isActive
+                  ? "z-10 opacity-100"
+                  : "z-0 opacity-0",
+              ].join(" ")}
             >
-              {homeHero.eyebrow}
-            </p>
-          </div>
+              {/* =============================================
+                  DESKTOP
+              ============================================= */}
 
-          {/* Right */}
-          <p
-            className="
-              hidden
-              text-[9px]
-              font-medium
-              uppercase
-              tracking-[0.3em]
-              text-white/60
-              sm:block
-            "
-          >
-            {homeHero.collection}
-          </p>
-        </div>
+              <div className="absolute inset-0 hidden md:flex items-center justify-center">
+                <Image
+                  src={slide.desktopImage.src}
+                  alt={slide.desktopImage.alt}
+                  fill
+                  priority={index === 0}
+                  sizes="100vw"
+                  className="object-contain"
+                />
+              </div>
 
-        {/* =======================================================
-            MAIN CONTENT
-        ======================================================== */}
+              {/* =============================================
+                  MOBILE
+              ============================================= */}
+
+              <div className="absolute inset-0 flex items-center justify-center md:hidden">
+                <Image
+                  src={slide.mobileImage.src}
+                  alt={slide.mobileImage.alt}
+                  fill
+                  priority={index === 0}
+                  sizes="100vw"
+                  className="object-contain"
+                />
+              </div>
+            </div>
+          );
+        })}
+
+        {/* ===================================================
+            PREVIOUS / NEXT
+        =================================================== */}
 
         <div
           className="
-            relative
-            max-w-[1100px]
-            pb-8
-            pt-20
-            sm:pt-24
-            lg:pb-12
-            lg:pt-16
+            absolute
+            bottom-5
+            right-5
+            z-30
+            flex
+            items-center
+            gap-2
+            sm:bottom-7
+            sm:right-7
+            lg:bottom-8
+            lg:right-10
+            xl:right-14
           "
         >
-          {/* =====================================================
-              MAIN EDITORIAL HEADING
-          ====================================================== */}
-
-          <h1
+          <button
+            type="button"
+            onClick={previousSlide}
+            aria-label="Previous banner"
             className="
-              font-display
-              text-[4.8rem]
-              font-medium
-              leading-[0.78]
-              tracking-[-0.045em]
-              text-white
-
-              sm:text-[6.5rem]
-
-              md:text-[8rem]
-
-              lg:text-[9.5rem]
-
-              xl:text-[11.5rem]
-
-              2xl:text-[13rem]
-            "
-          >
-            <span className="block">
-              {homeHero.title.first}
-            </span>
-
-            <span
-              className="
-                block
-                pl-[14%]
-                italic
-                text-[var(--color-rose-light)]
-              "
-            >
-              {homeHero.title.second}
-            </span>
-          </h1>
-
-          {/* =====================================================
-              DESCRIPTION + CTA
-          ====================================================== */}
-
-          <div
-            className="
-              mt-12
               flex
-              flex-col
-              gap-10
-              border-t
-              border-white/20
-              pt-7
-
-              sm:flex-row
-              sm:items-end
-              sm:justify-between
-
-              lg:mt-16
-              lg:max-w-[760px]
+              h-10
+              w-10
+              items-center
+              justify-center
+              border
+              border-white/55
+              bg-black/10
+              text-white
+              transition-all
+              duration-300
+              hover:border-white
+              hover:bg-white
+              hover:text-[var(--color-charcoal)]
+              sm:h-11
+              sm:w-11
             "
           >
-            {/* Description */}
-            <p
-              className="
-                max-w-sm
-                text-sm
-                leading-7
-                text-white/75
+            <ArrowLeft
+              size={16}
+              strokeWidth={1.4}
+            />
+          </button>
 
-                sm:text-base
-                sm:leading-8
-              "
-            >
-              {homeHero.description}
-            </p>
-
-            {/* Actions */}
-            <div className="flex flex-col items-start gap-5">
-              {/* Primary CTA */}
-              <LinkButton
-                href={homeHero.primaryAction.href}
-                variant="rose"
-                size="lg"
-                icon={
-                  <ArrowUpRight
-                    size={16}
-                    strokeWidth={1.5}
-                  />
-                }
-            >
-              {homeHero.primaryAction.label}
-            </LinkButton>
-
-              {/* Secondary CTA */}
-              <LinkButton
-  href={homeHero.secondaryAction.href}
-  variant="darkOutline"
-  size="md"
->
-  {homeHero.secondaryAction.label}
-</LinkButton>
-            </div>
-          </div>
-        </div>
-
-        {/* =======================================================
-            BOTTOM EDITORIAL INDEX
-        ======================================================== */}
-
-        <div className="flex items-end justify-between">
-          {/* Slide Index */}
-          <div className="flex items-center gap-4">
-            <span
-              className="
-                font-display
-                text-3xl
-                leading-none
-                text-white
-              "
-            >
-              01
-            </span>
-
-            <span className="h-px w-12 bg-white/40" />
-
-            <span
-              className="
-                text-[9px]
-                font-medium
-                uppercase
-                tracking-[0.25em]
-                text-white/60
-              "
-            >
-              03
-            </span>
-          </div>
-
-          {/* Copyright */}
-          <p
+          <button
+            type="button"
+            onClick={nextSlide}
+            aria-label="Next banner"
             className="
-              hidden
-              text-[9px]
-              uppercase
-              tracking-[0.25em]
-              text-white/50
-              md:block
+              flex
+              h-10
+              w-10
+              items-center
+              justify-center
+              border
+              border-white/55
+              bg-black/10
+              text-white
+              transition-all
+              duration-300
+              hover:border-white
+              hover:bg-white
+              hover:text-[var(--color-charcoal)]
+              sm:h-11
+              sm:w-11
             "
           >
-            Ayesha Fashion © 2026
-          </p>
+            <ArrowRight
+              size={16}
+              strokeWidth={1.4}
+            />
+          </button>
         </div>
-      </div>
 
-      {/* =========================================================
-          VERTICAL EDITORIAL DETAIL
-      ========================================================== */}
+        {/* ===================================================
+            INDICATORS
+        =================================================== */}
 
-      <div
-        className="
-          pointer-events-none
-          absolute
-          bottom-16
-          right-6
-          hidden
-          origin-bottom-right
-          rotate-[-90deg]
-
-          lg:block
-          xl:right-10
-        "
-      >
-        <span
+        <div
           className="
-            text-[9px]
-            uppercase
-            tracking-[0.4em]
-            text-white/50
+            absolute
+            bottom-7
+            left-5
+            z-30
+            flex
+            items-center
+            gap-2
+            sm:left-8
+            lg:left-10
+            xl:left-14
           "
         >
-          Designed for Timeless Moments
-        </span>
+          {homeHeroSlides.map(
+            (slide, index) => {
+              const isActive =
+                index === activeIndex;
+
+              return (
+                <button
+                  key={slide.id}
+                  type="button"
+                  aria-label={`Go to banner ${index + 1}`}
+                  aria-current={isActive}
+                  onClick={() =>
+                    goToSlide(index)
+                  }
+                  className="group flex h-7 items-center"
+                >
+                  <span
+                    className={[
+                      "h-px transition-all duration-500",
+                      isActive
+                        ? "w-10 bg-white"
+                        : "w-5 bg-white/55 group-hover:w-8 group-hover:bg-white",
+                    ].join(" ")}
+                  />
+                </button>
+              );
+            }
+          )}
+        </div>
+
+        {/* ===================================================
+            PAUSE / PLAY
+        =================================================== */}
+
+        <button
+          type="button"
+          onClick={() =>
+            setIsPaused(
+              (value) => !value
+            )
+          }
+          aria-label={
+            isPaused
+              ? "Resume banners"
+              : "Pause banners"
+          }
+          className="
+            absolute
+            bottom-8
+            left-1/2
+            z-30
+            hidden
+            -translate-x-1/2
+            text-white/70
+            transition-colors
+            duration-300
+            hover:text-white
+            md:block
+          "
+        >
+          {isPaused ? (
+            <Play
+              size={14}
+              strokeWidth={1.4}
+            />
+          ) : (
+            <Pause
+              size={14}
+              strokeWidth={1.4}
+            />
+          )}
+        </button>
       </div>
     </section>
   );

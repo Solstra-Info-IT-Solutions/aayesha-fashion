@@ -1,62 +1,72 @@
 "use client";
 
-import { useState } from "react";
-
-import { Menu } from "lucide-react";
-
 import { BrandLogo } from "@/components/layout/brand-logo";
 import { DesktopNavigation } from "@/components/layout/desktop-navigation";
 import { HeaderActions } from "@/components/layout/header-actions";
 import { MobileMenu } from "@/components/layout/mobile-menu";
+import { WishlistCount } from "./wishlist-count";
 
 export function Header() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] =
-    useState(false);
-
-  const handleSearchClick = () => {
-    // Search system will be connected later.
-    console.log("Open search");
-  };
-
   return (
-    <>
-      <header className="sticky top-0 z-50 border-b border-[var(--color-border)] bg-[rgba(252,251,249,0.94)] backdrop-blur-xl">
-        <div className="container-premium">
-          <div className="grid min-h-[76px] grid-cols-[1fr_auto_1fr] items-center xl:min-h-[88px]">
-            {/* Left */}
-            <div className="flex items-center">
-              <button
-                type="button"
-                onClick={() => setIsMobileMenuOpen(true)}
-                className="flex h-11 w-11 items-center justify-center xl:hidden"
-                aria-label="Open navigation"
-              >
-                <Menu
-                  size={22}
-                  strokeWidth={1.6}
-                />
-              </button>
+    <header
+      className="
+        sticky
+        top-0
+        z-50
+        w-full
+        border-b
+        border-[var(--color-border)]
+        bg-[var(--color-ivory)]
+        text-[var(--color-charcoal)]
+      "
+    >
+      <div
+        className="
+          relative
+          mx-auto
+          flex
+          h-[74px]
+          w-full
+          max-w-[1600px]
+          items-center
+          justify-between
+          px-5
+          sm:h-[78px]
+          sm:px-8
+          md:h-[82px]
+          md:px-10
+          lg:px-14
+          xl:px-20
+        "
+      >
+        {/* =====================================================
+            DESKTOP NAVIGATION
+        ===================================================== */}
 
-              <DesktopNavigation />
-            </div>
+        <div className="hidden lg:block">
+          <DesktopNavigation />
+        </div>
 
-            {/* Center Brand */}
-            <BrandLogo />
+        {/* =====================================================
+            CENTER LOGO
+        ===================================================== */}
 
-            {/* Right */}
-            <div className="flex justify-end">
-              <HeaderActions
-                onSearchClick={handleSearchClick}
-              />
-            </div>
+        <div className="absolute left-1/2 -translate-x-1/2">
+          <BrandLogo />
+        </div>
+
+        {/* =====================================================
+            HEADER ACTIONS
+        ===================================================== */}
+
+        <div className="ml-auto flex items-center">
+          <HeaderActions />
+
+          <div className="lg:hidden">
+            <MobileMenu />
           </div>
         </div>
-      </header>
-
-      <MobileMenu
-        isOpen={isMobileMenuOpen}
-        onClose={() => setIsMobileMenuOpen(false)}
-      />
-    </>
+      </div>
+    </header>
   );
 }
