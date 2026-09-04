@@ -1,107 +1,58 @@
-import React, { Suspense } from 'react';
-import type { Metadata } from 'next';
-import { Cormorant_Garamond, Inter } from 'next/font/google';
-import Script from 'next/script';
-import './globals.css';
+import type { Metadata } from "next";
+import {
+  Cormorant_Garamond,
+  Manrope,
+} from "next/font/google";
 
-import { CartProvider } from '@/context/CartContext';
-import AuthProvider from '@/context/AuthProvider';
-import AnnouncementBar from '@/components/AnnouncementBar';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import CartDrawer from '@/components/CartDrawer';
-import FloatingWhatsApp from '@/components/FloatingWhatsApp';
-import QuickHelp from '@/components/QuickHelp'
-import Loader from '@/components/Loader';
+import "./globals.css";
 
-import { Toaster } from 'react-hot-toast';
+import { siteConfig } from "@/config/site";
 
-const cormorant = Cormorant_Garamond({
-subsets: ['latin'],
-variable: '--font-serif',
-weight: ['300', '400', '500', '600', '700'],
-display: 'swap',
+const manrope = Manrope({
+  variable: "--font-manrope",
+  subsets: ["latin"],
+  display: "swap",
 });
 
-const inter = Inter({
-subsets: ['latin'],
-variable: '--font-sans',
-display: 'swap',
+const cormorant = Cormorant_Garamond({
+  variable: "--font-cormorant",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-title: 'Jannat Elegance | Premium Indian Ethnic Wear',
-description:
-'Jannat Elegance offers a curated collection of luxury Indian ethnic wear including Sharara Suits, Garara Suits, Pant Suits, Farshi Shalwar Suits, Frock Suits, Gowns, and Lehngas. Crafted for the modern queen.',
-keywords:
-'Jannat Elegance, ethnic wear, Indian fashion, Sharara Suit, Garara Suit, Pant Suit, Farshi Shalwar, Frock Suit, Gown, Lehnga, Plazo Suit',
-icons: {
-icon: '/favicon.ico',
-apple: '/apple-touch-icon.png',
-},
+  title: {
+    default: siteConfig.name,
+    template: `%s | ${siteConfig.name}`,
+  },
+
+  description: siteConfig.description,
+
+  metadataBase: new URL(siteConfig.url),
+
+  keywords: [
+    "Aayesha Fashion",
+    "Luxury Fashion",
+    "Women's Fashion",
+    "Indian Fashion",
+    "Online Shopping",
+  ],
 };
 
 export default function RootLayout({
-children,
+  children,
 }: Readonly<{
-children: React.ReactNode;
+  children: React.ReactNode;
 }>) {
-return (
-<html
-lang="en"
-className={`${inter.variable} ${cormorant.variable}`}
-> <body className="min-h-screen flex flex-col font-sans bg-[#fff8fa] text-rose-950 antialiased overflow-x-hidden"> <AuthProvider> <CartProvider>
-        {/* Global Website Loader */}
-        <Loader />
-
-        {/* Toast Notifications */}
-        <Toaster
-          position="top-center"
-          reverseOrder={false}
-        />
-
-          <AnnouncementBar />
-
-        {/* Header / Navbar */}
-        <Suspense
-          fallback={
-            <div className="h-20 bg-[#fff8fa] animate-pulse" />
-          }
-        >
-          <Navbar />
-        </Suspense>
-
-        {/* Main Workspace */}
-        <main className="flex-grow">
-          {children}
-        </main>
-
-        {/* Footer */}
-        <Footer />
-
-        {/* Cart Drawer */}
-        <CartDrawer />
-
-        {/* WhatsApp Floating Button */}
-        <FloatingWhatsApp />
-        <QuickHelp/>
-
-      </CartProvider>
-    </AuthProvider>
-
-    {/* Razorpay Integration */}
-    <Script
-      src="https://checkout.razorpay.com/v1/checkout.js"
-      strategy="lazyOnload"
-    />
-
-    {/* Google Sign-In */}
-    <Script
-      src="https://accounts.google.com/gsi/client"
-      strategy="afterInteractive"
-    />
-  </body>
-</html>
-
-);
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body
+        suppressHydrationWarning
+        className={`${manrope.variable} ${cormorant.variable} antialiased`}
+      >
+        {children}
+      </body>
+    </html>
+  );
 }
