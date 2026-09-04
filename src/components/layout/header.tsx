@@ -5,6 +5,8 @@ import { DesktopNavigation } from "@/components/layout/desktop-navigation";
 import { HeaderActions } from "@/components/layout/header-actions";
 import { MobileMenu } from "@/components/layout/mobile-menu";
 import { WishlistCount } from "./wishlist-count";
+import { useState } from "react";
+import { useEffect } from "react";
 
 const [mobileMenuOpen, setMobileMenuOpen] =
   useState(false);

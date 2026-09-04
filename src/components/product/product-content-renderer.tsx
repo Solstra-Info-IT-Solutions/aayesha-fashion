@@ -12,28 +12,32 @@ interface ProductContentRendererProps {
 export function ProductContentRenderer({
   content,
 }: ProductContentRendererProps) {
-  if (content.descriptionFormat === "html" && content.richContent) {
-    return (
-      <div
-        className="product-rich-content text-sm leading-7 text-[var(--color-text-secondary)]"
-        dangerouslySetInnerHTML={{
-          __html: sanitizeHtml(content.richContent),
-        }}
-      />
-    );
-  }
+  if (
+  content.descriptionFormat === "html" &&
+  typeof content.richContent === "string"
+) {
+  return (
+    <div
+      className="product-rich-content text-sm leading-7 text-[var(--color-text-secondary)]"
+      dangerouslySetInnerHTML={{
+        __html: sanitizeHtml(
+          content.richContent,
+        ),
+      }}
+    />
+  );
+}
 
-  if (content.descriptionFormat === "rich" && content.richContent) {
-    return (
-      <RichBlocks
-        blocks={
-          typeof content.richContent === "string"
-            ? []
-            : content.richContent
-        }
-      />
-    );
-  }
+  if (
+  content.descriptionFormat === "rich" &&
+  Array.isArray(content.richContent)
+) {
+  return (
+    <RichBlocks
+      blocks={content.richContent}
+    />
+  );
+}
 
   return (
     <div className="space-y-5 text-sm leading-7 text-[var(--color-text-secondary)]">

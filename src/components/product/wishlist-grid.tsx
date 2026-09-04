@@ -1,7 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Heart } from "lucide-react";
+import {
+  ArrowRight,
+  Heart,
+  ShoppingBag,
+  Trash2,
+} from "lucide-react";
 import type { Product } from "@/types/product";
 
 import { ProductCard } from "@/components/product/product-card";
@@ -86,7 +91,6 @@ export function WishlistGrid({ products }: WishlistGridProps) {
           size="md"
           rounded="none"
           icon={<ArrowRight size={16} />}
-          iconPosition="right"
         >
           Continue Shopping
         </LinkButton>
