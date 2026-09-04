@@ -1,65 +1,91 @@
+"use client";
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-type WishlistState = {
+interface WishlistState {
   productIds: string[];
-  addToWishlist: (productId: string) => void;
-  removeFromWishlist: (productId: string) => void;
-  toggleWishlist: (productId: string) => void;
+
+  add: (productId: string) => void;
+
+  remove: (productId: string) => void;
+
+  toggle: (productId: string) => void;
+
   isInWishlist: (productId: string) => boolean;
-  clearWishlist: () => void;
-};
 
-export const useWishlistStore = create<WishlistState>()(
-  persist(
-    (set, get) => ({
-      productIds: [],
+  clear: () => void;
+}
 
-      addToWishlist: (productId) => {
-        set((state) => {
-          if (state.productIds.includes(productId)) {
-            return state;
+export const useWishlistStore =
+  create<WishlistState>()(
+    persist(
+      (set, get) => ({
+        productIds: [],
+
+        add: (productId) => {
+          if (
+            get().productIds.includes(
+              productId,
+            )
+          ) {
+            return;
           }
 
-          return {
-            productIds: [...state.productIds, productId],
-          };
-        });
-      },
+          set((state) => ({
+            productIds: [
+              ...state.productIds,
+              productId,
+            ],
+          }));
+        },
 
-      removeFromWishlist: (productId) => {
-        set((state) => ({
-          productIds: state.productIds.filter((id) => id !== productId),
-        }));
-      },
+        remove: (productId) => {
+          set((state) => ({
+            productIds:
+              state.productIds.filter(
+                (id) => id !== productId,
+              ),
+          }));
+        },
 
-      toggleWishlist: (productId) => {
-        const { productIds } = get();
+        toggle: (productId) => {
+          const exists =
+            get().productIds.includes(
+              productId,
+            );
 
-        if (productIds.includes(productId)) {
+          if (exists) {
+            set((state) => ({
+              productIds:
+                state.productIds.filter(
+                  (id) =>
+                    id !== productId,
+                ),
+            }));
+          } else {
+            set((state) => ({
+              productIds: [
+                ...state.productIds,
+                productId,
+              ],
+            }));
+          }
+        },
+
+        isInWishlist: (productId) =>
+          get().productIds.includes(
+            productId,
+          ),
+
+        clear: () => {
           set({
-            productIds: productIds.filter((id) => id !== productId),
+            productIds: [],
           });
-          return;
-        }
-
-        set({
-          productIds: [...productIds, productId],
-        });
+        },
+      }),
+      {
+        name: "aayesha-wishlist",
       },
-
-      isInWishlist: (productId) => {
-        return get().productIds.includes(productId);
-      },
-
-      clearWishlist: () => {
-        set({
-          productIds: [],
-        });
-      },
-    }),
-    {
-      name: "aayesha-wishlist",
-    },
-  ),
-);
+    ),
+  );

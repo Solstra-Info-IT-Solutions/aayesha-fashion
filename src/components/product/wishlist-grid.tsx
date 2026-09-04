@@ -45,8 +45,7 @@ export function WishlistGrid({ products }: WishlistGridProps) {
             variant="primary"
             size="md"
             rounded="none"
-            icon={<ArrowRight size={16} />}
-            iconPosition="right"
+            icon={<ShoppingBag size={16} />}
           >
             Continue Shopping
           </LinkButton>

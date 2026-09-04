@@ -6,6 +6,9 @@ import { HeaderActions } from "@/components/layout/header-actions";
 import { MobileMenu } from "@/components/layout/mobile-menu";
 import { WishlistCount } from "./wishlist-count";
 
+const [mobileMenuOpen, setMobileMenuOpen] =
+  useState(false);
+
 export function Header() {
   return (
     <header
@@ -63,7 +66,10 @@ export function Header() {
           <HeaderActions />
 
           <div className="lg:hidden">
-            <MobileMenu />
+            <MobileMenu
+              isOpen={mobileMenuOpen}
+              onClose={() => setMobileMenuOpen(false)}
+            />
           </div>
         </div>
       </div>

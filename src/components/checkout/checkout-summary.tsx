@@ -1,11 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo } from "react";
 
-import {
-  getProductById,
-} from "@/data/products";
-
+import { getProductById } from "@/data/products";
 import { useCartStore } from "@/store/cart-store";
 import { useCheckoutStore } from "@/store/checkout-store";
 
@@ -22,42 +20,51 @@ export function CheckoutSummary() {
     (state) => state.couponCode,
   );
 
-  const data = useMemo(() => {
+  const summary = useMemo(() => {
     let subtotal = 0;
     let mrpTotal = 0;
 
-    const items = cartItems
-      .map((cartItem) => {
-        const product = getProductById(
-          cartItem.productId,
-        );
+    const items: {
+      cartItem: (typeof cartItems)[number];
+      product: NonNullable<
+        ReturnType<typeof getProductById>
+      >;
+      variant: NonNullable<
+        NonNullable<
+          ReturnType<typeof getProductById>
+        >
+      >["variants"][number];
+    }[] = [];
 
-        if (!product) return null;
+    for (const cartItem of cartItems) {
+      const product = getProductById(
+        cartItem.productId,
+      );
 
-        const variant =
-          product.variants.find(
-            (item) =>
-              item.id ===
-              cartItem.variantId,
-          );
+      if (!product) continue;
 
-        if (!variant) return null;
+      const variant = product.variants.find(
+        (item) =>
+          item.id ===
+          cartItem.variantId,
+      );
 
-        subtotal +=
-          variant.pricing.sellingPrice *
-          cartItem.quantity;
+      if (!variant) continue;
 
-        mrpTotal +=
-          variant.pricing.mrp *
-          cartItem.quantity;
+      subtotal +=
+        variant.pricing.sellingPrice *
+        cartItem.quantity;
 
-        return {
-          cartItem,
-          product,
-          variant,
-        };
-      })
-      .filter(Boolean);
+      mrpTotal +=
+        variant.pricing.mrp *
+        cartItem.quantity;
+
+      items.push({
+        cartItem,
+        product,
+        variant,
+      });
+    }
 
     const shipping =
       delivery === "express"
@@ -73,7 +80,8 @@ export function CheckoutSummary() {
       );
 
     const couponDiscount =
-      couponCode === "AYESHA10"
+      couponCode ===
+      "AYESHA10"
         ? Math.round(
             subtotal * 0.1,
           )
@@ -112,83 +120,105 @@ export function CheckoutSummary() {
           </p>
         </div>
 
-        {/* ITEMS */}
         <div className="max-h-[420px] overflow-y-auto">
-          {data.items.map(
+          {summary.items.map(
             ({
               cartItem,
               product,
               variant,
-            }) => (
-              <div
-                key={`${cartItem.productId}-${cartItem.variantId}`}
-                className="flex gap-4 border-b border-[var(--color-border)] px-6 py-4"
-              >
-                <div className="relative h-20 w-16 shrink-0 overflow-hidden bg-[var(--color-cream)]">
-                  {product.media[0]?.src && (
-                    <img
-                      src={product.media[0].src}
-                      alt={product.name}
-                      className="h-full w-full object-cover"
-                    />
-                  )}
+            }) => {
+              const image =
+                product.media.find(
+                  (media) =>
+                    media.id ===
+                    variant.mediaIds?.[0],
+                ) ??
+                product.media.find(
+                  (media) =>
+                    media.isPrimary,
+                ) ??
+                product.media.find(
+                  (media) =>
+                    media.type ===
+                    "image",
+                );
 
-                  <span className="absolute bottom-1 right-1 flex h-5 min-w-5 items-center justify-center bg-[var(--color-charcoal)] px-1 text-[8px] font-semibold text-white">
-                    {cartItem.quantity}
-                  </span>
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <p className="font-[var(--font-cormorant)] text-lg leading-tight">
-                    {product.name}
-                  </p>
-
-                  <p className="mt-1 text-[10px] text-[var(--color-text-muted)]">
-                    {variant.color.name} ·{" "}
-                    {variant.size.label}
-                  </p>
-
-                  <p className="mt-2 text-xs font-semibold">
-                    ₹
-                    {variant.pricing.sellingPrice.toLocaleString(
-                      "en-IN",
+              return (
+                <div
+                  key={`${cartItem.productId}-${cartItem.variantId}`}
+                  className="flex gap-4 border-b border-[var(--color-border)] px-6 py-4"
+                >
+                  <div className="relative h-20 w-16 shrink-0 overflow-hidden bg-[var(--color-cream)]">
+                    {image?.src && (
+                      <Image
+                        src={image.src}
+                        alt={
+                          image.alt ??
+                          product.name
+                        }
+                        fill
+                        className="object-cover"
+                        sizes="64px"
+                      />
                     )}
-                  </p>
+
+                    <span className="absolute bottom-1 right-1 flex h-5 min-w-5 items-center justify-center bg-[var(--color-charcoal)] px-1 text-[8px] font-semibold text-white">
+                      {cartItem.quantity}
+                    </span>
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <p className="font-[var(--font-cormorant)] text-lg leading-tight">
+                      {product.name}
+                    </p>
+
+                    <p className="mt-1 text-[10px] text-[var(--color-text-muted)]">
+                      {variant.color.name}{" "}
+                      ·{" "}
+                      {variant.size.label}
+                    </p>
+
+                    <p className="mt-2 text-xs font-semibold">
+                      ₹
+                      {variant.pricing.sellingPrice.toLocaleString(
+                        "en-IN",
+                      )}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ),
+              );
+            },
           )}
         </div>
 
-        {/* TOTALS */}
         <div className="space-y-4 px-6 py-5">
-          <Row
+          <SummaryRow
             label="MRP Total"
-            value={`₹${data.mrpTotal.toLocaleString("en-IN")}`}
+            value={`₹${summary.mrpTotal.toLocaleString("en-IN")}`}
           />
 
-          {data.productSavings > 0 && (
-            <Row
+          {summary.productSavings > 0 && (
+            <SummaryRow
               label="Product Discount"
-              value={`- ₹${data.productSavings.toLocaleString("en-IN")}`}
+              value={`- ₹${summary.productSavings.toLocaleString("en-IN")}`}
               valueClass="text-[var(--color-success)]"
             />
           )}
 
-          {data.couponDiscount > 0 && (
-            <Row
+          {summary.couponDiscount > 0 && (
+            <SummaryRow
               label="Coupon Discount"
-              value={`- ₹${data.couponDiscount.toLocaleString("en-IN")}`}
+              value={`- ₹${summary.couponDiscount.toLocaleString("en-IN")}`}
               valueClass="text-[var(--color-success)]"
             />
           )}
 
-          <Row
+          <SummaryRow
             label="Delivery"
             value={
-              data.shipping === 0
+              summary.shipping === 0
                 ? "Free"
-                : `₹${data.shipping.toLocaleString("en-IN")}`
+                : `₹${summary.shipping.toLocaleString("en-IN")}`
             }
           />
 
@@ -206,7 +236,7 @@ export function CheckoutSummary() {
 
               <p className="text-xl font-semibold">
                 ₹
-                {data.total.toLocaleString(
+                {summary.total.toLocaleString(
                   "en-IN",
                 )}
               </p>
@@ -215,15 +245,15 @@ export function CheckoutSummary() {
         </div>
       </div>
 
-      {data.productSavings > 0 && (
+      {summary.productSavings > 0 && (
         <div className="mt-4 border border-[var(--color-border)] bg-[var(--color-cream)] px-5 py-4">
           <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">
-            You're saving
+            You&apos;re saving
           </p>
 
           <p className="mt-1 text-sm font-semibold text-[var(--color-success)]">
             ₹
-            {data.productSavings.toLocaleString(
+            {summary.productSavings.toLocaleString(
               "en-IN",
             )}
           </p>
@@ -233,7 +263,7 @@ export function CheckoutSummary() {
   );
 }
 
-function Row({
+function SummaryRow({
   label,
   value,
   valueClass = "",

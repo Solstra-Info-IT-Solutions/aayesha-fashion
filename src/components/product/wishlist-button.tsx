@@ -1,6 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
+
 import { Heart } from "lucide-react";
 
 import { useWishlistStore } from "@/store/wishlist-store";
@@ -16,14 +20,18 @@ export function WishlistButton({
   productName = "Product",
   className = "",
 }: WishlistButtonProps) {
-  const isInWishlist = useWishlistStore(
-    (state) =>
-      state.productIds.includes(productId),
-  );
+  const isInWishlist =
+    useWishlistStore(
+      (state) =>
+        state.productIds.includes(
+          productId,
+        ),
+    );
 
-  const toggle = useWishlistStore(
-    (state) => state.toggle,
-  );
+  const toggle =
+    useWishlistStore(
+      (state) => state.toggle,
+    );
 
   const [hydrated, setHydrated] =
     useState(false);
@@ -38,7 +46,9 @@ export function WishlistButton({
   return (
     <button
       type="button"
-      onClick={() => toggle(productId)}
+      onClick={() =>
+        toggle(productId)
+      }
       aria-label={
         active
           ? `Remove ${productName} from wishlist`
@@ -56,7 +66,11 @@ export function WishlistButton({
       <Heart
         size={18}
         strokeWidth={1.5}
-        fill={active ? "currentColor" : "none"}
+        fill={
+          active
+            ? "currentColor"
+            : "none"
+        }
       />
     </button>
   );

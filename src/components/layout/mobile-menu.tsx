@@ -151,7 +151,7 @@ export function MobileMenu({
         {/* Bottom */}
         <div className="mt-auto border-t border-[var(--color-border)] pt-6">
           <p className="text-[10px] uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
-            {siteConfig.tagline}
+            {siteConfig.description}
           </p>
         </div>
       </aside>
