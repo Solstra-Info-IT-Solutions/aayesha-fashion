@@ -1,11 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import {
   ArrowRight,
   Heart,
   ShoppingBag,
-  Trash2,
 } from "lucide-react";
 import type { Product } from "@/types/product";
 

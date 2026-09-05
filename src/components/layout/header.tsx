@@ -1,13 +1,15 @@
 "use client";
 
+import { useState } from "react";
+
 import { BrandLogo } from "@/components/layout/brand-logo";
 import { DesktopNavigation } from "@/components/layout/desktop-navigation";
 import { HeaderActions } from "@/components/layout/header-actions";
 import { MobileMenu } from "@/components/layout/mobile-menu";
-import { useState } from "react";
 
 export function Header() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] =
+    useState(false);
 
   return (
     <header
@@ -31,7 +33,6 @@ export function Header() {
           w-full
           max-w-[1600px]
           items-center
-          justify-between
           px-5
           sm:h-[78px]
           sm:px-8
@@ -42,8 +43,25 @@ export function Header() {
         "
       >
         {/* =====================================================
+            MOBILE MENU
+        ===================================================== */}
+
+        <div className="relative z-[120] lg:hidden">
+          <MobileMenu
+            isOpen={mobileMenuOpen}
+            onOpen={() =>
+              setMobileMenuOpen(true)
+            }
+            onClose={() =>
+              setMobileMenuOpen(false)
+            }
+          />
+        </div>
+
+        {/* =====================================================
             DESKTOP NAVIGATION
         ===================================================== */}
+
         <div className="hidden lg:block">
           <DesktopNavigation />
         </div>
@@ -51,25 +69,25 @@ export function Header() {
         {/* =====================================================
             CENTER LOGO
         ===================================================== */}
-        <div className="absolute left-1/2 -translate-x-1/2">
+
+        <div
+          className="
+            pointer-events-none
+            absolute
+            left-1/2
+            z-10
+            -translate-x-1/2
+          "
+        >
           <BrandLogo />
         </div>
 
         {/* =====================================================
             HEADER ACTIONS
         ===================================================== */}
-        <div className="ml-auto flex items-center">
-          <HeaderActions />
 
-          {/* ===================================================
-              MOBILE MENU
-          =================================================== */}
-          <div className="lg:hidden">
-            <MobileMenu
-              isOpen={mobileMenuOpen}
-              onClose={() => setMobileMenuOpen(false)}
-            />
-          </div>
+        <div className="relative z-[20] ml-auto flex items-center">
+          <HeaderActions />
         </div>
       </div>
     </header>

@@ -1,11 +1,27 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 
-import { getProductById } from "@/data/products";
+import { getProductById } from "@/lib/api/products";
+import type {
+  Product,
+  ProductVariant,
+} from "@/types/product";
+
 import { useCartStore } from "@/store/cart-store";
 import { useCheckoutStore } from "@/store/checkout-store";
+
+type ResolvedCheckoutItem = {
+  cartItem: {
+    productId: string;
+    variantId: string;
+    quantity: number;
+  };
+  product: Product;
+  variant: ProductVariant;
+  image?: Product["media"][number];
+};
 
 export function CheckoutSummary() {
   const cartItems = useCartStore(
@@ -20,96 +36,178 @@ export function CheckoutSummary() {
     (state) => state.couponCode,
   );
 
-  const summary = useMemo(() => {
-    let subtotal = 0;
-    let mrpTotal = 0;
+  const [items, setItems] = useState<
+    ResolvedCheckoutItem[]
+  >([]);
 
-    const items: {
-      cartItem: (typeof cartItems)[number];
-      product: NonNullable<
-        ReturnType<typeof getProductById>
-      >;
-      variant: NonNullable<
-        NonNullable<
-          ReturnType<typeof getProductById>
-        >
-      >["variants"][number];
-    }[] = [];
+  const [loading, setLoading] = useState(true);
 
-    for (const cartItem of cartItems) {
-      const product = getProductById(
-        cartItem.productId,
-      );
+  /* ==========================================================
+     LOAD PRODUCTS FROM BACKEND
+  ========================================================== */
 
-      if (!product) continue;
+  useEffect(() => {
+    let cancelled = false;
 
-      const variant = product.variants.find(
-        (item) =>
-          item.id ===
-          cartItem.variantId,
-      );
+    async function loadProducts() {
+      if (!cartItems.length) {
+        setItems([]);
+        setLoading(false);
+        return;
+      }
 
-      if (!variant) continue;
+      setLoading(true);
 
-      subtotal +=
-        variant.pricing.sellingPrice *
-        cartItem.quantity;
+      try {
+        const productIds = Array.from(
+          new Set(
+            cartItems.map(
+              (item) => item.productId,
+            ),
+          ),
+        );
 
-      mrpTotal +=
-        variant.pricing.mrp *
-        cartItem.quantity;
+        const responses = await Promise.all(
+          productIds.map(
+            async (productId) => {
+              try {
+                return await getProductById(
+                  productId,
+                );
+              } catch {
+                return null;
+              }
+            },
+          ),
+        );
 
-      items.push({
-        cartItem,
-        product,
-        variant,
-      });
+        if (cancelled) {
+          return;
+        }
+
+        const productMap = new Map<
+          string,
+          Product
+        >();
+
+        responses.forEach((product) => {
+          if (product) {
+            productMap.set(
+              product.id,
+              product,
+            );
+          }
+        });
+
+        const resolved: ResolvedCheckoutItem[] =
+          [];
+
+        for (const cartItem of cartItems) {
+          const product = productMap.get(
+            cartItem.productId,
+          );
+
+          if (!product) {
+            continue;
+          }
+
+          const variant =
+            product.variants.find(
+              (item) =>
+                item.id ===
+                cartItem.variantId,
+            );
+
+          if (!variant) {
+            continue;
+          }
+
+          const image =
+            product.media.find(
+              (media) =>
+                variant.mediaIds?.includes(
+                  media.id,
+                ),
+            ) ??
+            product.media.find(
+              (media) =>
+                media.isPrimary,
+            ) ??
+            product.media.find(
+              (media) =>
+                media.type === "image",
+            );
+
+          resolved.push({
+            cartItem,
+            product,
+            variant,
+            image,
+          });
+        }
+
+        setItems(resolved);
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
     }
 
-    const shipping =
-      delivery === "express"
-        ? 199
-        : subtotal >= 2999
-          ? 0
-          : 99;
+    void loadProducts();
 
-    const productSavings =
-      Math.max(
-        0,
-        mrpTotal - subtotal,
-      );
-
-    const couponDiscount =
-      couponCode ===
-      "AYESHA10"
-        ? Math.round(
-            subtotal * 0.1,
-          )
-        : 0;
-
-    const total =
-      subtotal +
-      shipping -
-      couponDiscount;
-
-    return {
-      items,
-      subtotal,
-      mrpTotal,
-      shipping,
-      productSavings,
-      couponDiscount,
-      total,
+    return () => {
+      cancelled = true;
     };
-  }, [
-    cartItems,
-    delivery,
-    couponCode,
-  ]);
+  }, [cartItems]);
+
+  /* ==========================================================
+     SUMMARY
+  ========================================================== */
+
+  let subtotal = 0;
+  let mrpTotal = 0;
+
+  for (const item of items) {
+    subtotal +=
+      item.variant.pricing.sellingPrice *
+      item.cartItem.quantity;
+
+    mrpTotal +=
+      item.variant.pricing.mrp *
+      item.cartItem.quantity;
+  }
+
+  const shipping =
+    delivery === "express"
+      ? 199
+      : subtotal >= 2999
+        ? 0
+        : 99;
+
+  const productSavings = Math.max(
+    0,
+    mrpTotal - subtotal,
+  );
+
+  const couponDiscount =
+    couponCode.trim().toUpperCase() ===
+    "AYESHA10"
+      ? Math.round(subtotal * 0.1)
+      : 0;
+
+  const total = Math.max(
+    0,
+    subtotal +
+      shipping -
+      couponDiscount,
+  );
 
   return (
     <aside className="lg:sticky lg:top-28">
       <div className="border border-[var(--color-border)] bg-white">
+        {/* HEADER */}
+
         <div className="border-b border-[var(--color-border)] px-6 py-5">
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
             Order Summary
@@ -120,95 +218,101 @@ export function CheckoutSummary() {
           </p>
         </div>
 
+        {/* PRODUCTS */}
+
         <div className="max-h-[420px] overflow-y-auto">
-          {summary.items.map(
-            ({
-              cartItem,
-              product,
-              variant,
-            }) => {
-              const image =
-                product.media.find(
-                  (media) =>
-                    media.id ===
-                    variant.mediaIds?.[0],
-                ) ??
-                product.media.find(
-                  (media) =>
-                    media.isPrimary,
-                ) ??
-                product.media.find(
-                  (media) =>
-                    media.type ===
-                    "image",
-                );
-
-              return (
-                <div
-                  key={`${cartItem.productId}-${cartItem.variantId}`}
-                  className="flex gap-4 border-b border-[var(--color-border)] px-6 py-4"
-                >
-                  <div className="relative h-20 w-16 shrink-0 overflow-hidden bg-[var(--color-cream)]">
-                    {image?.src && (
-                      <Image
-                        src={image.src}
-                        alt={
-                          image.alt ??
-                          product.name
-                        }
-                        fill
-                        className="object-cover"
-                        sizes="64px"
-                      />
-                    )}
-
-                    <span className="absolute bottom-1 right-1 flex h-5 min-w-5 items-center justify-center bg-[var(--color-charcoal)] px-1 text-[8px] font-semibold text-white">
-                      {cartItem.quantity}
-                    </span>
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <p className="font-[var(--font-cormorant)] text-lg leading-tight">
-                      {product.name}
-                    </p>
-
-                    <p className="mt-1 text-[10px] text-[var(--color-text-muted)]">
-                      {variant.color.name}{" "}
-                      ·{" "}
-                      {variant.size.label}
-                    </p>
-
-                    <p className="mt-2 text-xs font-semibold">
-                      ₹
-                      {variant.pricing.sellingPrice.toLocaleString(
-                        "en-IN",
+          {loading ? (
+            <CheckoutItemsSkeleton />
+          ) : items.length ? (
+            items.map(
+              ({
+                cartItem,
+                product,
+                variant,
+                image,
+              }) => {
+                return (
+                  <div
+                    key={`${cartItem.productId}-${cartItem.variantId}`}
+                    className="flex gap-4 border-b border-[var(--color-border)] px-6 py-4"
+                  >
+                    <div className="relative h-20 w-16 shrink-0 overflow-hidden bg-[var(--color-cream)]">
+                      {image?.src ? (
+                        <Image
+                          src={image.src}
+                          alt={
+                            image.alt ??
+                            product.name
+                          }
+                          fill
+                          className="object-cover"
+                          sizes="64px"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-[8px] uppercase tracking-[0.1em] text-[var(--color-text-muted)]">
+                          No image
+                        </div>
                       )}
-                    </p>
+
+                      <span className="absolute bottom-1 right-1 flex h-5 min-w-5 items-center justify-center bg-[var(--color-charcoal)] px-1 text-[8px] font-semibold text-white">
+                        {cartItem.quantity}
+                      </span>
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <p className="font-[var(--font-cormorant)] text-lg leading-tight">
+                        {product.name}
+                      </p>
+
+                      <p className="mt-1 text-[10px] text-[var(--color-text-muted)]">
+                        {variant.color.name} ·{" "}
+                        {variant.size.label}
+                      </p>
+
+                      <p className="mt-2 text-xs font-semibold">
+                        ₹
+                        {variant.pricing.sellingPrice.toLocaleString(
+                          "en-IN",
+                        )}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              );
-            },
+                );
+              },
+            )
+          ) : (
+            <div className="px-6 py-8 text-center text-xs text-[var(--color-text-muted)]">
+              Your bag is empty.
+            </div>
           )}
         </div>
+
+        {/* TOTALS */}
 
         <div className="space-y-4 px-6 py-5">
           <SummaryRow
             label="MRP Total"
-            value={`₹${summary.mrpTotal.toLocaleString("en-IN")}`}
+            value={`₹${mrpTotal.toLocaleString(
+              "en-IN",
+            )}`}
           />
 
-          {summary.productSavings > 0 && (
+          {productSavings > 0 && (
             <SummaryRow
               label="Product Discount"
-              value={`- ₹${summary.productSavings.toLocaleString("en-IN")}`}
+              value={`- ₹${productSavings.toLocaleString(
+                "en-IN",
+              )}`}
               valueClass="text-[var(--color-success)]"
             />
           )}
 
-          {summary.couponDiscount > 0 && (
+          {couponDiscount > 0 && (
             <SummaryRow
-              label="Coupon Discount"
-              value={`- ₹${summary.couponDiscount.toLocaleString("en-IN")}`}
+              label={`Coupon (${couponCode.toUpperCase()})`}
+              value={`- ₹${couponDiscount.toLocaleString(
+                "en-IN",
+              )}`}
               valueClass="text-[var(--color-success)]"
             />
           )}
@@ -216,9 +320,11 @@ export function CheckoutSummary() {
           <SummaryRow
             label="Delivery"
             value={
-              summary.shipping === 0
+              shipping === 0
                 ? "Free"
-                : `₹${summary.shipping.toLocaleString("en-IN")}`
+                : `₹${shipping.toLocaleString(
+                    "en-IN",
+                  )}`
             }
           />
 
@@ -236,7 +342,7 @@ export function CheckoutSummary() {
 
               <p className="text-xl font-semibold">
                 ₹
-                {summary.total.toLocaleString(
+                {total.toLocaleString(
                   "en-IN",
                 )}
               </p>
@@ -245,7 +351,7 @@ export function CheckoutSummary() {
         </div>
       </div>
 
-      {summary.productSavings > 0 && (
+      {productSavings > 0 && (
         <div className="mt-4 border border-[var(--color-border)] bg-[var(--color-cream)] px-5 py-4">
           <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">
             You&apos;re saving
@@ -253,7 +359,7 @@ export function CheckoutSummary() {
 
           <p className="mt-1 text-sm font-semibold text-[var(--color-success)]">
             ₹
-            {summary.productSavings.toLocaleString(
+            {productSavings.toLocaleString(
               "en-IN",
             )}
           </p>
@@ -262,6 +368,10 @@ export function CheckoutSummary() {
     </aside>
   );
 }
+
+/* ============================================================
+   SUMMARY ROW
+============================================================ */
 
 function SummaryRow({
   label,
@@ -282,5 +392,34 @@ function SummaryRow({
         {value}
       </span>
     </div>
+  );
+}
+
+/* ============================================================
+   SKELETON
+============================================================ */
+
+function CheckoutItemsSkeleton() {
+  return (
+    <>
+      {Array.from({ length: 2 }).map(
+        (_, index) => (
+          <div
+            key={index}
+            className="flex gap-4 border-b border-[var(--color-border)] px-6 py-4"
+          >
+            <div className="h-20 w-16 animate-pulse bg-[var(--color-cream)]" />
+
+            <div className="flex-1">
+              <div className="h-5 w-32 animate-pulse bg-[var(--color-cream)]" />
+
+              <div className="mt-2 h-3 w-24 animate-pulse bg-[var(--color-cream)]" />
+
+              <div className="mt-3 h-4 w-16 animate-pulse bg-[var(--color-cream)]" />
+            </div>
+          </div>
+        ),
+      )}
+    </>
   );
 }

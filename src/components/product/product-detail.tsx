@@ -16,31 +16,38 @@ import { ProductStickyBuyBar } from "@/components/product/product-sticky-buy-bar
 
 interface ProductDetailProps {
   product: Product;
+  recommendations?: Product[];
 }
 
 export function ProductDetail({
   product,
+  recommendations = [],
 }: ProductDetailProps) {
   const firstAvailableVariant = useMemo(() => {
     return (
       product.variants.find(
         (variant) =>
           variant.status === "active" &&
-          getVariantInventoryStatus(variant) !== "out-of-stock",
+          getVariantInventoryStatus(variant) !==
+            "out-of-stock",
       ) ?? product.variants[0]
     );
   }, [product.variants]);
 
-  const [selectedColorId, setSelectedColorId] = useState(
-    firstAvailableVariant?.color.id ?? "",
-  );
+  const [selectedColorId, setSelectedColorId] =
+    useState(
+      firstAvailableVariant?.color.id ?? "",
+    );
 
-  const [selectedSizeCode, setSelectedSizeCode] = useState(
-    firstAvailableVariant?.size.code ?? "",
-  );
+  const [selectedSizeCode, setSelectedSizeCode] =
+    useState(
+      firstAvailableVariant?.size.code ?? "",
+    );
 
   const [quantity, setQuantity] = useState(1);
-  const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
+
+  const [sizeGuideOpen, setSizeGuideOpen] =
+    useState(false);
 
   const selectedVariant = useMemo(() => {
     return (
@@ -57,16 +64,20 @@ export function ProductDetail({
     selectedSizeCode,
   ]);
 
-  const handleColorChange = (colorId: string) => {
+  const handleColorChange = (
+    colorId: string,
+  ) => {
     setSelectedColorId(colorId);
 
-    const availableVariant = product.variants.find(
-      (variant) =>
-        variant.color.id === colorId &&
-        variant.status === "active" &&
-        getVariantInventoryStatus(variant) !==
-          "out-of-stock",
-    );
+    const availableVariant =
+      product.variants.find(
+        (variant) =>
+          variant.color.id === colorId &&
+          variant.status === "active" &&
+          getVariantInventoryStatus(
+            variant,
+          ) !== "out-of-stock",
+      );
 
     setSelectedSizeCode(
       availableVariant?.size.code ?? "",
@@ -75,7 +86,9 @@ export function ProductDetail({
     setQuantity(1);
   };
 
-  const handleSizeChange = (sizeCode: string) => {
+  const handleSizeChange = (
+    sizeCode: string,
+  ) => {
     setSelectedSizeCode(sizeCode);
     setQuantity(1);
   };
@@ -95,40 +108,69 @@ export function ProductDetail({
 
   return (
     <main className="bg-[var(--color-ivory)]">
-      {/* PDP HERO */}
+      {/* =====================================================
+          PDP HERO
+      ===================================================== */}
+
       <section className="border-b border-[var(--color-border)]">
         <div className="mx-auto max-w-[1500px] px-4 pb-16 pt-6 sm:px-6 sm:pb-20 sm:pt-8 lg:px-10 lg:pb-24">
           <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.08fr)_minmax(390px,0.92fr)] lg:gap-16 xl:gap-20">
             {/* MEDIA */}
-            <ProductMediaGallery product={product} />
+
+            <ProductMediaGallery
+              product={product}
+            />
 
             {/* INFORMATION */}
+
             <div className="lg:sticky lg:top-28">
               <ProductInfo
                 product={product}
-                selectedColorId={selectedColorId}
-                selectedSizeCode={selectedSizeCode}
-                selectedVariant={selectedVariant}
+                selectedColorId={
+                  selectedColorId
+                }
+                selectedSizeCode={
+                  selectedSizeCode
+                }
+                selectedVariant={
+                  selectedVariant
+                }
                 quantity={safeQuantity}
-                sizeGuideOpen={sizeGuideOpen}
-                onColorChange={handleColorChange}
-                onSizeChange={handleSizeChange}
-                onQuantityChange={(value) =>
+                sizeGuideOpen={
+                  sizeGuideOpen
+                }
+                onColorChange={
+                  handleColorChange
+                }
+                onSizeChange={
+                  handleSizeChange
+                }
+                onQuantityChange={(
+                  value,
+                ) =>
                   setQuantity(
                     Math.min(
                       Math.max(value, 1),
-                      Math.max(maxStock, 1),
+                      Math.max(
+                        maxStock,
+                        1,
+                      ),
                     ),
                   )
                 }
-                onSizeGuideChange={setSizeGuideOpen}
+                onSizeGuideChange={
+                  setSizeGuideOpen
+                }
               />
             </div>
           </div>
         </div>
       </section>
 
-      {/* PRODUCT CONTENT */}
+      {/* =====================================================
+          PRODUCT CONTENT
+      ===================================================== */}
+
       <section className="mx-auto max-w-[1500px] px-4 py-14 sm:px-6 sm:py-18 lg:px-10 lg:py-20">
         <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-20">
           <div>
@@ -136,30 +178,42 @@ export function ProductDetail({
               title="Description"
               defaultOpen
             >
-              <ProductDescription product={product} />
+              <ProductDescription
+                product={product}
+              />
             </ProductAccordion>
 
             <ProductAccordion title="Materials & Care">
               <div className="max-w-2xl space-y-5 text-sm leading-7 text-[var(--color-text-secondary)]">
-                {product.attributes.fabric && (
+                {product.attributes
+                  .fabric && (
                   <p>
                     <strong className="text-[var(--color-charcoal)]">
                       Fabric:
                     </strong>{" "}
-                    {product.attributes.fabric}
+                    {
+                      product.attributes
+                        .fabric
+                    }
                   </p>
                 )}
 
-                {product.attributes.composition && (
+                {product.attributes
+                  .composition && (
                   <p>
                     <strong className="text-[var(--color-charcoal)]">
                       Composition:
                     </strong>{" "}
-                    {product.attributes.composition}
+                    {
+                      product.attributes
+                        .composition
+                    }
                   </p>
                 )}
 
-                {product.attributes.careInstructions?.length ? (
+                {product.attributes
+                  .careInstructions
+                  ?.length ? (
                   <div>
                     <p className="mb-3 font-semibold text-[var(--color-charcoal)]">
                       Care Instructions
@@ -167,13 +221,19 @@ export function ProductDetail({
 
                     <ul className="space-y-2">
                       {product.attributes.careInstructions.map(
-                        (instruction) => (
+                        (
+                          instruction,
+                        ) => (
                           <li
-                            key={instruction}
+                            key={
+                              instruction
+                            }
                             className="relative pl-4"
                           >
                             <span className="absolute left-0 top-[10px] h-1 w-1 rounded-full bg-[var(--color-rose)]" />
-                            {instruction}
+                            {
+                              instruction
+                            }
                           </li>
                         ),
                       )}
@@ -185,48 +245,70 @@ export function ProductDetail({
 
             <ProductAccordion title="Size & Fit">
               <div className="max-w-2xl text-sm leading-7 text-[var(--color-text-secondary)]">
-                {product.attributes.fit && (
+                {product.attributes
+                  .fit && (
                   <p>
                     <strong className="text-[var(--color-charcoal)]">
                       Fit:
                     </strong>{" "}
-                    {product.attributes.fit}
+                    {
+                      product.attributes
+                        .fit
+                    }
                   </p>
                 )}
 
-                {product.attributes.silhouette && (
+                {product.attributes
+                  .silhouette && (
                   <p className="mt-3">
                     <strong className="text-[var(--color-charcoal)]">
                       Silhouette:
                     </strong>{" "}
-                    {product.attributes.silhouette}
+                    {
+                      product.attributes
+                        .silhouette
+                    }
                   </p>
                 )}
 
-                {product.content.fitNote && (
+                {product.content
+                  .fitNote && (
                   <p className="mt-5">
-                    {product.content.fitNote}
+                    {
+                      product.content
+                        .fitNote
+                    }
                   </p>
                 )}
               </div>
             </ProductAccordion>
 
             <ProductAccordion title="Product Details">
-              <ProductSpecifications product={product} />
+              <ProductSpecifications
+                product={product}
+              />
             </ProductAccordion>
 
-            {product.content.shippingContent && (
+            {product.content
+              .shippingContent && (
               <ProductAccordion title="Shipping & Delivery">
                 <p className="max-w-2xl text-sm leading-7 text-[var(--color-text-secondary)]">
-                  {product.content.shippingContent}
+                  {
+                    product.content
+                      .shippingContent
+                  }
                 </p>
               </ProductAccordion>
             )}
 
-            {product.content.returnContent && (
+            {product.content
+              .returnContent && (
               <ProductAccordion title="Returns & Exchange">
                 <p className="max-w-2xl text-sm leading-7 text-[var(--color-text-secondary)]">
-                  {product.content.returnContent}
+                  {
+                    product.content
+                      .returnContent
+                  }
                 </p>
               </ProductAccordion>
             )}
@@ -234,32 +316,44 @@ export function ProductDetail({
             {product.faqs?.length ? (
               <ProductAccordion title="Frequently Asked Questions">
                 <div className="max-w-2xl space-y-7">
-                  {product.faqs.map((faq) => (
-                    <div key={faq.id}>
-                      <p className="text-sm font-semibold">
-                        {faq.question}
-                      </p>
+                  {product.faqs.map(
+                    (faq) => (
+                      <div key={faq.id}>
+                        <p className="text-sm font-semibold">
+                          {
+                            faq.question
+                          }
+                        </p>
 
-                      <p className="mt-2 text-sm leading-7 text-[var(--color-text-secondary)]">
-                        {faq.answer}
-                      </p>
-                    </div>
-                  ))}
+                        <p className="mt-2 text-sm leading-7 text-[var(--color-text-secondary)]">
+                          {
+                            faq.answer
+                          }
+                        </p>
+                      </div>
+                    ),
+                  )}
                 </div>
               </ProductAccordion>
             ) : null}
 
             {/* REVIEWS */}
+
             <div className="border-t border-[var(--color-border)] pt-7">
               <p className="mb-5 text-[11px] font-semibold uppercase tracking-[0.15em]">
                 Customer Reviews
               </p>
 
-              <ProductReviews product={product} />
+              <ProductReviews
+                product={product}
+              />
             </div>
           </div>
 
-          {/* SIDE SUMMARY */}
+          {/* =====================================================
+              SIDE SUMMARY
+          ===================================================== */}
+
           <aside className="hidden lg:block">
             <div className="border border-[var(--color-border)] bg-[var(--color-cream)] p-7">
               <p className="text-[10px] font-semibold uppercase tracking-[0.17em] text-[var(--color-text-muted)]">
@@ -267,12 +361,15 @@ export function ProductDetail({
               </p>
 
               <h3 className="mt-3 font-[var(--font-cormorant)] text-3xl leading-tight">
-                Designed to be worn, remembered, and loved.
+                Designed to be worn, remembered,
+                and loved.
               </h3>
 
               <p className="mt-4 text-sm leading-7 text-[var(--color-text-secondary)]">
-                Every piece is thoughtfully designed with an
-                emphasis on elegance, comfort and enduring style.
+                Every piece is thoughtfully
+                designed with an emphasis on
+                elegance, comfort and enduring
+                style.
               </p>
 
               <div className="mt-7 h-px bg-[var(--color-border)]" />
@@ -282,8 +379,13 @@ export function ProductDetail({
                   <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">
                     Fabric
                   </p>
+
                   <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-                    {product.attributes.fabric ?? "Premium materials"}
+                    {
+                      product.attributes
+                        .fabric ??
+                      "Premium materials"
+                    }
                   </p>
                 </div>
 
@@ -291,8 +393,12 @@ export function ProductDetail({
                   <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">
                     Occasion
                   </p>
+
                   <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-                    {product.attributes.occasion?.join(", ") ??
+                    {product.attributes
+                      .occasion?.join(
+                        ", ",
+                      ) ??
                       "Versatile styling"}
                   </p>
                 </div>
@@ -302,10 +408,21 @@ export function ProductDetail({
         </div>
       </section>
 
-      {/* RECOMMENDATIONS */}
-      <ProductRecommendations product={product} />
+      {/* =====================================================
+          RECOMMENDATIONS
+      ===================================================== */}
 
-      {/* MOBILE STICKY BUY BAR */}
+      <ProductRecommendations
+        recommendations={
+          recommendations
+        }
+        product={product}
+      />
+
+      {/* =====================================================
+          MOBILE STICKY BUY BAR
+      ===================================================== */}
+
       <ProductStickyBuyBar
         product={product}
         variant={selectedVariant}

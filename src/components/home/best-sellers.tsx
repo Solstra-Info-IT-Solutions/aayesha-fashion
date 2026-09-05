@@ -1,11 +1,16 @@
 import { ArrowUpRight } from "lucide-react";
 
+import { getBestSellers } from "@/lib/api/products";
+
 import { ProductCarousel } from "@/components/product/product-carousel";
 import { Container } from "@/components/shared/container";
 import { LinkButton } from "@/components/ui/button";
-import { bestSellers } from "@/data/products";
 
-export function BestSellers() {
+export async function BestSellers() {
+  const response = await getBestSellers(8);
+
+  const bestSellers = response.products;
+
   return (
     <section
       id="best-sellers"
@@ -28,7 +33,10 @@ export function BestSellers() {
               </div>
 
               <span className="font-display text-lg text-[var(--color-text-muted)] sm:text-xl">
-                08
+                {String(bestSellers.length).padStart(
+                  2,
+                  "0",
+                )}
               </span>
             </div>
 
@@ -69,12 +77,24 @@ export function BestSellers() {
               PRODUCT CAROUSEL
           ===================================================== */}
 
-          <div className="mt-12 sm:mt-14 lg:mt-16">
-            <ProductCarousel
-              products={bestSellers}
-              ariaLabel="Best selling products"
-            />
-          </div>
+          {bestSellers.length > 0 ? (
+            <div className="mt-12 sm:mt-14 lg:mt-16">
+              <ProductCarousel
+                products={bestSellers}
+                ariaLabel="Best selling products"
+              />
+            </div>
+          ) : (
+            <div className="mt-12 border-y border-[var(--color-border)] py-16 text-center">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
+                Coming soon
+              </p>
+
+              <p className="mt-3 font-display text-2xl text-[var(--color-charcoal)]">
+                Our most-loved edit is being curated.
+              </p>
+            </div>
+          )}
 
           {/* =====================================================
               CTA

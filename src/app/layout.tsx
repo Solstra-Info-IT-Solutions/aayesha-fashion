@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
+
 import {
   Cormorant_Garamond,
   Manrope,
 } from "next/font/google";
 
 import "./globals.css";
+
 import { Toaster } from "react-hot-toast";
 
 import { siteConfig } from "@/config/site";
+
+import { AuthProvider } from "@/components/auth/auth-provider";
 
 const manrope = Manrope({
   variable: "--font-manrope",
@@ -19,7 +23,12 @@ const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
   subsets: ["latin"],
   display: "swap",
-  weight: ["400", "500", "600", "700"],
+  weight: [
+    "400",
+    "500",
+    "600",
+    "700",
+  ],
 });
 
 export const metadata: Metadata = {
@@ -28,9 +37,12 @@ export const metadata: Metadata = {
     template: `%s | ${siteConfig.name}`,
   },
 
-  description: siteConfig.description,
+  description:
+    siteConfig.description,
 
-  metadataBase: new URL(siteConfig.url),
+  metadataBase: new URL(
+    siteConfig.url,
+  ),
 
   keywords: [
     "Aayesha Fashion",
@@ -47,19 +59,26 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      suppressHydrationWarning
+    >
       <body
         suppressHydrationWarning
         className={`${manrope.variable} ${cormorant.variable} antialiased`}
       >
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
 
-         <Toaster
+        <Toaster
           position="top-right"
           toastOptions={{
             duration: 2200,
+
             style: {
-              background: "#1b1d1d",
+              background:
+                "#1b1d1d",
               color: "#ffffff",
               borderRadius: "0",
               fontSize: "12px",

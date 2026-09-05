@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ChevronLeft,
   Minus,
@@ -13,70 +13,180 @@ import {
 import toast from "react-hot-toast";
 
 import { useCartStore } from "@/store/cart-store";
-import {
-  getProductById,
-  getVariantById,
-} from "@/data/products";
+import { getProductById } from "@/lib/api/products";
+import type {
+  Product,
+  ProductVariant,
+} from "@/types/product";
 import {
   getVariantAvailableStock,
   getDiscountPercentage,
 } from "@/types/product";
 
+/* ============================================================
+   RESOLVED CART ITEM
+============================================================ */
+
+type ResolvedCartItem = {
+  item: {
+    productId: string;
+    variantId: string;
+    quantity: number;
+  };
+  product: Product;
+  variant: ProductVariant;
+  media?: Product["media"][number];
+};
+
+/* ============================================================
+   COMPONENT
+============================================================ */
+
 export function CartContent() {
   const items = useCartStore((state) => state.items);
+
   const updateQuantity = useCartStore(
     (state) => state.updateQuantity,
   );
+
   const removeItem = useCartStore(
     (state) => state.removeItem,
   );
+
   const clearCart = useCartStore(
     (state) => state.clearCart,
   );
 
-  const cartItems = useMemo(() => {
-    return items
-      .map((item) => {
-        const product = getProductById(item.productId);
+  const [cartItems, setCartItems] = useState<
+    ResolvedCartItem[]
+  >([]);
 
-        if (!product) {
-          return null;
-        }
+  const [isLoading, setIsLoading] =
+    useState(true);
 
-        const variant = product.variants.find(
-          (productVariant) =>
-            productVariant.id === item.variantId,
+  /* ==========================================================
+     LOAD PRODUCTS FROM BACKEND
+  ========================================================== */
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadCartProducts() {
+      if (!items.length) {
+        setCartItems([]);
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+
+      try {
+        const uniqueProductIds = Array.from(
+          new Set(
+            items.map(
+              (item) => item.productId,
+            ),
+          ),
         );
 
-        if (!variant) {
-          return null;
-        }
-
-        const media =
-          product.media.find((mediaItem) =>
-            variant.mediaIds?.includes(mediaItem.id),
-          ) ??
-          product.media.find(
-            (mediaItem) => mediaItem.isPrimary,
-          ) ??
-          product.media.find(
-            (mediaItem) => mediaItem.type === "image",
+        const productResults =
+          await Promise.all(
+            uniqueProductIds.map(
+              async (productId) => {
+                try {
+                  return await getProductById(
+                    productId,
+                  );
+                } catch {
+                  return null;
+                }
+              },
+            ),
           );
 
-        return {
-          item,
-          product,
-          variant,
-          media,
-        };
-      })
-      .filter(
-        (
-          value,
-        ): value is NonNullable<typeof value> =>
-          value !== null,
-      );
+        if (cancelled) {
+          return;
+        }
+
+        const productMap = new Map<
+          string,
+          Product
+        >();
+
+        productResults.forEach((product) => {
+          if (product) {
+            productMap.set(
+              product.id,
+              product,
+            );
+          }
+        });
+
+        const resolvedItems: ResolvedCartItem[] =
+          [];
+
+        for (const item of items) {
+          const product = productMap.get(
+            item.productId,
+          );
+
+          if (!product) {
+            continue;
+          }
+
+          const variant =
+            product.variants.find(
+              (productVariant) =>
+                productVariant.id ===
+                item.variantId,
+            );
+
+          if (!variant) {
+            continue;
+          }
+
+          const media =
+            product.media.find(
+              (mediaItem) =>
+                variant.mediaIds?.includes(
+                  mediaItem.id,
+                ),
+            ) ??
+            product.media.find(
+              (mediaItem) =>
+                mediaItem.isPrimary,
+            ) ??
+            product.media.find(
+              (mediaItem) =>
+                mediaItem.type === "image",
+            );
+
+          resolvedItems.push({
+            item,
+            product,
+            variant,
+            media,
+          });
+        }
+
+        setCartItems(resolvedItems);
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadCartProducts();
+
+    return () => {
+      cancelled = true;
+    };
   }, [items]);
+
+  /* ==========================================================
+     SUMMARY
+  ========================================================== */
 
   const summary = useMemo(() => {
     return cartItems.reduce(
@@ -84,14 +194,18 @@ export function CartContent() {
         const sellingPrice =
           variant.pricing.sellingPrice;
 
-        const mrp = variant.pricing.mrp;
+        const mrp =
+          variant.pricing.mrp;
 
-        result.itemCount += item.quantity;
+        result.itemCount +=
+          item.quantity;
 
         result.subtotal +=
-          sellingPrice * item.quantity;
+          sellingPrice *
+          item.quantity;
 
-        result.mrpTotal += mrp * item.quantity;
+        result.mrpTotal +=
+          mrp * item.quantity;
 
         return result;
       },
@@ -105,11 +219,85 @@ export function CartContent() {
 
   const savings = Math.max(
     0,
-    summary.mrpTotal - summary.subtotal,
+    summary.mrpTotal -
+      summary.subtotal,
   );
 
-  const formatPrice = (value: number) =>
-    `₹${value.toLocaleString("en-IN")}`;
+  const formatPrice = (
+    value: number,
+  ) =>
+    `₹${value.toLocaleString(
+      "en-IN",
+    )}`;
+
+  /* ==========================================================
+     LOADING STATE
+  ========================================================== */
+
+  if (isLoading) {
+    return (
+      <section className="bg-[var(--color-ivory)]">
+        <div className="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16">
+          <div className="border-b border-[var(--color-border)] pb-7">
+            <div className="h-4 w-28 animate-pulse bg-[var(--color-cream)]" />
+
+            <div className="mt-6 h-12 w-52 animate-pulse bg-[var(--color-cream)]" />
+          </div>
+
+          <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_390px] lg:gap-16">
+            <div className="border-y border-[var(--color-border)]">
+              {items.map((item) => (
+                <div
+                  key={`${item.productId}-${item.variantId}`}
+                  className="grid grid-cols-[100px_minmax(0,1fr)] gap-4 border-b border-[var(--color-border)] py-6 last:border-b-0 sm:grid-cols-[140px_minmax(0,1fr)] sm:gap-6"
+                >
+                  <div className="aspect-[3/4] animate-pulse bg-[var(--color-cream)]" />
+
+                  <div>
+                    <div className="h-3 w-20 animate-pulse bg-[var(--color-cream)]" />
+
+                    <div className="mt-3 h-8 w-52 max-w-full animate-pulse bg-[var(--color-cream)]" />
+
+                    <div className="mt-5 h-4 w-40 animate-pulse bg-[var(--color-cream)]" />
+
+                    <div className="mt-5 h-5 w-28 animate-pulse bg-[var(--color-cream)]" />
+
+                    <div className="mt-6 h-10 w-28 animate-pulse bg-[var(--color-cream)]" />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="h-[360px] animate-pulse border border-[var(--color-border)] bg-white" />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  /* ==========================================================
+     CLEAN INVALID CART ITEMS
+  ========================================================== */
+
+  const resolvedItemKeys = new Set(
+    cartItems.map(
+      ({ item }) =>
+        `${item.productId}-${item.variantId}`,
+    ),
+  );
+
+  const invalidItems = items.filter(
+    (item) =>
+      !resolvedItemKeys.has(
+        `${item.productId}-${item.variantId}`,
+      ),
+  );
+
+  /*
+   * Do not mutate the cart automatically while
+   * rendering. Invalid persisted items are simply
+   * excluded from the UI until the user clears them.
+   */
 
   /* ==========================================================
      EMPTY CART
@@ -120,7 +308,10 @@ export function CartContent() {
       <section className="min-h-[65vh] bg-[var(--color-ivory)]">
         <div className="mx-auto flex min-h-[65vh] max-w-2xl flex-col items-center justify-center px-4 py-20 text-center sm:px-6">
           <div className="flex h-16 w-16 items-center justify-center border border-[var(--color-border)]">
-            <ShoppingBag size={22} strokeWidth={1.4} />
+            <ShoppingBag
+              size={22}
+              strokeWidth={1.4}
+            />
           </div>
 
           <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
@@ -132,8 +323,9 @@ export function CartContent() {
           </h1>
 
           <p className="mt-4 max-w-md text-sm leading-7 text-[var(--color-text-secondary)]">
-            Discover thoughtfully designed pieces from
-            the latest Ayesha collection.
+            Discover thoughtfully designed
+            pieces from the latest Ayesha
+            collection.
           </p>
 
           <Link
@@ -155,6 +347,7 @@ export function CartContent() {
     <main className="bg-[var(--color-ivory)]">
       <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 sm:py-12 lg:px-10 lg:py-16">
         {/* HEADER */}
+
         <div className="border-b border-[var(--color-border)] pb-7">
           <Link
             href="/shop"
@@ -185,7 +378,8 @@ export function CartContent() {
 
               {savings > 0 && (
                 <p className="mt-1 text-[10px] font-semibold text-[var(--color-success)]">
-                  You save {formatPrice(savings)}
+                  You save{" "}
+                  {formatPrice(savings)}
                 </p>
               )}
             </div>
@@ -193,12 +387,21 @@ export function CartContent() {
         </div>
 
         {/* MAIN */}
+
         <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_390px] lg:items-start lg:gap-16">
-          {/* ==================================================
-             ITEMS
-          ================================================== */}
+          {/* ITEMS */}
 
           <section>
+            {invalidItems.length > 0 && (
+              <div className="mb-5 border border-[var(--color-rose-light)] bg-[var(--color-rose-light)] px-4 py-3 text-xs leading-5 text-[var(--color-charcoal)]">
+                Some saved items are no
+                longer available and have
+                been excluded from your bag.
+                Please review your selection
+                before checkout.
+              </div>
+            )}
+
             <div className="border-y border-[var(--color-border)]">
               {cartItems.map(
                 ({
@@ -213,7 +416,8 @@ export function CartContent() {
                     );
 
                   const price =
-                    variant.pricing.sellingPrice;
+                    variant.pricing
+                      .sellingPrice;
 
                   const mrp =
                     variant.pricing.mrp;
@@ -224,7 +428,8 @@ export function CartContent() {
                     );
 
                   const itemTotal =
-                    price * item.quantity;
+                    price *
+                    item.quantity;
 
                   return (
                     <article
@@ -232,6 +437,7 @@ export function CartContent() {
                       className="grid grid-cols-[100px_minmax(0,1fr)] gap-4 border-b border-[var(--color-border)] py-6 last:border-b-0 sm:grid-cols-[140px_minmax(0,1fr)] sm:gap-6"
                     >
                       {/* PRODUCT IMAGE */}
+
                       <Link
                         href={`/products/${product.slug}`}
                         className="relative aspect-[3/4] overflow-hidden bg-[var(--color-cream)]"
@@ -255,18 +461,23 @@ export function CartContent() {
                       </Link>
 
                       {/* DETAILS */}
+
                       <div className="min-w-0">
                         <div className="flex items-start justify-between gap-4">
                           <div className="min-w-0">
                             <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
-                              {product.category}
+                              {
+                                product.category
+                              }
                             </p>
 
                             <Link
                               href={`/products/${product.slug}`}
                               className="mt-1 block font-[var(--font-cormorant)] text-[24px] leading-tight transition hover:text-[var(--color-rose-dark)]"
                             >
-                              {product.name}
+                              {
+                                product.name
+                              }
                             </Link>
                           </div>
 
@@ -290,41 +501,60 @@ export function CartContent() {
                         </div>
 
                         {/* VARIANT DETAILS */}
+
                         <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs">
                           <span className="text-[var(--color-text-secondary)]">
                             Color:{" "}
                             <strong className="font-medium text-[var(--color-charcoal)]">
-                              {variant.color.name}
+                              {
+                                variant
+                                  .color
+                                  .name
+                              }
                             </strong>
                           </span>
 
                           <span className="text-[var(--color-text-secondary)]">
                             Size:{" "}
                             <strong className="font-medium text-[var(--color-charcoal)]">
-                              {variant.size.label}
+                              {
+                                variant
+                                  .size
+                                  .label
+                              }
                             </strong>
                           </span>
                         </div>
 
                         <p className="mt-2 text-[10px] text-[var(--color-text-muted)]">
-                          SKU: {variant.sku}
+                          SKU:{" "}
+                          {variant.sku}
                         </p>
 
                         {/* PRICE */}
+
                         <div className="mt-4 flex flex-wrap items-baseline gap-2">
                           <span className="text-sm font-semibold">
-                            {formatPrice(price)}
+                            {formatPrice(
+                              price,
+                            )}
                           </span>
 
                           {mrp > price && (
                             <>
                               <span className="text-xs text-[var(--color-text-muted)] line-through">
-                                {formatPrice(mrp)}
+                                {formatPrice(
+                                  mrp,
+                                )}
                               </span>
 
-                              {discount > 0 && (
+                              {discount >
+                                0 && (
                                 <span className="text-[10px] font-semibold text-[var(--color-rose-dark)]">
-                                  {discount}% OFF
+                                  {
+                                    discount
+                                  }
+                                  % OFF
                                 </span>
                               )}
                             </>
@@ -332,6 +562,7 @@ export function CartContent() {
                         </div>
 
                         {/* QUANTITY / TOTAL */}
+
                         <div className="mt-6 flex flex-wrap items-end justify-between gap-5">
                           <div>
                             <p className="mb-2 text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
@@ -344,21 +575,29 @@ export function CartContent() {
                                 onClick={() =>
                                   updateQuantity(
                                     item.productId,
-                                    item.quantity - 1,
+                                    item.quantity -
+                                      1,
                                     item.variantId,
                                   )
                                 }
                                 disabled={
-                                  item.quantity <= 1
+                                  item.quantity <=
+                                  1
                                 }
                                 className="flex w-10 items-center justify-center transition hover:bg-[var(--color-cream)] disabled:cursor-not-allowed disabled:opacity-25"
                                 aria-label="Decrease quantity"
                               >
-                                <Minus size={14} />
+                                <Minus
+                                  size={
+                                    14
+                                  }
+                                />
                               </button>
 
                               <span className="flex w-10 items-center justify-center border-x border-[var(--color-border-dark)] text-xs font-semibold">
-                                {item.quantity}
+                                {
+                                  item.quantity
+                                }
                               </span>
 
                               <button
@@ -366,18 +605,25 @@ export function CartContent() {
                                 onClick={() =>
                                   updateQuantity(
                                     item.productId,
-                                    item.quantity + 1,
+                                    item.quantity +
+                                      1,
                                     item.variantId,
                                   )
                                 }
                                 disabled={
+                                  availableStock <=
+                                    0 ||
                                   item.quantity >=
-                                  availableStock
+                                    availableStock
                                 }
                                 className="flex w-10 items-center justify-center transition hover:bg-[var(--color-cream)] disabled:cursor-not-allowed disabled:opacity-25"
                                 aria-label="Increase quantity"
                               >
-                                <Plus size={14} />
+                                <Plus
+                                  size={
+                                    14
+                                  }
+                                />
                               </button>
                             </div>
                           </div>
@@ -388,27 +634,56 @@ export function CartContent() {
                             </p>
 
                             <p className="mt-1 text-sm font-semibold">
-                              {formatPrice(itemTotal)}
+                              {formatPrice(
+                                itemTotal,
+                              )}
                             </p>
                           </div>
                         </div>
 
                         {/* INVENTORY */}
+
                         {availableStock <=
-                          variant.inventory.lowStockThreshold &&
-                          availableStock > 0 && (
+                          variant
+                            .inventory
+                            .lowStockThreshold &&
+                          availableStock >
+                            0 && (
                             <p className="mt-4 text-[10px] font-semibold text-[var(--color-rose-dark)]">
-                              Only {availableStock} left
-                              in this size
+                              Only{" "}
+                              {
+                                availableStock
+                              }{" "}
+                              left in this
+                              size
                             </p>
                           )}
 
-                        {availableStock === 0 && (
+                        {availableStock ===
+                          0 && (
                           <p className="mt-4 text-[10px] font-semibold text-[var(--color-error)]">
-                            This variant is currently
+                            This variant
+                            is currently
                             unavailable.
                           </p>
                         )}
+
+                        {item.quantity >
+                          availableStock &&
+                          availableStock >
+                            0 && (
+                            <p className="mt-4 text-[10px] font-semibold text-[var(--color-error)]">
+                              Only{" "}
+                              {
+                                availableStock
+                              }{" "}
+                              units are
+                              currently
+                              available.
+                              Please reduce
+                              the quantity.
+                            </p>
+                          )}
                       </div>
                     </article>
                   );
@@ -417,11 +692,15 @@ export function CartContent() {
             </div>
 
             {/* CLEAR CART */}
+
             <button
               type="button"
               onClick={() => {
                 clearCart();
-                toast.success("Your bag has been cleared.");
+
+                toast.success(
+                  "Your bag has been cleared.",
+                );
               }}
               className="mt-5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-muted)] underline underline-offset-4 transition hover:text-[var(--color-error)]"
             >
@@ -429,9 +708,7 @@ export function CartContent() {
             </button>
           </section>
 
-          {/* ==================================================
-             SUMMARY
-          ================================================== */}
+          {/* SUMMARY */}
 
           <aside className="lg:sticky lg:top-28">
             <div className="border border-[var(--color-border)] bg-white p-6 sm:p-7">
@@ -471,12 +748,15 @@ export function CartContent() {
                   </p>
 
                   <p className="mt-1 text-[10px] leading-5 text-[var(--color-text-muted)]">
-                    Inclusive of applicable taxes
+                    Inclusive of applicable
+                    taxes
                   </p>
                 </div>
 
                 <p className="text-xl font-semibold">
-                  {formatPrice(summary.subtotal)}
+                  {formatPrice(
+                    summary.subtotal,
+                  )}
                 </p>
               </div>
 
@@ -488,21 +768,26 @@ export function CartContent() {
               </Link>
 
               <p className="mt-4 text-center text-[10px] leading-5 text-[var(--color-text-muted)]">
-                Secure checkout · Payment and delivery
-                options available at checkout
+                Secure checkout · Payment
+                and delivery options
+                available at checkout
               </p>
             </div>
 
             {/* CARE CARD */}
+
             <div className="mt-4 border border-[var(--color-border)] bg-[var(--color-cream)] p-5">
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em]">
                 Ayesha Care
               </p>
 
               <p className="mt-2 text-xs leading-6 text-[var(--color-text-secondary)]">
-                Your selected color, size and variant are
-                preserved in your bag. Final inventory
-                availability is confirmed before order
+                Your selected color,
+                size and variant are
+                preserved in your bag.
+                Final inventory
+                availability is
+                confirmed before order
                 placement.
               </p>
             </div>
@@ -512,6 +797,10 @@ export function CartContent() {
     </main>
   );
 }
+
+/* ============================================================
+   SUMMARY ROW
+============================================================ */
 
 function SummaryRow({
   label,

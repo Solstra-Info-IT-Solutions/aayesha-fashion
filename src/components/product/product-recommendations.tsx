@@ -1,26 +1,18 @@
 import Link from "next/link";
 
 import type { Product } from "@/types/product";
-import { products } from "@/data/products";
+
 import { ProductCard } from "@/components/product/product-card";
 
 interface ProductRecommendationsProps {
   product: Product;
+  recommendations: Product[];
 }
 
 export function ProductRecommendations({
   product,
+  recommendations,
 }: ProductRecommendationsProps) {
-  const recommendations = products
-    .filter(
-      (item) =>
-        item.id !== product.id &&
-        item.status === "active" &&
-        (item.category === product.category ||
-          item.productType === product.productType),
-    )
-    .slice(0, 4);
-
   if (!recommendations.length) {
     return null;
   }
@@ -48,12 +40,14 @@ export function ProductRecommendations({
         </div>
 
         <div className="grid grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-4 lg:gap-x-6">
-          {recommendations.map((item) => (
-            <ProductCard
-              key={item.id}
-              product={item}
-            />
-          ))}
+          {recommendations.map(
+            (item) => (
+              <ProductCard
+                key={item.id}
+                product={item}
+              />
+            ),
+          )}
         </div>
       </div>
     </section>

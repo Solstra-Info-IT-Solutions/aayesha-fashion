@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   CheckCircle2,
   LockKeyhole,
@@ -8,13 +9,30 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 
-import { getProductById } from "@/data/products";
+import { getProductById } from "@/lib/api/products";
+import {
+  createOrder,
+  type CreateOrderPayload,
+} from "@/lib/api/orders";
 import { useCartStore } from "@/store/cart-store";
 import { useCheckoutStore } from "@/store/checkout-store";
+import type { Product } from "@/types/product";
+
+type ResolvedItem = {
+  product: Product;
+  variantId: string;
+  quantity: number;
+};
 
 export function CheckoutPlaceOrder() {
+  const router = useRouter();
+
   const items = useCartStore(
     (state) => state.items,
+  );
+
+  const clearCart = useCartStore(
+    (state) => state.clearCart,
   );
 
   const contact = useCheckoutStore(
@@ -37,61 +55,199 @@ export function CheckoutPlaceOrder() {
     (state) => state.couponCode,
   );
 
+  const [resolvedItems, setResolvedItems] =
+    useState<ResolvedItem[]>([]);
+
+  const [loadingProducts, setLoadingProducts] =
+    useState(true);
+
   const [placingOrder, setPlacingOrder] =
     useState(false);
 
-  const summary = useMemo(() => {
-    let subtotal = 0;
+  /*
+   * Keep the same idempotency key while an order request
+   * is being retried. This prevents accidental duplicate
+   * orders when the first request succeeded but the client
+   * did not receive the response.
+   */
+  const idempotencyKeyRef = useRef<string | null>(
+    null,
+  );
 
-    for (const item of items) {
-      const product = getProductById(
-        item.productId,
-      );
+  /* ==========================================================
+     RESOLVE CART ITEMS FROM BACKEND
+  ========================================================== */
 
-      if (!product) continue;
+  useEffect(() => {
+    let cancelled = false;
 
-      const variant = product.variants.find(
-        (productVariant) =>
-          productVariant.id === item.variantId,
-      );
+    async function resolveItems() {
+      if (!items.length) {
+        setResolvedItems([]);
+        setLoadingProducts(false);
+        return;
+      }
 
-      if (!variant) continue;
+      setLoadingProducts(true);
 
-      subtotal +=
-        variant.pricing.sellingPrice *
-        item.quantity;
+      try {
+        const productIds = Array.from(
+          new Set(
+            items.map(
+              (item) => item.productId,
+            ),
+          ),
+        );
+
+        const products = await Promise.all(
+          productIds.map(
+            async (productId) => {
+              try {
+                return await getProductById(
+                  productId,
+                );
+              } catch {
+                return null;
+              }
+            },
+          ),
+        );
+
+        if (cancelled) {
+          return;
+        }
+
+        const productMap = new Map<
+          string,
+          Product
+        >();
+
+        products.forEach((product) => {
+          if (product) {
+            productMap.set(
+              product.id,
+              product,
+            );
+          }
+        });
+
+        const nextItems: ResolvedItem[] =
+          [];
+
+        for (const item of items) {
+          const product = productMap.get(
+            item.productId,
+          );
+
+          if (!product) {
+            continue;
+          }
+
+          const variant =
+            product.variants.find(
+              (productVariant) =>
+                productVariant.id ===
+                item.variantId &&
+                productVariant.status ===
+                  "active",
+            );
+
+          if (!variant) {
+            continue;
+          }
+
+          nextItems.push({
+            product,
+            variantId: item.variantId,
+            quantity: item.quantity,
+          });
+        }
+
+        setResolvedItems(nextItems);
+      } finally {
+        if (!cancelled) {
+          setLoadingProducts(false);
+        }
+      }
     }
 
-    const shipping =
-      delivery === "express"
-        ? 199
-        : subtotal >= 2999
-          ? 0
-          : 99;
+    void resolveItems();
 
-    const couponDiscount =
-      couponCode === "AYESHA10"
-        ? Math.round(subtotal * 0.1)
-        : 0;
-
-    const total = Math.max(
-      0,
-      subtotal +
-        shipping -
-        couponDiscount,
-    );
-
-    return {
-      subtotal,
-      shipping,
-      couponDiscount,
-      total,
+    return () => {
+      cancelled = true;
     };
-  }, [
-    items,
-    delivery,
-    couponCode,
-  ]);
+  }, [items]);
+
+  /* ==========================================================
+     CLIENT-SIDE DISPLAY TOTAL
+     ========================================================== */
+
+  let subtotal = 0;
+
+  for (const item of resolvedItems) {
+    const variant =
+      item.product.variants.find(
+        (productVariant) =>
+          productVariant.id ===
+          item.variantId,
+      );
+
+    if (!variant) {
+      continue;
+    }
+
+    subtotal +=
+      variant.pricing.sellingPrice *
+      item.quantity;
+  }
+
+  const shipping =
+    delivery === "express"
+      ? 199
+      : subtotal >= 2999
+        ? 0
+        : 99;
+
+  const normalizedCoupon =
+    couponCode.trim().toUpperCase();
+
+  const couponDiscount =
+    normalizedCoupon === "AYESHA10"
+      ? Math.round(subtotal * 0.1)
+      : 0;
+
+  const total = Math.max(
+    0,
+    subtotal +
+      shipping -
+      couponDiscount,
+  );
+
+  /* ==========================================================
+     HELPERS
+  ========================================================== */
+
+  const getCustomerName = () => {
+    return [
+      address.firstName.trim(),
+      address.lastName.trim(),
+    ]
+      .filter(Boolean)
+      .join(" ");
+  };
+
+  const createIdempotencyKey = () => {
+    if (!idempotencyKeyRef.current) {
+      idempotencyKeyRef.current =
+        crypto.randomUUID();
+    }
+
+    return idempotencyKeyRef.current;
+  };
+
+  /* ==========================================================
+     VALIDATION
+  ========================================================== */
 
   const validateCheckout = () => {
     if (!contact.email.trim()) {
@@ -103,7 +259,7 @@ export function CheckoutPlaceOrder() {
 
     if (
       !/^\d{10}$/.test(
-        contact.phone,
+        contact.phone.trim(),
       )
     ) {
       toast.error(
@@ -141,7 +297,7 @@ export function CheckoutPlaceOrder() {
 
     if (
       !/^\d{6}$/.test(
-        address.postalCode,
+        address.postalCode.trim(),
       )
     ) {
       toast.error(
@@ -157,11 +313,37 @@ export function CheckoutPlaceOrder() {
       return false;
     }
 
+    if (
+      resolvedItems.length !==
+      items.length
+    ) {
+      toast.error(
+        "Some items in your bag are no longer available. Please review your bag.",
+      );
+      return false;
+    }
+
+    /*
+     * Current backend supports COD only.
+     */
+    if (payment !== "cod") {
+      toast.error(
+        "Online payment is not available yet. Please select Cash on Delivery.",
+      );
+      return false;
+    }
+
     return true;
   };
 
+  /* ==========================================================
+     PLACE ORDER
+  ========================================================== */
+
   const handlePlaceOrder = async () => {
-    if (placingOrder) return;
+    if (placingOrder || loadingProducts) {
+      return;
+    }
 
     if (!validateCheckout()) {
       return;
@@ -170,78 +352,129 @@ export function CheckoutPlaceOrder() {
     setPlacingOrder(true);
 
     try {
+      const orderPayload: CreateOrderPayload =
+        {
+          customerName:
+            getCustomerName(),
+
+          customerEmail:
+            contact.email.trim(),
+
+          customerPhone:
+            contact.phone.trim(),
+
+          shippingAddress: {
+            firstName:
+              address.firstName.trim(),
+
+            lastName:
+              address.lastName.trim(),
+
+            addressLine1:
+              address.addressLine1.trim(),
+
+            addressLine2:
+              address.addressLine2?.trim() ||
+              "",
+
+            city:
+              address.city.trim(),
+
+            state:
+              address.state.trim(),
+
+            postalCode:
+              address.postalCode.trim(),
+
+            country:
+              address.country?.trim() ||
+              "India",
+          },
+
+          deliveryMethod:
+            delivery === "express"
+              ? "express"
+              : "standard",
+
+          paymentMethod: "cod",
+
+          couponCode:
+            normalizedCoupon ||
+            undefined,
+
+          items: items.map(
+            (item) => ({
+              productId:
+                item.productId,
+
+              variantId:
+                item.variantId,
+
+              quantity:
+                item.quantity,
+            }),
+          ),
+        };
+
+      const idempotencyKey =
+        createIdempotencyKey();
+
+      const response =
+        await createOrder(
+          orderPayload,
+          idempotencyKey,
+        );
+
+      const order =
+        response.order;
+
       /*
-       * TEMPORARY FRONTEND ORDER FLOW
+       * Order created successfully.
        *
-       * Backend integration will replace this block.
-       *
-       * COD:
-       * POST /api/orders
-       *
-       * Online:
-       * POST /api/orders
-       * -> create pending order
-       * -> payment gateway
-       * -> verify payment
+       * Backend is the source of truth for the final
+       * amount, inventory and order status.
        */
+      clearCart();
 
-      const orderPayload = {
-        customer: {
-          email: contact.email,
-          phone: contact.phone,
-        },
+      /*
+       * Reset the idempotency key only after
+       * successful order creation.
+       */
+      idempotencyKeyRef.current = null;
 
-        shippingAddress: address,
-
-        delivery: {
-          method: delivery,
-        },
-
-        payment: {
-          method: payment,
-        },
-
-        couponCode:
-          couponCode || undefined,
-
-        items,
-      };
-
-      console.log(
-        "Checkout order payload:",
-        orderPayload,
+      toast.success(
+        "Your order has been placed successfully.",
       );
 
-      await new Promise((resolve) =>
-        setTimeout(resolve, 900),
+      router.replace(
+        `/checkout/success?orderNumber=${encodeURIComponent(
+          order.orderNumber,
+        )}`,
       );
-
-      if (payment === "cod") {
-        toast.success(
-          "COD order details validated successfully.",
-        );
-      } else {
-        toast.success(
-          "Order details validated. Payment integration is next.",
-        );
-      }
     } catch (error) {
       console.error(
-        "Checkout error:",
+        "Place order error:",
         error,
       );
 
       toast.error(
-        "Unable to process your order. Please try again.",
+        error instanceof Error
+          ? error.message
+          : "Unable to place your order. Please try again.",
       );
     } finally {
       setPlacingOrder(false);
     }
   };
 
+  /* ==========================================================
+     RENDER
+  ========================================================== */
+
   return (
     <section className="border border-[var(--color-border)] bg-white p-5 sm:p-6">
-      {/* SECURITY HEADER */}
+      {/* SECURITY */}
+
       <div className="flex gap-3">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-[var(--color-cream)]">
           <LockKeyhole
@@ -256,12 +489,14 @@ export function CheckoutPlaceOrder() {
           </p>
 
           <p className="mt-1 text-[10px] leading-5 text-[var(--color-text-muted)]">
-            Your order information is handled securely.
+            Your order information is handled
+            securely.
           </p>
         </div>
       </div>
 
-      {/* PAYMENT STATUS */}
+      {/* PAYMENT */}
+
       <div className="mt-5 border-y border-[var(--color-border)] py-4">
         <div className="flex items-center justify-between gap-5">
           <div>
@@ -298,14 +533,15 @@ export function CheckoutPlaceOrder() {
           <span className="text-xs font-semibold">
             {delivery === "express"
               ? "₹199"
-              : summary.shipping === 0
+              : shipping === 0
                 ? "FREE"
-                : `₹${summary.shipping}`}
+                : `₹${shipping}`}
           </span>
         </div>
       </div>
 
       {/* TOTAL */}
+
       <div className="flex items-end justify-between gap-5 py-5">
         <div>
           <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
@@ -313,41 +549,49 @@ export function CheckoutPlaceOrder() {
           </p>
 
           <p className="mt-1 text-[10px] text-[var(--color-text-muted)]">
-            Inclusive of applicable taxes
+            Final amount is verified securely by
+            the server.
           </p>
         </div>
 
         <p className="text-xl font-semibold">
           ₹
-          {summary.total.toLocaleString(
+          {total.toLocaleString(
             "en-IN",
           )}
         </p>
       </div>
 
       {/* CTA */}
+
       <button
         type="button"
         onClick={handlePlaceOrder}
         disabled={
           placingOrder ||
-          !items.length
+          loadingProducts ||
+          !items.length ||
+          payment !== "cod"
         }
         className="flex min-h-[52px] w-full items-center justify-center gap-2 bg-[var(--color-charcoal)] px-5 text-[10px] font-semibold uppercase tracking-[0.17em] text-white transition hover:bg-[var(--color-charcoal-soft)] disabled:cursor-not-allowed disabled:opacity-50"
       >
         <ShoppingBag size={16} />
 
-        {placingOrder
-          ? "Processing..."
-          : payment === "cod"
-            ? `Place COD Order · ₹${summary.total.toLocaleString("en-IN")}`
-            : `Continue to Payment · ₹${summary.total.toLocaleString("en-IN")}`}
+        {loadingProducts
+          ? "Preparing Order..."
+          : placingOrder
+            ? "Placing Order..."
+            : payment === "cod"
+              ? `Place COD Order · ₹${total.toLocaleString(
+                  "en-IN",
+                )}`
+              : "Online Payment Unavailable"}
       </button>
 
       <p className="mt-3 text-center text-[9px] leading-5 text-[var(--color-text-muted)]">
-        By placing your order, you agree to Ayesha
-        Fashion's applicable terms, shipping and return
-        policies.
+        By placing your order, you agree to
+        Ayesha Fashion&apos;s applicable terms,
+        shipping and return policies.
       </p>
     </section>
   );

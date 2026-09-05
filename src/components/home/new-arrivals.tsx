@@ -1,11 +1,16 @@
 import { ArrowUpRight } from "lucide-react";
 
+import { getNewArrivals } from "@/lib/api/products";
+
 import { ProductCarousel } from "@/components/product/product-carousel";
 import { Container } from "@/components/shared/container";
 import { LinkButton } from "@/components/ui/button";
-import { newArrivals } from "@/data/products";
 
-export function NewArrivals() {
+export async function NewArrivals() {
+  const response = await getNewArrivals(8);
+
+  const newArrivals = response.products;
+
   return (
     <section
       id="new-arrivals"
@@ -28,40 +33,40 @@ export function NewArrivals() {
               </div>
 
               <span className="font-display text-lg text-[var(--color-text-muted)] sm:text-xl">
-                03
+                {String(newArrivals.length).padStart(
+                  2,
+                  "0",
+                )}
               </span>
             </div>
 
             {/* ===================================================
-                TITLE + DESCRIPTION
-            =================================================== */}
+                TITLE
+            ===================================================== */}
 
             <div className="mt-8 flex justify-center text-center sm:mt-10">
-              {/* TITLE */}
-
               <div>
-                <h2 className="
-                  whitespace-nowrap
-                  font-display 
-                  text-[2.4rem] 
-                  font-medium 
-                  leading-none 
-                  tracking-[-0.045em] 
-                  text-[var(--color-charcoal)] 
-                  sm:text-[3.3rem] 
-                  md:text-[4.3rem] 
-                  lg:text-[5.2rem] 
-                  xl:text-[5.8rem]">
-                  New {" "}
+                <h2
+                  className="
+                    whitespace-nowrap
+                    font-display
+                    text-[2.4rem]
+                    font-medium
+                    leading-none
+                    tracking-[-0.045em]
+                    text-[var(--color-charcoal)]
+                    sm:text-[3.3rem]
+                    md:text-[4.3rem]
+                    lg:text-[5.2rem]
+                    xl:text-[5.8rem]
+                  "
+                >
+                  New{" "}
                   <span className="italic text-[var(--color-rose-dark)]">
                     Arrivals.
                   </span>
                 </h2>
               </div>
-
-              {/* DESCRIPTION */}
-
-          
             </div>
           </div>
 
@@ -69,12 +74,24 @@ export function NewArrivals() {
               PRODUCT CAROUSEL
           ===================================================== */}
 
-          <div className="mt-12 sm:mt-14 lg:mt-16">
-            <ProductCarousel
-              products={newArrivals}
-              ariaLabel="New arrivals products"
-            />
-          </div>
+          {newArrivals.length > 0 ? (
+            <div className="mt-12 sm:mt-14 lg:mt-16">
+              <ProductCarousel
+                products={newArrivals}
+                ariaLabel="New arrivals products"
+              />
+            </div>
+          ) : (
+            <div className="mt-12 border-y border-[var(--color-border)] py-14 text-center">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--color-text-muted)]">
+                The New Edit
+              </p>
+
+              <p className="mt-3 font-display text-2xl text-[var(--color-charcoal)]">
+                New pieces are arriving soon.
+              </p>
+            </div>
+          )}
 
           {/* =====================================================
               BOTTOM CTA
