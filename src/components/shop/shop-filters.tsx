@@ -188,15 +188,27 @@ export function ShopFilters({
     >();
 
     products.forEach((product) => {
-      const availability = getProductAvailability(product);
+      const availabilityOptions = useMemo(() => {
+  const values = new Set<
+    "in-stock" | "low" | "out-of-stock"
+  >();
 
-      if (availability.status === "in-stock") {
-        values.add("in-stock");
-      } else if (availability.status === "low-stock") {
+  products.forEach((product) => {
+    const availability = getProductAvailability(product);
+
+    if (availability.isAvailable) {
+      if (availability.isLowStock) {
         values.add("low");
       } else {
-        values.add("out-of-stock");
+        values.add("in-stock");
       }
+    } else {
+      values.add("out-of-stock");
+    }
+  });
+
+  return Array.from(values);
+}, [products]);
     });
 
     return Array.from(values);

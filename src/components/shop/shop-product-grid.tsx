@@ -76,25 +76,25 @@ export function ShopProductGrid({
     }
 
     if (availability) {
-      result = result.filter((product) => {
-        const status =
-          getProductAvailability(product).status;
+  result = result.filter((product) => {
+    const productAvailability =
+      getProductAvailability(product);
 
-        if (availability === "in-stock") {
-          return status === "in-stock";
-        }
-
-        if (availability === "low") {
-          return status === "low-stock";
-        }
-
-        if (availability === "out-of-stock") {
-          return status === "out-of-stock";
-        }
-
-        return true;
-      });
+    if (availability === "in-stock") {
+      return productAvailability.isAvailable === true;
     }
+
+    if (availability === "low") {
+      return productAvailability.isLowStock === true;
+    }
+
+    if (availability === "out-of-stock") {
+      return productAvailability.isAvailable === false;
+    }
+
+    return true;
+  });
+}
 
     switch (sort) {
       case "price-low":
@@ -124,18 +124,21 @@ export function ShopProductGrid({
       case "rating":
         result.sort(
           (a, b) =>
-            (b.reviews?.rating ?? 0) -
-            (a.reviews?.rating ?? 0),
+           {
+               const aCount = a.reviews?.reviewCount ?? 0;
+               const bCount = b.reviews?.reviewCount ?? 0;
+               return bCount - aCount;
+           }
         );
         break;
 
       case "best-selling":
         result.sort((a, b) => {
           const aScore =
-            a.merchandising?.bestSeller ? 1 : 0;
+            a.merchandising?.isBestSeller  ? 1 : 0;
 
           const bScore =
-            b.merchandising?.bestSeller ? 1 : 0;
+            b.merchandising?.isBestSeller  ? 1 : 0;
 
           return bScore - aScore;
         });
@@ -144,10 +147,10 @@ export function ShopProductGrid({
       case "featured":
         result.sort((a, b) => {
           const aScore =
-            a.merchandising?.featured ? 1 : 0;
+            a.merchandising?.isFeatured  ? 1 : 0;
 
           const bScore =
-            b.merchandising?.featured ? 1 : 0;
+            b.merchandising?.isFeatured  ? 1 : 0;
 
           return bScore - aScore;
         });
