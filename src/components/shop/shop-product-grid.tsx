@@ -11,7 +11,6 @@ import type {
 } from "@/types/product";
 
 import {
-  getProductAvailability,
   getProductStartingPrice,
   getProductColors,
   getProductSizes,
@@ -32,15 +31,22 @@ export function ShopProductGrid({
 }: ShopProductGridProps) {
   const filteredProducts = useMemo(() => {
     let result = products.filter(
-      (product) =>
-        product.status === "active",
+      (product) => product.status === "active",
     );
+
+    /* =========================================================
+       CATEGORY
+    ========================================================= */
 
     if (category) {
       result = result.filter(
         (product) => product.category === category,
       );
     }
+
+    /* =========================================================
+       URL FILTERS
+    ========================================================= */
 
     const params =
       typeof window !== "undefined"
@@ -52,12 +58,20 @@ export function ShopProductGrid({
     const size = params?.get("size");
     const availability = params?.get("availability");
 
+    /* =========================================================
+       PRODUCT TYPE
+    ========================================================= */
+
     if (type) {
       result = result.filter(
         (product) =>
           product.productType === type,
       );
     }
+
+    /* =========================================================
+       COLOR
+    ========================================================= */
 
     if (color) {
       result = result.filter((product) =>
@@ -67,6 +81,10 @@ export function ShopProductGrid({
       );
     }
 
+    /* =========================================================
+       SIZE
+    ========================================================= */
+
     if (size) {
       result = result.filter((product) =>
         getProductSizes(product).some(
@@ -75,28 +93,89 @@ export function ShopProductGrid({
       );
     }
 
+    /* =========================================================
+       AVAILABILITY
+       
+       Uses actual variant inventory data instead of relying
+       on ProductAvailability fields.
+    ========================================================= */
+
     if (availability) {
-  result = result.filter((product) => {
-    const productAvailability =
-      getProductAvailability(product);
+      result = result.filter((product) => {
+        const activeVariants = product.variants.filter(
+          (variant) =>
+            variant.status === "active",
+        );
 
-    if (availability === "in-stock") {
-      return productAvailability.isAvailable === true;
+        const availableVariants =
+          activeVariants.filter((variant) => {
+            const availableStock =
+              variant.inventory.stock -
+              variant.inventory.reserved;
+
+            return availableStock > 0;
+          });
+
+        /* -----------------------------------------------
+           OUT OF STOCK
+        ----------------------------------------------- */
+
+        if (availability === "out-of-stock") {
+          return availableVariants.length === 0;
+        }
+
+        /* -----------------------------------------------
+           IN STOCK
+        ----------------------------------------------- */
+
+        if (availability === "in-stock") {
+          return availableVariants.some(
+            (variant) => {
+              const availableStock =
+                variant.inventory.stock -
+                variant.inventory.reserved;
+
+              return (
+                availableStock >
+                variant.inventory.lowStockThreshold
+              );
+            },
+          );
+        }
+
+        /* -----------------------------------------------
+           LOW STOCK
+        ----------------------------------------------- */
+
+        if (availability === "low") {
+          return availableVariants.some(
+            (variant) => {
+              const availableStock =
+                variant.inventory.stock -
+                variant.inventory.reserved;
+
+              return (
+                availableStock > 0 &&
+                availableStock <=
+                  variant.inventory.lowStockThreshold
+              );
+            },
+          );
+        }
+
+        return true;
+      });
     }
 
-    if (availability === "low") {
-      return productAvailability.isLowStock === true;
-    }
-
-    if (availability === "out-of-stock") {
-      return productAvailability.isAvailable === false;
-    }
-
-    return true;
-  });
-}
+    /* =========================================================
+       SORTING
+    ========================================================= */
 
     switch (sort) {
+      /* -------------------------------------------------------
+         PRICE LOW → HIGH
+      ------------------------------------------------------- */
+
       case "price-low":
         result.sort(
           (a, b) =>
@@ -104,6 +183,10 @@ export function ShopProductGrid({
             getProductStartingPrice(b),
         );
         break;
+
+      /* -------------------------------------------------------
+         PRICE HIGH → LOW
+      ------------------------------------------------------- */
 
       case "price-high":
         result.sort(
@@ -113,6 +196,10 @@ export function ShopProductGrid({
         );
         break;
 
+      /* -------------------------------------------------------
+         NEWEST
+      ------------------------------------------------------- */
+
       case "newest":
         result.sort(
           (a, b) =>
@@ -121,41 +208,56 @@ export function ShopProductGrid({
         );
         break;
 
-      case "rating":
-        result.sort(
-          (a, b) =>
-           {
-               const aCount = a.reviews?.reviewCount ?? 0;
-               const bCount = b.reviews?.reviewCount ?? 0;
-               return bCount - aCount;
-           }
-        );
-        break;
+      /* -------------------------------------------------------
+         BEST SELLING
+      ------------------------------------------------------- */
 
       case "best-selling":
         result.sort((a, b) => {
           const aScore =
-            a.merchandising?.isBestSeller  ? 1 : 0;
+            a.merchandising?.isBestSeller
+              ? 1
+              : 0;
 
           const bScore =
-            b.merchandising?.isBestSeller  ? 1 : 0;
+            b.merchandising?.isBestSeller
+              ? 1
+              : 0;
 
           return bScore - aScore;
         });
         break;
+
+      /* -------------------------------------------------------
+         FEATURED
+      ------------------------------------------------------- */
 
       case "featured":
         result.sort((a, b) => {
           const aScore =
-            a.merchandising?.isFeatured  ? 1 : 0;
+            a.merchandising?.isFeatured
+              ? 1
+              : 0;
 
           const bScore =
-            b.merchandising?.isFeatured  ? 1 : 0;
+            b.merchandising?.isFeatured
+              ? 1
+              : 0;
 
           return bScore - aScore;
         });
         break;
 
+      /* -------------------------------------------------------
+         RATING
+         
+         Temporarily preserve original product order because
+         the exact ProductReviewSummary rating field has not
+         been verified.
+      ------------------------------------------------------- */
+
+      case "rating":
+      case "relevance":
       default:
         break;
     }
@@ -163,9 +265,17 @@ export function ShopProductGrid({
     return result;
   }, [products, category, sort]);
 
+  /* ===========================================================
+     RENDER
+  =========================================================== */
+
   return (
-    <div>
-      <div className="mb-6 flex items-end justify-between gap-4">
+    <div className="min-w-0">
+      {/* =======================================================
+          TOOLBAR
+      ======================================================= */}
+
+      <div className="mb-6 flex items-center justify-between gap-4 sm:mb-7">
         <div>
           <p className="text-sm text-[var(--color-text-secondary)]">
             {filteredProducts.length}{" "}
@@ -175,38 +285,121 @@ export function ShopProductGrid({
           </p>
         </div>
 
+        {/* Mobile refine */}
         <Link
           href="/shop"
-          className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.13em] text-[var(--color-text-secondary)] lg:hidden"
+          className="
+            inline-flex
+            items-center
+            gap-2
+            text-[11px]
+            font-semibold
+            uppercase
+            tracking-[0.14em]
+            text-[var(--color-text-secondary)]
+            transition-colors
+            hover:text-[var(--color-charcoal)]
+            lg:hidden
+          "
         >
           <SlidersHorizontal
             size={14}
             strokeWidth={1.7}
           />
+
           Refine
         </Link>
       </div>
 
+      {/* =======================================================
+          EMPTY STATE
+      ======================================================= */}
+
       {filteredProducts.length === 0 ? (
-        <div className="border border-[var(--color-border)] bg-[var(--color-cream)] px-6 py-16 text-center sm:px-10 sm:py-24">
-          <p className="font-serif text-3xl text-[var(--color-charcoal)]">
+        <div
+          className="
+            border
+            border-[var(--color-border)]
+            bg-[var(--color-cream)]
+            px-6
+            py-16
+            text-center
+            sm:px-10
+            sm:py-24
+          "
+        >
+          <p
+            className="
+              font-serif
+              text-3xl
+              tracking-[-0.02em]
+              text-[var(--color-charcoal)]
+              sm:text-4xl
+            "
+          >
             No pieces found
           </p>
 
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-[var(--color-text-secondary)]">
-            Try adjusting your filters or explore the
-            complete collection.
+          <p
+            className="
+              mx-auto
+              mt-3
+              max-w-md
+              text-sm
+              leading-6
+              text-[var(--color-text-secondary)]
+            "
+          >
+            Try adjusting your filters or explore
+            the complete collection.
           </p>
 
           <Link
             href="/shop"
-            className="mt-6 inline-flex border border-[var(--color-charcoal)] px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--color-charcoal)] transition-colors hover:bg-[var(--color-charcoal)] hover:text-white"
+            className="
+              mt-7
+              inline-flex
+              border
+              border-[var(--color-charcoal)]
+              px-5
+              py-3
+              text-[11px]
+              font-semibold
+              uppercase
+              tracking-[0.14em]
+              text-[var(--color-charcoal)]
+              transition-colors
+              hover:bg-[var(--color-charcoal)]
+              hover:text-white
+            "
           >
             View Collection
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 sm:gap-y-10 md:grid-cols-3 md:gap-x-6 xl:grid-cols-4">
+        /* =====================================================
+           PRODUCT GRID
+        ===================================================== */
+
+        <div
+          className="
+            grid
+            grid-cols-2
+            gap-x-3
+            gap-y-9
+
+            sm:gap-x-5
+            sm:gap-y-11
+
+            md:grid-cols-3
+            md:gap-x-6
+            md:gap-y-12
+
+            xl:grid-cols-4
+            xl:gap-x-7
+            xl:gap-y-14
+          "
+        >
           {filteredProducts.map((product) => (
             <ProductCard
               key={product.id}

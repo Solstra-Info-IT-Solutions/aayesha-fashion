@@ -182,37 +182,45 @@ export function ShopFilters({
     return Array.from(map.values());
   }, [products]);
 
-  const availabilityOptions = useMemo(() => {
-    const values = new Set<
-      "in-stock" | "low" | "out-of-stock"
-    >();
-
-    products.forEach((product) => {
-      const availabilityOptions = useMemo(() => {
+const availabilityOptions = useMemo(() => {
   const values = new Set<
     "in-stock" | "low" | "out-of-stock"
   >();
 
   products.forEach((product) => {
-    const availability = getProductAvailability(product);
+    const availableVariants = product.variants.filter(
+      (variant) =>
+        variant.status === "active" &&
+        variant.inventory.stock > variant.inventory.reserved,
+    );
 
-    if (availability.isAvailable) {
-      if (availability.isLowStock) {
-        values.add("low");
-      } else {
-        values.add("in-stock");
-      }
-    } else {
+    if (availableVariants.length === 0) {
       values.add("out-of-stock");
+      return;
+    }
+
+    const hasLowStock = availableVariants.some(
+      (variant) => {
+        const available =
+          variant.inventory.stock -
+          variant.inventory.reserved;
+
+        return (
+          available <=
+          variant.inventory.lowStockThreshold
+        );
+      },
+    );
+
+    if (hasLowStock) {
+      values.add("low");
+    } else {
+      values.add("in-stock");
     }
   });
 
   return Array.from(values);
 }, [products]);
-    });
-
-    return Array.from(values);
-  }, [products]);
 
   function toggleSection(section: FilterSection) {
     setOpenSections((current) =>
