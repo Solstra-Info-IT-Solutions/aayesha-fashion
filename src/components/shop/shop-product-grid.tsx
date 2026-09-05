@@ -1,13 +1,23 @@
 "use client";
 
+import { useMemo } from "react";
+import Link from "next/link";
+import { SlidersHorizontal } from "lucide-react";
+
 import type {
   Product,
   ProductCategory,
   ProductSort,
 } from "@/types/product";
 
+import {
+  getProductAvailability,
+  getProductStartingPrice,
+  getProductColors,
+  getProductSizes,
+} from "@/types/product";
+
 import { ProductCard } from "@/components/product/product-card";
-import { getProductStartingPrice } from "@/types/product";
 
 interface ShopProductGridProps {
   products: Product[];
@@ -20,149 +30,188 @@ export function ShopProductGrid({
   category,
   sort = "relevance",
 }: ShopProductGridProps) {
-  let visibleProducts = products.filter(
-    (product) =>
-      product.status === "active",
-  );
-
-  /* ==========================================================
-     CATEGORY
-  ========================================================== */
-
-  if (category) {
-    visibleProducts = visibleProducts.filter(
+  const filteredProducts = useMemo(() => {
+    let result = products.filter(
       (product) =>
-        product.category === category,
+        product.status === "active",
     );
-  }
 
-  /* ==========================================================
-     SORTING
-  ========================================================== */
-
-  visibleProducts = [
-    ...visibleProducts,
-  ];
-
-  switch (sort) {
-    case "newest":
-      visibleProducts.sort(
-        (a, b) =>
-          new Date(
-            b.publishedAt ??
-              b.createdAt,
-          ).getTime() -
-          new Date(
-            a.publishedAt ??
-              a.createdAt,
-          ).getTime(),
+    if (category) {
+      result = result.filter(
+        (product) => product.category === category,
       );
-      break;
+    }
 
-    case "price-low":
-      visibleProducts.sort(
-        (a, b) =>
-          getProductStartingPrice(a) -
-          getProductStartingPrice(b),
+    const params =
+      typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search)
+        : null;
+
+    const type = params?.get("type");
+    const color = params?.get("color");
+    const size = params?.get("size");
+    const availability = params?.get("availability");
+
+    if (type) {
+      result = result.filter(
+        (product) =>
+          product.productType === type,
       );
-      break;
+    }
 
-    case "price-high":
-      visibleProducts.sort(
-        (a, b) =>
-          getProductStartingPrice(b) -
-          getProductStartingPrice(a),
+    if (color) {
+      result = result.filter((product) =>
+        getProductColors(product).some(
+          (item) => item.id === color,
+        ),
       );
-      break;
+    }
 
-    case "best-selling":
-      visibleProducts.sort(
-        (a, b) =>
-          (a.merchandising.ranking ??
-            999) -
-          (b.merchandising.ranking ??
-            999),
+    if (size) {
+      result = result.filter((product) =>
+        getProductSizes(product).some(
+          (item) => item.code === size,
+        ),
       );
-      break;
+    }
 
-    case "featured":
-      visibleProducts.sort(
-        (a, b) =>
-          Number(
-            b.merchandising.isFeatured,
-          ) -
-          Number(
-            a.merchandising.isFeatured,
-          ),
-      );
-      break;
+    if (availability) {
+      result = result.filter((product) => {
+        const status =
+          getProductAvailability(product).status;
 
-    case "rating":
-      visibleProducts.sort(
-        (a, b) =>
-          (b.reviews?.averageRating ??
-            0) -
-          (a.reviews?.averageRating ??
-            0),
-      );
-      break;
+        if (availability === "in-stock") {
+          return status === "in-stock";
+        }
 
-    case "relevance":
-    default:
-      visibleProducts.sort(
-        (a, b) =>
-          (a.merchandising.ranking ??
-            999) -
-          (b.merchandising.ranking ??
-            999),
-      );
-      break;
-  }
+        if (availability === "low") {
+          return status === "low-stock";
+        }
 
-  /* ==========================================================
-     EMPTY STATE
-  ========================================================== */
+        if (availability === "out-of-stock") {
+          return status === "out-of-stock";
+        }
 
-  if (!visibleProducts.length) {
-    return (
-      <section className="border-y border-[var(--color-border)] py-20 text-center">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
-          Ayesha Collection
-        </p>
+        return true;
+      });
+    }
 
-        <h2 className="mt-2 font-[var(--font-cormorant)] text-3xl">
-          No pieces found.
-        </h2>
+    switch (sort) {
+      case "price-low":
+        result.sort(
+          (a, b) =>
+            getProductStartingPrice(a) -
+            getProductStartingPrice(b),
+        );
+        break;
 
-        <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-[var(--color-text-secondary)]">
-          Try adjusting your filters or explore another
-          collection.
-        </p>
-      </section>
-    );
-  }
+      case "price-high":
+        result.sort(
+          (a, b) =>
+            getProductStartingPrice(b) -
+            getProductStartingPrice(a),
+        );
+        break;
+
+      case "newest":
+        result.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() -
+            new Date(a.createdAt).getTime(),
+        );
+        break;
+
+      case "rating":
+        result.sort(
+          (a, b) =>
+            (b.reviews?.rating ?? 0) -
+            (a.reviews?.rating ?? 0),
+        );
+        break;
+
+      case "best-selling":
+        result.sort((a, b) => {
+          const aScore =
+            a.merchandising?.bestSeller ? 1 : 0;
+
+          const bScore =
+            b.merchandising?.bestSeller ? 1 : 0;
+
+          return bScore - aScore;
+        });
+        break;
+
+      case "featured":
+        result.sort((a, b) => {
+          const aScore =
+            a.merchandising?.featured ? 1 : 0;
+
+          const bScore =
+            b.merchandising?.featured ? 1 : 0;
+
+          return bScore - aScore;
+        });
+        break;
+
+      default:
+        break;
+    }
+
+    return result;
+  }, [products, category, sort]);
 
   return (
-    <section>
-      <div className="mb-5 flex items-center justify-between border-b border-[var(--color-border)] pb-4">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
-          {visibleProducts.length}{" "}
-          {visibleProducts.length === 1
-            ? "piece"
-            : "pieces"}
-        </p>
+    <div>
+      <div className="mb-6 flex items-end justify-between gap-4">
+        <div>
+          <p className="text-sm text-[var(--color-text-secondary)]">
+            {filteredProducts.length}{" "}
+            {filteredProducts.length === 1
+              ? "piece"
+              : "pieces"}
+          </p>
+        </div>
+
+        <Link
+          href="/shop"
+          className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.13em] text-[var(--color-text-secondary)] lg:hidden"
+        >
+          <SlidersHorizontal
+            size={14}
+            strokeWidth={1.7}
+          />
+          Refine
+        </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-3 lg:gap-x-6 lg:gap-y-12">
-        {visibleProducts.map(
-          (product) => (
+      {filteredProducts.length === 0 ? (
+        <div className="border border-[var(--color-border)] bg-[var(--color-cream)] px-6 py-16 text-center sm:px-10 sm:py-24">
+          <p className="font-serif text-3xl text-[var(--color-charcoal)]">
+            No pieces found
+          </p>
+
+          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-[var(--color-text-secondary)]">
+            Try adjusting your filters or explore the
+            complete collection.
+          </p>
+
+          <Link
+            href="/shop"
+            className="mt-6 inline-flex border border-[var(--color-charcoal)] px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--color-charcoal)] transition-colors hover:bg-[var(--color-charcoal)] hover:text-white"
+          >
+            View Collection
+          </Link>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 sm:gap-y-10 md:grid-cols-3 md:gap-x-6 xl:grid-cols-4">
+          {filteredProducts.map((product) => (
             <ProductCard
               key={product.id}
               product={product}
             />
-          ),
-        )}
-      </div>
-    </section>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
