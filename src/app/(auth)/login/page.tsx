@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+
 import { AuthShell } from "@/components/auth/auth-shell";
 import { LoginForm } from "@/components/auth/login-form";
 
@@ -9,7 +11,17 @@ export default function LoginPage() {
       backHref="/"
       backLabel="Back to home"
     >
-      <LoginForm />
+      <Suspense
+        fallback={
+          <div className="w-full">
+            <div className="h-12 w-full animate-pulse bg-[var(--color-cream)]" />
+            <div className="mt-4 h-12 w-full animate-pulse bg-[var(--color-cream)]" />
+            <div className="mt-6 h-12 w-full animate-pulse bg-[var(--color-charcoal)]/10" />
+          </div>
+        }
+      >
+        <LoginForm />
+      </Suspense>
     </AuthShell>
   );
 }
