@@ -6,6 +6,7 @@ import {
   CalendarDays,
   Check,
   ChevronDown,
+  ChevronRight,
   Edit3,
   Home,
   Loader2,
