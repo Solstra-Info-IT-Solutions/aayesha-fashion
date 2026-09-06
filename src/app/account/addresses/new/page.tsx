@@ -1,4 +1,5 @@
 import { AddressForm } from "@/components/account/address-form";
+import { Suspense } from "react";
 
 export default function NewAddressPage() {
   // return <AddressForm mode="create" />;
