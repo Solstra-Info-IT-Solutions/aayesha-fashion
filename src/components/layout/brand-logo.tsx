@@ -1,13 +1,25 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export function BrandLogo() {
+  const router = useRouter();
+
+  const handleLogoClick = () => {
+    router.push("/");
+  };
+
   return (
     <Link
       href="/"
+      onClick={handleLogoClick}
       aria-label="Aayesha Fashion — Home"
       className="
         group
+        relative
+        z-[70]
         inline-flex
         items-center
         justify-center
@@ -16,6 +28,7 @@ export function BrandLogo() {
         transition-opacity
         duration-200
         hover:opacity-80
+        cursor-pointer
       "
     >
       {/* =====================================================
@@ -29,6 +42,7 @@ export function BrandLogo() {
         height={46}
         priority
         className="
+          pointer-events-none
           h-[38px]
           w-[38px]
           shrink-0
@@ -44,6 +58,7 @@ export function BrandLogo() {
 
       <span
         className="
+          pointer-events-none
           ml-3
           flex
           flex-col
