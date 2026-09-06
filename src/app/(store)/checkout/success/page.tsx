@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   ArrowRight,
   Check,
@@ -17,16 +18,13 @@ import type { OrderDetails } from "@/lib/api/orders";
 
 import { useAuthStore } from "@/store/auth-store";
 
-interface CheckoutSuccessPageProps {
-  searchParams: Promise<{
-    orderNumber?: string;
-  }>;
-}
+/* ==========================================================
+   HELPERS
+========================================================== */
 
 const getOrderAccessTokenKey = (
   orderNumber: string,
-) =>
-  `aayesha-order-access-token:${orderNumber}`;
+) => `aayesha-order-access-token:${orderNumber}`;
 
 const formatCurrency = (
   amount: number,
@@ -47,9 +45,43 @@ const formatDate = (
   ).format(new Date(date));
 };
 
-export default function CheckoutSuccessPage({
-  searchParams,
-}: CheckoutSuccessPageProps) {
+/* ==========================================================
+   LOADING UI
+========================================================== */
+
+function CheckoutSuccessLoading() {
+  return (
+    <main className="min-h-[70vh] bg-[var(--color-ivory)]">
+      <div className="mx-auto flex min-h-[70vh] w-full max-w-3xl items-center justify-center px-5 py-16 sm:px-8">
+        <div className="w-full border border-[var(--color-border)] bg-white p-8 text-center sm:p-12">
+          <div className="mx-auto flex h-16 w-16 animate-pulse items-center justify-center bg-[var(--color-cream)]">
+            <ShoppingBag
+              size={25}
+              strokeWidth={1.5}
+            />
+          </div>
+
+          <p className="mt-7 font-[var(--font-display)] text-3xl leading-none text-[var(--color-charcoal)] sm:text-4xl">
+            Confirming your order
+          </p>
+
+          <p className="mx-auto mt-4 max-w-md text-sm leading-7 text-[var(--color-text-muted)]">
+            We&apos;re securely retrieving your order
+            details. Please wait a moment.
+          </p>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+/* ==========================================================
+   MAIN CONTENT
+========================================================== */
+
+function CheckoutSuccessContent() {
+  const searchParams = useSearchParams();
+
   const isAuthenticated = useAuthStore(
     (state) => state.isAuthenticated,
   );
@@ -74,56 +106,34 @@ export default function CheckoutSuccessPage({
     useState<string | null>(null);
 
   /* ==========================================================
-     READ ORDER NUMBER
+     READ ORDER NUMBER FROM URL
   ========================================================== */
 
   useEffect(() => {
-    let cancelled = false;
+    const normalizedOrderNumber =
+      searchParams
+        .get("orderNumber")
+        ?.trim()
+        .toUpperCase();
 
-    const loadOrderNumber =
-      async () => {
-        try {
-          const params =
-            await searchParams;
+    console.log(
+      "CHECKOUT SUCCESS ORDER NUMBER:",
+      normalizedOrderNumber,
+    );
 
-          const normalizedOrderNumber =
-            params.orderNumber
-              ?.trim()
-              .toUpperCase();
+    if (!normalizedOrderNumber) {
+      setOrderNumber("");
+      setError(
+        "We could not find an order number for this confirmation page.",
+      );
+      setLoading(false);
+      return;
+    }
 
-          if (!normalizedOrderNumber) {
-            if (!cancelled) {
-              setError(
-                "We could not find an order number for this confirmation page.",
-              );
-
-              setLoading(false);
-            }
-
-            return;
-          }
-
-          if (!cancelled) {
-            setOrderNumber(
-              normalizedOrderNumber,
-            );
-          }
-        } catch {
-          if (!cancelled) {
-            setError(
-              "Unable to read your order confirmation.",
-            );
-
-            setLoading(false);
-          }
-        }
-      };
-
-    void loadOrderNumber();
-
-    return () => {
-      cancelled = true;
-    };
+    setOrderNumber(
+      normalizedOrderNumber,
+    );
+    setError(null);
   }, [searchParams]);
 
   /* ==========================================================
@@ -152,8 +162,20 @@ export default function CheckoutSuccessPage({
             storageKey,
           );
 
+        console.log(
+          "CHECKOUT SUCCESS STORAGE KEY:",
+          storageKey,
+        );
+
+        console.log(
+          "CHECKOUT SUCCESS TOKEN EXISTS:",
+          Boolean(storedToken),
+        );
+
         if (!storedToken) {
           if (!cancelled) {
+            setOrder(null);
+
             setError(
               "Your secure order access information is unavailable. Please check your orders shortly.",
             );
@@ -179,10 +201,8 @@ export default function CheckoutSuccessPage({
         );
 
         /*
-         * Keep the token available for the public
-         * View Order page during this browser session.
-         *
-         * It is intentionally not removed immediately.
+         * Keep the public access token in memory
+         * and sessionStorage for this browser session.
          */
         setPublicAccessToken(
           storedToken,
@@ -192,11 +212,15 @@ export default function CheckoutSuccessPage({
           return;
         }
 
+        console.error(
+          "Checkout success order load error:",
+          requestError,
+        );
+
         setOrder(null);
 
         setError(
-          requestError instanceof
-            Error
+          requestError instanceof Error
             ? requestError.message
             : "We could not load your order details.",
         );
@@ -215,34 +239,8 @@ export default function CheckoutSuccessPage({
   }, [orderNumber]);
 
   /* ==========================================================
-     INVALID / LOADING / ERROR
+     INVALID / ERROR
   ========================================================== */
-
-  if (loading) {
-    return (
-      <main className="min-h-[70vh] bg-[var(--color-ivory)]">
-        <div className="mx-auto flex min-h-[70vh] w-full max-w-3xl items-center justify-center px-5 py-16 sm:px-8">
-          <div className="w-full border border-[var(--color-border)] bg-white p-8 text-center sm:p-12">
-            <div className="mx-auto flex h-16 w-16 animate-pulse items-center justify-center bg-[var(--color-cream)]">
-              <ShoppingBag
-                size={25}
-                strokeWidth={1.5}
-              />
-            </div>
-
-            <p className="mt-7 font-[var(--font-display)] text-3xl leading-none text-[var(--color-charcoal)] sm:text-4xl">
-              Confirming your order
-            </p>
-
-            <p className="mx-auto mt-4 max-w-md text-sm leading-7 text-[var(--color-text-muted)]">
-              We&apos;re securely retrieving your
-              order details. Please wait a moment.
-            </p>
-          </div>
-        </div>
-      </main>
-    );
-  }
 
   if (error || !order) {
     return (
@@ -300,12 +298,6 @@ export default function CheckoutSuccessPage({
     order.shippingAddress.country,
   ].filter(Boolean);
 
-  /*
-   * Logged-in customers can use the authenticated
-   * account order page.
-   *
-   * Guest customers use the public secure order page.
-   */
   const viewOrderHref =
     isInitialized &&
     isAuthenticated
@@ -691,16 +683,7 @@ export default function CheckoutSuccessPage({
             <div className="border border-[var(--color-border)] bg-white p-6 sm:p-7">
               {publicAccessToken ? (
                 <Link
-                  href={
-                    isInitialized &&
-                    isAuthenticated
-                      ? `/account/orders/${encodeURIComponent(
-                          order.orderNumber,
-                        )}`
-                      : `/orders/${encodeURIComponent(
-                          order.orderNumber,
-                        )}`
-                  }
+                  href={viewOrderHref}
                   className="flex min-h-12 w-full items-center justify-center gap-2 bg-[var(--color-charcoal)] px-5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[var(--color-charcoal-soft)]"
                 >
                   View Order
@@ -740,5 +723,21 @@ export default function CheckoutSuccessPage({
         </div>
       </section>
     </main>
+  );
+}
+
+/* ==========================================================
+   PAGE
+========================================================== */
+
+export default function CheckoutSuccessPage() {
+  return (
+    <Suspense
+      fallback={
+        <CheckoutSuccessLoading />
+      }
+    >
+      <CheckoutSuccessContent />
+    </Suspense>
   );
 }
