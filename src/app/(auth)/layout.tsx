@@ -2,6 +2,8 @@ import type {
   ReactNode,
 } from "react";
 
+import { Suspense } from "react";
+
 type AuthLayoutProps = {
   children: ReactNode;
 };
@@ -11,7 +13,13 @@ export default function AuthLayout({
 }: AuthLayoutProps) {
   return (
     <div className="min-h-screen bg-[var(--color-ivory)]">
-      {children}
+      <Suspense
+        fallback={
+          <div className="min-h-screen bg-[var(--color-ivory)]" />
+        }
+      >
+        {children}
+      </Suspense>
     </div>
   );
 }
