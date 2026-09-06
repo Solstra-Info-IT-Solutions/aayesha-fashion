@@ -34,8 +34,16 @@ import { useAuthStore } from "@/store/auth-store";
 export function HeaderActions() {
   const router = useRouter();
 
+  /* =======================================================
+     AUTH STATE
+  ======================================================= */
+
   const user = useAuthStore(
     (state) => state.user,
+  );
+
+  const accessToken = useAuthStore(
+    (state) => state.accessToken,
   );
 
   const isAuthenticated = useAuthStore(
@@ -45,6 +53,21 @@ export function HeaderActions() {
   const isInitialized = useAuthStore(
     (state) => state.isInitialized,
   );
+
+  /*
+   * Use the actual authenticated session state.
+   *
+   * This prevents the header from incorrectly sending
+   * an already logged-in customer to /login.
+   */
+  const loggedIn =
+  isInitialized &&
+  isAuthenticated &&
+  Boolean(user);
+
+  /* =======================================================
+     LOCAL STATE
+  ======================================================= */
 
   const [searchOpen, setSearchOpen] =
     useState(false);
@@ -63,6 +86,20 @@ export function HeaderActions() {
 
   const accountWrapperRef =
     useRef<HTMLDivElement>(null);
+
+  /* =======================================================
+     AUTH STATE SYNC
+  ======================================================= */
+
+  useEffect(() => {
+    /*
+     * If the customer becomes logged out while the
+     * popup is open, close the popup immediately.
+     */
+    if (!loggedIn) {
+      setAccountOpen(false);
+    }
+  }, [loggedIn]);
 
   /* =======================================================
      SEARCH FOCUS
@@ -223,27 +260,37 @@ export function HeaderActions() {
   ======================================================= */
 
   const handleAccountClick = () => {
+    /*
+     * During auth initialization, don't navigate anywhere.
+     * This prevents a premature /login redirect while the
+     * refresh session is still being restored.
+     */
     if (!isInitialized) {
       return;
     }
 
-    if (
-      !isAuthenticated ||
-      !user
-    ) {
-      setAccountOpen(false);
+    /*
+     * Authenticated customer:
+     * open account popup.
+     */
+    if (isAuthenticated && user) {
+      setSearchOpen(false);
+      setMobileMenuOpen(false);
 
-      router.push("/login");
+      setAccountOpen(
+        (current) => !current,
+      );
 
       return;
     }
 
-    setSearchOpen(false);
-    setMobileMenuOpen(false);
+    /*
+     * Guest:
+     * go to login page.
+     */
+    setAccountOpen(false);
 
-    setAccountOpen(
-      (current) => !current,
-    );
+    router.push("/login");
   };
 
   /* =======================================================
@@ -267,17 +314,18 @@ export function HeaderActions() {
       router.push(href);
     };
 
+  /* =======================================================
+     ACCOUNT LABEL
+  ======================================================= */
+
   const accountLabel =
-    isInitialized &&
-    isAuthenticated &&
-    user
-      ? `Account for ${user.name}`
+    isInitialized && loggedIn
+      ? `Account for ${user?.name ?? "customer"}`
       : "Sign in or account";
 
   return (
     <>
       <div className="flex items-center gap-0.5">
-
         {/* ===================================================
             SEARCH
         =================================================== */}
@@ -320,19 +368,15 @@ export function HeaderActions() {
         >
           <button
             type="button"
-            onClick={
-              handleAccountClick
-            }
-            aria-label={
-              accountLabel
-            }
+            onClick={handleAccountClick}
+            aria-label={accountLabel}
             aria-expanded={
-              accountOpen
+              loggedIn
+                ? accountOpen
+                : undefined
             }
             aria-haspopup={
-              isInitialized &&
-              isAuthenticated &&
-              user
+              loggedIn
                 ? "menu"
                 : undefined
             }
@@ -354,9 +398,7 @@ export function HeaderActions() {
               strokeWidth={1.3}
             />
 
-            {isInitialized &&
-            isAuthenticated &&
-            user ? (
+            {isInitialized && loggedIn ? (
               <span
                 aria-hidden="true"
                 className="
@@ -376,9 +418,7 @@ export function HeaderActions() {
               DESKTOP ACCOUNT POPUP
           ================================================= */}
 
-          {isInitialized &&
-          isAuthenticated &&
-          user ? (
+          {isInitialized && loggedIn ? (
             <AccountPopup
               isOpen={accountOpen}
               onClose={() =>
@@ -533,9 +573,7 @@ export function HeaderActions() {
 
               <button
                 type="button"
-                onClick={
-                  closeMobileMenu
-                }
+                onClick={closeMobileMenu}
                 aria-label="Close menu"
                 className="
                   flex
@@ -564,9 +602,7 @@ export function HeaderActions() {
             ================================================= */}
 
             <div className="px-5 pt-5">
-              {isInitialized &&
-              isAuthenticated &&
-              user ? (
+              {isInitialized && loggedIn ? (
                 <button
                   type="button"
                   onClick={() =>
@@ -603,23 +639,17 @@ export function HeaderActions() {
                       text-[var(--color-charcoal)]
                     "
                   >
-                    {user.name
+                    {user?.name
                       ?.trim()
-                      .split(
-                        /\s+/,
-                      )
+                      .split(/\s+/)
                       .slice(0, 2)
                       .map(
                         (part) =>
                           part
-                            .charAt(
-                              0,
-                            )
+                            .charAt(0)
                             .toUpperCase(),
                       )
-                      .join(
-                        "",
-                      ) || "A"}
+                      .join("") || "A"}
                   </span>
 
                   <span className="min-w-0 flex-1">
@@ -632,7 +662,8 @@ export function HeaderActions() {
                         text-[var(--color-charcoal)]
                       "
                     >
-                      {user.name}
+                      {user?.name ||
+                        "My Account"}
                     </span>
 
                     <span
@@ -662,9 +693,7 @@ export function HeaderActions() {
                   type="button"
                   onClick={() => {
                     closeMobileMenu();
-                    router.push(
-                      "/login",
-                    );
+                    router.push("/login");
                   }}
                   className="
                     flex
@@ -681,24 +710,11 @@ export function HeaderActions() {
                   "
                 >
                   <span>
-                    <span
-                      className="
-                        block
-                        text-sm
-                        font-semibold
-                      "
-                    >
+                    <span className="block text-sm font-semibold">
                       Sign In
                     </span>
 
-                    <span
-                      className="
-                        mt-1
-                        block
-                        text-[10px]
-                        text-white/60
-                      "
-                    >
+                    <span className="mt-1 block text-[10px] text-white/60">
                       Access your account
                     </span>
                   </span>
@@ -716,10 +732,7 @@ export function HeaderActions() {
             ================================================= */}
 
             <nav
-              className="
-                px-5
-                py-5
-              "
+              className="px-5 py-5"
               aria-label="Mobile navigation"
             >
               <p
@@ -743,6 +756,8 @@ export function HeaderActions() {
                   bg-white
                 "
               >
+                {/* SHOP */}
+
                 <button
                   type="button"
                   onClick={() =>
@@ -765,23 +780,18 @@ export function HeaderActions() {
                     hover:bg-[var(--color-cream)]
                   "
                 >
-                  <span
-                    className="
-                      text-sm
-                      text-[var(--color-charcoal)]
-                    "
-                  >
+                  <span className="text-sm text-[var(--color-charcoal)]">
                     Shop
                   </span>
 
                   <ChevronRight
                     size={15}
                     strokeWidth={1.5}
-                    className="
-                      text-[var(--color-secondary)]
-                    "
+                    className="text-[var(--color-secondary)]"
                   />
                 </button>
+
+                {/* COLLECTIONS */}
 
                 <button
                   type="button"
@@ -805,23 +815,18 @@ export function HeaderActions() {
                     hover:bg-[var(--color-cream)]
                   "
                 >
-                  <span
-                    className="
-                      text-sm
-                      text-[var(--color-charcoal)]
-                    "
-                  >
+                  <span className="text-sm text-[var(--color-charcoal)]">
                     Collections
                   </span>
 
                   <ChevronRight
                     size={15}
                     strokeWidth={1.5}
-                    className="
-                      text-[var(--color-secondary)]
-                    "
+                    className="text-[var(--color-secondary)]"
                   />
                 </button>
+
+                {/* WISHLIST */}
 
                 <button
                   type="button"
@@ -845,12 +850,7 @@ export function HeaderActions() {
                     hover:bg-[var(--color-cream)]
                   "
                 >
-                  <span
-                    className="
-                      text-sm
-                      text-[var(--color-charcoal)]
-                    "
-                  >
+                  <span className="text-sm text-[var(--color-charcoal)]">
                     Wishlist
                   </span>
 
@@ -860,12 +860,12 @@ export function HeaderActions() {
                     <ChevronRight
                       size={15}
                       strokeWidth={1.5}
-                      className="
-                        text-[var(--color-secondary)]
-                      "
+                      className="text-[var(--color-secondary)]"
                     />
                   </div>
                 </button>
+
+                {/* CART */}
 
                 <button
                   type="button"
@@ -887,12 +887,7 @@ export function HeaderActions() {
                     hover:bg-[var(--color-cream)]
                   "
                 >
-                  <span
-                    className="
-                      text-sm
-                      text-[var(--color-charcoal)]
-                    "
-                  >
+                  <span className="text-sm text-[var(--color-charcoal)]">
                     Shopping Bag
                   </span>
 
@@ -902,9 +897,7 @@ export function HeaderActions() {
                     <ChevronRight
                       size={15}
                       strokeWidth={1.5}
-                      className="
-                        text-[var(--color-secondary)]
-                      "
+                      className="text-[var(--color-secondary)]"
                     />
                   </div>
                 </button>
@@ -1024,9 +1017,7 @@ export function HeaderActions() {
                         ref={inputRef}
                         type="search"
                         value={query}
-                        onChange={(
-                          event,
-                        ) =>
+                        onChange={(event) =>
                           setQuery(
                             event.target
                               .value,
@@ -1078,20 +1069,16 @@ export function HeaderActions() {
                       )}
                     </div>
 
-                    {/* SEARCH RULE */}
-
                     <div className="mt-4 h-px bg-[var(--color-border)]" />
 
                     <div className="mt-3 flex items-center justify-between gap-4">
                       <p className="text-[9px] uppercase tracking-[0.18em] text-[var(--color-muted)]">
-                        Try “anarkali”,
-                        “ivory” or
-                        “festive”
+                        Try “anarkali”, “ivory”
+                        or “festive”
                       </p>
 
                       <p className="hidden text-[9px] uppercase tracking-[0.18em] text-[var(--color-muted)] sm:block">
-                        Press Enter to
-                        search
+                        Press Enter to search
                       </p>
                     </div>
                   </form>
@@ -1100,9 +1087,7 @@ export function HeaderActions() {
 
                   <button
                     type="button"
-                    onClick={
-                      closeSearch
-                    }
+                    onClick={closeSearch}
                     aria-label="Close search"
                     className="
                       flex

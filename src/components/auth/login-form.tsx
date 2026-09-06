@@ -15,74 +15,64 @@ import {
   Loader2,
 } from "lucide-react";
 
-import {
-  ApiError,
-} from "@/lib/api";
+import { ApiError } from "@/lib/api";
 
-import {
-  useAuthStore,
-} from "@/store/auth-store";
+import { useAuthStore } from "@/store/auth-store";
+
+import { useRouter } from "next/navigation";
 
 /* =========================================================
    COMPONENT
 ========================================================= */
 
 export function LoginForm() {
-  const searchParams =
-    useSearchParams();
+  const router = useRouter();
 
-  const verified =
-    searchParams.get("verified");
+  const searchParams = useSearchParams();
 
-  const login =
-    useAuthStore(
-      (state) => state.login,
-    );
+  const verified = searchParams.get("verified");
 
-  const isLoading =
-    useAuthStore(
-      (state) => state.isLoading,
-    );
+  /* =======================================================
+     AUTH STORE
+  ======================================================= */
 
-  const storeError =
-    useAuthStore(
-      (state) => state.error,
-    );
+  const login = useAuthStore(
+    (state) => state.login,
+  );
 
-  const clearError =
-    useAuthStore(
-      (state) => state.clearError,
-    );
+  const isLoading = useAuthStore(
+    (state) => state.isLoading,
+  );
 
-  const [
-    email,
-    setEmail,
-  ] = useState("");
+  const storeError = useAuthStore(
+    (state) => state.error,
+  );
 
-  const [
-    password,
-    setPassword,
-  ] = useState("");
+  const clearError = useAuthStore(
+    (state) => state.clearError,
+  );
 
-  const [
-    rememberMe,
-    setRememberMe,
-  ] = useState(false);
+  /* =======================================================
+     FORM STATE
+  ======================================================= */
 
-  const [
-    showPassword,
-    setShowPassword,
-  ] = useState(false);
+  const [email, setEmail] =
+    useState("");
 
-  const [
-    localError,
-    setLocalError,
-  ] = useState("");
+  const [password, setPassword] =
+    useState("");
 
-  const [
-    successMessage,
-    setSuccessMessage,
-  ] = useState("");
+  const [rememberMe, setRememberMe] =
+    useState(false);
+
+  const [showPassword, setShowPassword] =
+    useState(false);
+
+  const [localError, setLocalError] =
+    useState("");
+
+  const [successMessage, setSuccessMessage] =
+    useState("");
 
   /* =======================================================
      VERIFIED MESSAGE
@@ -141,6 +131,13 @@ export function LoginForm() {
     }
 
     try {
+      /*
+       * login() updates Zustand immediately:
+       *
+       * user
+       * accessToken
+       * isAuthenticated
+       */
       await login(
         email.trim(),
         password,
@@ -148,41 +145,62 @@ export function LoginForm() {
       );
 
       /*
-       * Login successful.
+       * IMPORTANT:
+       *
+       * Do not use window.location.href here.
+       *
+       * That performs a full browser reload and clears
+       * the memory-only access token before the new page
+       * can consume it.
+       *
+       * Client-side navigation keeps the authenticated
+       * Zustand state alive.
        */
-      window.location.href =
-        "/";
+      router.replace("/");
+
+      /*
+       * Ensure the new route starts from the top.
+       */
+      window.scrollTo({
+        top: 0,
+        behavior: "auto",
+      });
     } catch (error) {
       /*
-       * Backend specifically tells us that the user's
-       * credentials are valid but the email is not verified.
-       *
-       * Send the user directly to the email verification
-       * screen with their email pre-filled.
+       * Backend says credentials are valid but email
+       * still needs verification.
        */
-
       if (
         error instanceof ApiError &&
         error.code ===
           "EMAIL_NOT_VERIFIED"
       ) {
-        window.location.href =
+        router.replace(
           `/verify-email?email=${encodeURIComponent(
             email.trim(),
-          )}`;
+          )}`,
+        );
 
         return;
       }
 
       /*
-       * Other API errors are already stored in auth store.
+       * Other API errors are already stored inside
+       * the auth store.
        */
     }
   };
 
+  /* =======================================================
+     ERROR
+  ======================================================= */
+
   const errorMessage =
-    localError ||
-    storeError;
+    localError || storeError;
+
+  /* =======================================================
+     RENDER
+  ======================================================= */
 
   return (
     <form
@@ -237,76 +255,74 @@ export function LoginForm() {
       =================================================== */}
 
       <div>
-        <div>
-          <div className="mb-2 flex items-center justify-between">
-            <label
-              htmlFor="login-password"
-              className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-secondary)]"
-            >
-              Password
-            </label>
+        <div className="mb-2 flex items-center justify-between">
+          <label
+            htmlFor="login-password"
+            className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-secondary)]"
+          >
+            Password
+          </label>
 
-            <Link
-              href="/forgot-password"
-              className="text-[11px] text-[var(--color-secondary)] underline underline-offset-4 transition hover:text-[var(--color-charcoal)]"
-            >
-              Forgot password?
-            </Link>
-          </div>
+          <Link
+            href="/forgot-password"
+            className="text-[11px] text-[var(--color-secondary)] underline underline-offset-4 transition hover:text-[var(--color-charcoal)]"
+          >
+            Forgot password?
+          </Link>
+        </div>
 
-          <div className="relative">
-            <input
-              id="login-password"
-              type={
-                showPassword
-                  ? "text"
-                  : "password"
+        <div className="relative">
+          <input
+            id="login-password"
+            type={
+              showPassword
+                ? "text"
+                : "password"
+            }
+            value={password}
+            placeholder="Enter your password"
+            autoComplete="current-password"
+            onChange={(event) => {
+              setPassword(
+                event.target.value,
+              );
+
+              if (localError) {
+                setLocalError("");
               }
-              value={password}
-              placeholder="Enter your password"
-              autoComplete="current-password"
-              onChange={(event) => {
-                setPassword(
-                  event.target.value,
-                );
 
-                if (localError) {
-                  setLocalError("");
-                }
+              clearError();
+            }}
+            className="h-12 w-full rounded-none border border-[var(--color-border)] bg-white px-4 pr-12 text-[13px] text-[var(--color-charcoal)] outline-none transition placeholder:text-[#aaa] focus:border-[var(--color-charcoal)]"
+          />
 
-                clearError();
-              }}
-              className="h-12 w-full rounded-none border border-[var(--color-border)] bg-white px-4 pr-12 text-[13px] text-[var(--color-charcoal)] outline-none transition placeholder:text-[#aaa] focus:border-[var(--color-charcoal)]"
-            />
-
-            <button
-              type="button"
-              aria-label={
-                showPassword
-                  ? "Hide password"
-                  : "Show password"
-              }
-              onClick={() =>
-                setShowPassword(
-                  (current) =>
-                    !current,
-                )
-              }
-              className="absolute right-0 top-0 flex h-12 w-12 items-center justify-center text-[var(--color-secondary)] transition hover:text-[var(--color-charcoal)]"
-            >
-              {showPassword ? (
-                <EyeOff
-                  size={17}
-                  strokeWidth={1.6}
-                />
-              ) : (
-                <Eye
-                  size={17}
-                  strokeWidth={1.6}
-                />
-              )}
-            </button>
-          </div>
+          <button
+            type="button"
+            aria-label={
+              showPassword
+                ? "Hide password"
+                : "Show password"
+            }
+            onClick={() =>
+              setShowPassword(
+                (current) =>
+                  !current,
+              )
+            }
+            className="absolute right-0 top-0 flex h-12 w-12 items-center justify-center text-[var(--color-secondary)] transition hover:text-[var(--color-charcoal)]"
+          >
+            {showPassword ? (
+              <EyeOff
+                size={17}
+                strokeWidth={1.6}
+              />
+            ) : (
+              <Eye
+                size={17}
+                strokeWidth={1.6}
+              />
+            )}
+          </button>
         </div>
       </div>
 

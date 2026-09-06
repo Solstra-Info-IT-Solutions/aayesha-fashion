@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -10,6 +13,9 @@ import {
 } from "lucide-react";
 
 import { getOrder } from "@/lib/api/orders";
+import type { OrderDetails } from "@/lib/api/orders";
+
+import { useAuthStore } from "@/store/auth-store";
 
 interface CheckoutSuccessPageProps {
   searchParams: Promise<{
@@ -17,11 +23,20 @@ interface CheckoutSuccessPageProps {
   }>;
 }
 
-const formatCurrency = (amount: number) => {
+const getOrderAccessTokenKey = (
+  orderNumber: string,
+) =>
+  `aayesha-order-access-token:${orderNumber}`;
+
+const formatCurrency = (
+  amount: number,
+) => {
   return `₹${amount.toLocaleString("en-IN")}`;
 };
 
-const formatDate = (date: string) => {
+const formatDate = (
+  date: string,
+) => {
   return new Intl.DateTimeFormat(
     "en-IN",
     {
@@ -32,23 +47,183 @@ const formatDate = (date: string) => {
   ).format(new Date(date));
 };
 
-export default async function CheckoutSuccessPage({
+export default function CheckoutSuccessPage({
   searchParams,
 }: CheckoutSuccessPageProps) {
-  const params = await searchParams;
+  const isAuthenticated = useAuthStore(
+    (state) => state.isAuthenticated,
+  );
 
-  const orderNumber =
-    params.orderNumber?.trim();
+  const isInitialized = useAuthStore(
+    (state) => state.isInitialized,
+  );
 
-  /*
-   * Invalid/missing order number
-   */
-  if (!orderNumber) {
+  const [orderNumber, setOrderNumber] =
+    useState("");
+
+  const [order, setOrder] =
+    useState<OrderDetails | null>(null);
+
+  const [publicAccessToken, setPublicAccessToken] =
+    useState("");
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState<string | null>(null);
+
+  /* ==========================================================
+     READ ORDER NUMBER
+  ========================================================== */
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadOrderNumber =
+      async () => {
+        try {
+          const params =
+            await searchParams;
+
+          const normalizedOrderNumber =
+            params.orderNumber
+              ?.trim()
+              .toUpperCase();
+
+          if (!normalizedOrderNumber) {
+            if (!cancelled) {
+              setError(
+                "We could not find an order number for this confirmation page.",
+              );
+
+              setLoading(false);
+            }
+
+            return;
+          }
+
+          if (!cancelled) {
+            setOrderNumber(
+              normalizedOrderNumber,
+            );
+          }
+        } catch {
+          if (!cancelled) {
+            setError(
+              "Unable to read your order confirmation.",
+            );
+
+            setLoading(false);
+          }
+        }
+      };
+
+    void loadOrderNumber();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [searchParams]);
+
+  /* ==========================================================
+     LOAD ORDER
+  ========================================================== */
+
+  useEffect(() => {
+    if (!orderNumber) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadOrder = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const storageKey =
+          getOrderAccessTokenKey(
+            orderNumber,
+          );
+
+        const storedToken =
+          sessionStorage.getItem(
+            storageKey,
+          );
+
+        if (!storedToken) {
+          if (!cancelled) {
+            setError(
+              "Your secure order access information is unavailable. Please check your orders shortly.",
+            );
+
+            setLoading(false);
+          }
+
+          return;
+        }
+
+        const response =
+          await getOrder(
+            orderNumber,
+            storedToken,
+          );
+
+        if (cancelled) {
+          return;
+        }
+
+        setOrder(
+          response.order,
+        );
+
+        /*
+         * Keep the token available for the public
+         * View Order page during this browser session.
+         *
+         * It is intentionally not removed immediately.
+         */
+        setPublicAccessToken(
+          storedToken,
+        );
+      } catch (requestError) {
+        if (cancelled) {
+          return;
+        }
+
+        setOrder(null);
+
+        setError(
+          requestError instanceof
+            Error
+            ? requestError.message
+            : "We could not load your order details.",
+        );
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void loadOrder();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [orderNumber]);
+
+  /* ==========================================================
+     INVALID / LOADING / ERROR
+  ========================================================== */
+
+  if (loading) {
     return (
       <main className="min-h-[70vh] bg-[var(--color-ivory)]">
         <div className="mx-auto flex min-h-[70vh] w-full max-w-3xl items-center justify-center px-5 py-16 sm:px-8">
           <div className="w-full border border-[var(--color-border)] bg-white p-8 text-center sm:p-12">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center bg-[var(--color-cream)]">
+            <div className="mx-auto flex h-16 w-16 animate-pulse items-center justify-center bg-[var(--color-cream)]">
               <ShoppingBag
                 size={25}
                 strokeWidth={1.5}
@@ -56,51 +231,20 @@ export default async function CheckoutSuccessPage({
             </div>
 
             <p className="mt-7 font-[var(--font-display)] text-3xl leading-none text-[var(--color-charcoal)] sm:text-4xl">
-              Order details unavailable
+              Confirming your order
             </p>
 
             <p className="mx-auto mt-4 max-w-md text-sm leading-7 text-[var(--color-text-muted)]">
-              We could not find an order number for
-              this confirmation page.
+              We&apos;re securely retrieving your
+              order details. Please wait a moment.
             </p>
-
-            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <Link
-                href="/shop"
-                className="inline-flex min-h-12 items-center justify-center gap-2 bg-[var(--color-charcoal)] px-6 text-[10px] font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[var(--color-charcoal-soft)]"
-              >
-                Continue Shopping
-                <ArrowRight size={15} />
-              </Link>
-
-              <Link
-                href="/account/orders"
-                className="inline-flex min-h-12 items-center justify-center border border-[var(--color-border)] bg-white px-6 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--color-charcoal)] transition hover:bg-[var(--color-cream)]"
-              >
-                View Orders
-              </Link>
-            </div>
           </div>
         </div>
       </main>
     );
   }
 
-  let order = null;
-
-  try {
-    const response =
-      await getOrder(orderNumber);
-
-    order = response.order;
-  } catch {
-    order = null;
-  }
-
-  /*
-   * Order not found
-   */
-  if (!order) {
+  if (error || !order) {
     return (
       <main className="min-h-[70vh] bg-[var(--color-ivory)]">
         <div className="mx-auto flex min-h-[70vh] w-full max-w-3xl items-center justify-center px-5 py-16 sm:px-8">
@@ -117,8 +261,8 @@ export default async function CheckoutSuccessPage({
             </p>
 
             <p className="mx-auto mt-4 max-w-md text-sm leading-7 text-[var(--color-text-muted)]">
-              Your order may still be processing.
-              Please check your orders shortly.
+              {error ||
+                "Your order may still be processing. Please check your orders shortly."}
             </p>
 
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
@@ -149,11 +293,28 @@ export default async function CheckoutSuccessPage({
   const fullAddress = [
     order.shippingAddress.addressLine1,
     order.shippingAddress.addressLine2,
+    order.shippingAddress.landmark,
     order.shippingAddress.city,
     order.shippingAddress.state,
     order.shippingAddress.postalCode,
     order.shippingAddress.country,
   ].filter(Boolean);
+
+  /*
+   * Logged-in customers can use the authenticated
+   * account order page.
+   *
+   * Guest customers use the public secure order page.
+   */
+  const viewOrderHref =
+    isInitialized &&
+    isAuthenticated
+      ? `/account/orders/${encodeURIComponent(
+          order.orderNumber,
+        )}`
+      : `/orders/${encodeURIComponent(
+          order.orderNumber,
+        )}`;
 
   return (
     <main className="bg-[var(--color-ivory)]">
@@ -180,23 +341,25 @@ export default async function CheckoutSuccessPage({
             </h1>
 
             <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-[var(--color-text-secondary)] sm:text-[15px]">
-              Your order has been received and is now
-              being prepared with care.
+              Your order has been received and is
+              now being prepared with care.
             </p>
 
-            <div className="mt-8 inline-flex flex-wrap items-center justify-center gap-x-5 gap-y-2 border border-[var(--color-border)] bg-white px-5 py-3">
+            <div className="mt-8 inline-flex max-w-full flex-wrap items-center justify-center gap-x-5 gap-y-2 border border-[var(--color-border)] bg-white px-5 py-3">
               <span className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[var(--color-text-muted)]">
                 Order Number
               </span>
 
-              <span className="text-sm font-semibold tracking-[0.04em] text-[var(--color-charcoal)]">
+              <span className="break-all text-sm font-semibold tracking-[0.04em] text-[var(--color-charcoal)]">
                 {order.orderNumber}
               </span>
 
               <span className="hidden h-4 w-px bg-[var(--color-border)] sm:block" />
 
               <span className="text-[10px] text-[var(--color-text-muted)]">
-                {formatDate(order.createdAt)}
+                {formatDate(
+                  order.createdAt,
+                )}
               </span>
             </div>
           </div>
@@ -292,15 +455,12 @@ export default async function CheckoutSuccessPage({
 
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-col justify-between gap-3 sm:flex-row">
-                          <div>
-                            <Link
-                              href={`/products/${item.productId}`}
-                              className="text-sm font-semibold text-[var(--color-charcoal)] transition hover:text-[var(--color-rose-dark)]"
-                            >
+                          <div className="min-w-0">
+                            <p className="break-words text-sm font-semibold text-[var(--color-charcoal)]">
                               {item.name}
-                            </Link>
+                            </p>
 
-                            <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-[var(--color-text-muted)]">
+                            <p className="mt-1 break-words text-[10px] uppercase tracking-[0.12em] text-[var(--color-text-muted)]">
                               {item.colorName}
                               {item.colorName &&
                               item.sizeLabel
@@ -315,7 +475,7 @@ export default async function CheckoutSuccessPage({
                             </p>
                           </div>
 
-                          <div className="text-left sm:text-right">
+                          <div className="shrink-0 text-left sm:text-right">
                             <p className="text-sm font-semibold text-[var(--color-charcoal)]">
                               {formatCurrency(
                                 item.lineTotal,
@@ -357,11 +517,17 @@ export default async function CheckoutSuccessPage({
                   </p>
 
                   <h2 className="mt-1 text-base font-semibold text-[var(--color-charcoal)]">
-                    {order.shippingAddress.firstName}{" "}
-                    {order.shippingAddress.lastName}
+                    {
+                      order.shippingAddress
+                        .firstName
+                    }{" "}
+                    {
+                      order.shippingAddress
+                        .lastName
+                    }
                   </h2>
 
-                  <div className="mt-3 space-y-1 text-xs leading-5 text-[var(--color-text-secondary)]">
+                  <div className="mt-3 space-y-1 break-words text-xs leading-5 text-[var(--color-text-secondary)]">
                     {fullAddress.map(
                       (line, index) => (
                         <p
@@ -373,7 +539,7 @@ export default async function CheckoutSuccessPage({
                     )}
                   </div>
 
-                  <div className="mt-3 space-y-1 text-xs text-[var(--color-text-secondary)]">
+                  <div className="mt-3 space-y-1 break-words text-xs text-[var(--color-text-secondary)]">
                     <p>
                       {order.customerPhone}
                     </p>
@@ -406,12 +572,12 @@ export default async function CheckoutSuccessPage({
               <div className="mt-6 space-y-3 border-t border-[var(--color-border)] pt-5">
                 <div className="flex items-center justify-between gap-5 text-xs">
                   <span className="text-[var(--color-text-muted)]">
-                    Subtotal
+                    MRP Total
                   </span>
 
                   <span className="font-medium text-[var(--color-charcoal)]">
                     {formatCurrency(
-                      order.subtotal,
+                      order.mrpTotal,
                     )}
                   </span>
                 </div>
@@ -504,8 +670,8 @@ export default async function CheckoutSuccessPage({
                   />
                 </div>
 
-                <div>
-                  <p className="text-sm font-semibold capitalize">
+                <div className="min-w-0">
+                  <p className="break-words text-sm font-semibold capitalize">
                     {order.status.replace(
                       /_/g,
                       " ",
@@ -523,19 +689,28 @@ export default async function CheckoutSuccessPage({
             {/* ACTIONS */}
 
             <div className="border border-[var(--color-border)] bg-white p-6 sm:p-7">
-              <Link
-                href={`/account/orders/${encodeURIComponent(
-                  order.orderNumber,
-                )}`}
-                className="flex min-h-12 w-full items-center justify-center gap-2 bg-[var(--color-charcoal)] px-5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[var(--color-charcoal-soft)]"
-              >
-                View Order
-                <ArrowRight size={15} />
-              </Link>
+              {publicAccessToken ? (
+                <Link
+                  href={
+                    isInitialized &&
+                    isAuthenticated
+                      ? `/account/orders/${encodeURIComponent(
+                          order.orderNumber,
+                        )}`
+                      : `/orders/${encodeURIComponent(
+                          order.orderNumber,
+                        )}`
+                  }
+                  className="flex min-h-12 w-full items-center justify-center gap-2 bg-[var(--color-charcoal)] px-5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[var(--color-charcoal-soft)]"
+                >
+                  View Order
+                  <ArrowRight size={15} />
+                </Link>
+              ) : null}
 
               <Link
                 href="/shop"
-                className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 border border-[var(--color-border)] bg-white px-5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--color-charcoal)] transition hover:bg-[var(--color-cream)]"
+                className="mt-3 flex min-h-12 w-full items-center justify-center border border-[var(--color-border)] bg-white px-5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--color-charcoal)] transition hover:bg-[var(--color-cream)]"
               >
                 Continue Shopping
               </Link>

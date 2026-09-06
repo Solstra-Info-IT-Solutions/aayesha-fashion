@@ -1,22 +1,44 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
 import { useRouter } from "next/navigation";
+
 import {
   CheckCircle2,
   LockKeyhole,
   ShoppingBag,
 } from "lucide-react";
+
 import toast from "react-hot-toast";
 
 import { getProductById } from "@/lib/api/products";
+
 import {
   createOrder,
   type CreateOrderPayload,
 } from "@/lib/api/orders";
+
+import {
+  createCustomerAddress,
+  getCustomerAddresses,
+} from "@/lib/customer-api";
+
+import { useAuthStore } from "@/store/auth-store";
+
 import { useCartStore } from "@/store/cart-store";
+
 import { useCheckoutStore } from "@/store/checkout-store";
+
 import type { Product } from "@/types/product";
+
+/* ==========================================================
+   TYPES
+========================================================== */
 
 type ResolvedItem = {
   product: Product;
@@ -24,8 +46,37 @@ type ResolvedItem = {
   quantity: number;
 };
 
+/* ==========================================================
+   ORDER ACCESS TOKEN STORAGE
+========================================================== */
+
+const getOrderAccessTokenKey = (
+  orderNumber: string,
+) =>
+  `aayesha-order-access-token:${orderNumber}`;
+
+/* ==========================================================
+   COMPONENT
+========================================================== */
+
 export function CheckoutPlaceOrder() {
   const router = useRouter();
+
+  /* ========================================================
+     AUTH
+  ======================================================== */
+
+  const accessToken = useAuthStore(
+    (state) => state.accessToken,
+  );
+
+  const isAuthenticated = useAuthStore(
+    (state) => state.isAuthenticated,
+  );
+
+  /* ========================================================
+     CART
+  ======================================================== */
 
   const items = useCartStore(
     (state) => state.items,
@@ -34,6 +85,10 @@ export function CheckoutPlaceOrder() {
   const clearCart = useCartStore(
     (state) => state.clearCart,
   );
+
+  /* ========================================================
+     CHECKOUT
+  ======================================================== */
 
   const contact = useCheckoutStore(
     (state) => state.contact,
@@ -55,24 +110,31 @@ export function CheckoutPlaceOrder() {
     (state) => state.couponCode,
   );
 
-  const [resolvedItems, setResolvedItems] =
-    useState<ResolvedItem[]>([]);
+  /* ========================================================
+     LOCAL STATE
+  ======================================================== */
 
-  const [loadingProducts, setLoadingProducts] =
-    useState(true);
+  const [
+    resolvedItems,
+    setResolvedItems,
+  ] = useState<ResolvedItem[]>([]);
 
-  const [placingOrder, setPlacingOrder] =
-    useState(false);
+  const [
+    loadingProducts,
+    setLoadingProducts,
+  ] = useState(true);
+
+  const [
+    placingOrder,
+    setPlacingOrder,
+  ] = useState(false);
 
   /*
-   * Keep the same idempotency key while an order request
-   * is being retried. This prevents accidental duplicate
-   * orders when the first request succeeded but the client
-   * did not receive the response.
+   * Keep the same idempotency key during one
+   * order attempt / retry sequence.
    */
-  const idempotencyKeyRef = useRef<string | null>(
-    null,
-  );
+  const idempotencyKeyRef =
+    useRef<string | null>(null);
 
   /* ==========================================================
      RESOLVE CART ITEMS FROM BACKEND
@@ -99,45 +161,47 @@ export function CheckoutPlaceOrder() {
           ),
         );
 
-        const products = await Promise.all(
-          productIds.map(
-            async (productId) => {
-              try {
-                return await getProductById(
-                  productId,
-                );
-              } catch {
-                return null;
-              }
-            },
-          ),
-        );
+        const products =
+          await Promise.all(
+            productIds.map(
+              async (productId) => {
+                try {
+                  return await getProductById(
+                    productId,
+                  );
+                } catch {
+                  return null;
+                }
+              },
+            ),
+          );
 
         if (cancelled) {
           return;
         }
 
-        const productMap = new Map<
-          string,
-          Product
-        >();
+        const productMap =
+          new Map<string, Product>();
 
-        products.forEach((product) => {
-          if (product) {
-            productMap.set(
-              product.id,
-              product,
-            );
-          }
-        });
+        products.forEach(
+          (product) => {
+            if (product) {
+              productMap.set(
+                product.id,
+                product,
+              );
+            }
+          },
+        );
 
         const nextItems: ResolvedItem[] =
           [];
 
         for (const item of items) {
-          const product = productMap.get(
-            item.productId,
-          );
+          const product =
+            productMap.get(
+              item.productId,
+            );
 
           if (!product) {
             continue;
@@ -147,7 +211,7 @@ export function CheckoutPlaceOrder() {
             product.variants.find(
               (productVariant) =>
                 productVariant.id ===
-                item.variantId &&
+                  item.variantId &&
                 productVariant.status ===
                   "active",
             );
@@ -158,12 +222,16 @@ export function CheckoutPlaceOrder() {
 
           nextItems.push({
             product,
-            variantId: item.variantId,
-            quantity: item.quantity,
+            variantId:
+              item.variantId,
+            quantity:
+              item.quantity,
           });
         }
 
-        setResolvedItems(nextItems);
+        setResolvedItems(
+          nextItems,
+        );
       } finally {
         if (!cancelled) {
           setLoadingProducts(false);
@@ -180,7 +248,7 @@ export function CheckoutPlaceOrder() {
 
   /* ==========================================================
      CLIENT-SIDE DISPLAY TOTAL
-     ========================================================== */
+  ========================================================== */
 
   let subtotal = 0;
 
@@ -209,11 +277,16 @@ export function CheckoutPlaceOrder() {
         : 99;
 
   const normalizedCoupon =
-    couponCode.trim().toUpperCase();
+    couponCode
+      .trim()
+      .toUpperCase();
 
   const couponDiscount =
-    normalizedCoupon === "AYESHA10"
-      ? Math.round(subtotal * 0.1)
+    normalizedCoupon ===
+    "AYESHA10"
+      ? Math.round(
+          subtotal * 0.1,
+        )
       : 0;
 
   const total = Math.max(
@@ -236,14 +309,113 @@ export function CheckoutPlaceOrder() {
       .join(" ");
   };
 
-  const createIdempotencyKey = () => {
-    if (!idempotencyKeyRef.current) {
-      idempotencyKeyRef.current =
-        crypto.randomUUID();
-    }
+  const createIdempotencyKey =
+    () => {
+      if (
+        !idempotencyKeyRef.current
+      ) {
+        idempotencyKeyRef.current =
+          crypto.randomUUID();
+      }
 
-    return idempotencyKeyRef.current;
-  };
+      return idempotencyKeyRef.current;
+    };
+
+  /* ==========================================================
+     SAVE ADDRESS FOR FUTURE ORDERS
+  ========================================================== */
+
+  const saveAddressForFutureOrders =
+    async () => {
+      /*
+       * Address saving is only for authenticated
+       * customers who explicitly chose to save it.
+       */
+      if (
+        !isAuthenticated ||
+        !accessToken ||
+        !address.isDefault
+      ) {
+        return;
+      }
+
+      const customerName =
+        getCustomerName();
+
+      if (!customerName) {
+        return;
+      }
+
+      const existingAddresses =
+        await getCustomerAddresses(
+          accessToken,
+        );
+
+      const alreadySaved =
+        existingAddresses.some(
+          (savedAddress) =>
+            savedAddress.name
+              .trim()
+              .toLowerCase() ===
+              customerName
+                .trim()
+                .toLowerCase() &&
+            savedAddress.addressLine
+              .trim()
+              .toLowerCase() ===
+              address.addressLine1
+                .trim()
+                .toLowerCase() &&
+            savedAddress.city
+              .trim()
+              .toLowerCase() ===
+              address.city
+                .trim()
+                .toLowerCase() &&
+            savedAddress.state
+              .trim()
+              .toLowerCase() ===
+              address.state
+                .trim()
+                .toLowerCase() &&
+            savedAddress.pincode
+              .trim() ===
+              address.postalCode
+                .trim(),
+        );
+
+      if (alreadySaved) {
+        return;
+      }
+
+      await createCustomerAddress(
+        accessToken,
+        {
+          name: customerName,
+
+          phone:
+            contact.phone.trim(),
+
+          addressLine:
+            address.addressLine1.trim(),
+
+          city:
+            address.city.trim(),
+
+          state:
+            address.state.trim(),
+
+          pincode:
+            address.postalCode.trim(),
+
+          landmark:
+            address.landmark?.trim() ||
+            "",
+
+          isDefault: true,
+        },
+      );
+    };
 
   /* ==========================================================
      VALIDATION
@@ -254,6 +426,7 @@ export function CheckoutPlaceOrder() {
       toast.error(
         "Please enter your email address.",
       );
+
       return false;
     }
 
@@ -265,6 +438,7 @@ export function CheckoutPlaceOrder() {
       toast.error(
         "Please enter a valid 10-digit phone number.",
       );
+
       return false;
     }
 
@@ -275,13 +449,17 @@ export function CheckoutPlaceOrder() {
       toast.error(
         "Please enter your full name.",
       );
+
       return false;
     }
 
-    if (!address.addressLine1.trim()) {
+    if (
+      !address.addressLine1.trim()
+    ) {
       toast.error(
         "Please enter your delivery address.",
       );
+
       return false;
     }
 
@@ -292,6 +470,7 @@ export function CheckoutPlaceOrder() {
       toast.error(
         "Please enter your city and state.",
       );
+
       return false;
     }
 
@@ -303,6 +482,7 @@ export function CheckoutPlaceOrder() {
       toast.error(
         "Please enter a valid 6-digit PIN code.",
       );
+
       return false;
     }
 
@@ -310,6 +490,7 @@ export function CheckoutPlaceOrder() {
       toast.error(
         "Your bag is empty.",
       );
+
       return false;
     }
 
@@ -320,6 +501,7 @@ export function CheckoutPlaceOrder() {
       toast.error(
         "Some items in your bag are no longer available. Please review your bag.",
       );
+
       return false;
     }
 
@@ -330,6 +512,7 @@ export function CheckoutPlaceOrder() {
       toast.error(
         "Online payment is not available yet. Please select Cash on Delivery.",
       );
+
       return false;
     }
 
@@ -340,132 +523,249 @@ export function CheckoutPlaceOrder() {
      PLACE ORDER
   ========================================================== */
 
-  const handlePlaceOrder = async () => {
-    if (placingOrder || loadingProducts) {
-      return;
-    }
+  const handlePlaceOrder =
+    async () => {
+      if (
+        placingOrder ||
+        loadingProducts
+      ) {
+        return;
+      }
 
-    if (!validateCheckout()) {
-      return;
-    }
+      if (!validateCheckout()) {
+        return;
+      }
 
-    setPlacingOrder(true);
+      setPlacingOrder(true);
 
-    try {
-      const orderPayload: CreateOrderPayload =
-        {
-          customerName:
-            getCustomerName(),
+      try {
+        /* ----------------------------------------------------
+           SAVE ADDRESS
+        ---------------------------------------------------- */
 
-          customerEmail:
-            contact.email.trim(),
+          console.log("CHECKOUT AUTH STATE:", {
+    isAuthenticated,
+    accessTokenExists: Boolean(accessToken),
+    accessTokenLength: accessToken?.length ?? 0,
+  });
 
-          customerPhone:
-            contact.phone.trim(),
 
-          shippingAddress: {
-            firstName:
-              address.firstName.trim(),
+        try {
+          await saveAddressForFutureOrders();
+        } catch (error) {
+          /*
+           * Address saving should never block an order.
+           */
+          console.error(
+            "Save checkout address error:",
+            error,
+          );
+        }
 
-            lastName:
-              address.lastName.trim(),
+        /* ----------------------------------------------------
+           ORDER PAYLOAD
+        ---------------------------------------------------- */
 
-            addressLine1:
-              address.addressLine1.trim(),
+        const orderPayload: CreateOrderPayload =
+          {
+            customerName:
+              getCustomerName(),
 
-            addressLine2:
-              address.addressLine2?.trim() ||
-              "",
+            customerEmail:
+              contact.email.trim(),
 
-            city:
-              address.city.trim(),
+            customerPhone:
+              contact.phone.trim(),
 
-            state:
-              address.state.trim(),
+            shippingAddress: {
+              firstName:
+                address.firstName.trim(),
 
-            postalCode:
-              address.postalCode.trim(),
+              lastName:
+                address.lastName.trim(),
 
-            country:
-              address.country?.trim() ||
-              "India",
-          },
+              addressLine1:
+                address.addressLine1.trim(),
 
-          deliveryMethod:
-            delivery === "express"
-              ? "express"
-              : "standard",
+              addressLine2:
+                address.addressLine2?.trim() ||
+                "",
 
-          paymentMethod: "cod",
+              landmark:
+                address.landmark?.trim() ||
+                "",
 
-          couponCode:
-            normalizedCoupon ||
-            undefined,
+              city:
+                address.city.trim(),
 
-          items: items.map(
-            (item) => ({
-              productId:
-                item.productId,
+              state:
+                address.state.trim(),
 
-              variantId:
-                item.variantId,
+              postalCode:
+                address.postalCode.trim(),
 
-              quantity:
-                item.quantity,
-            }),
-          ),
-        };
+              country:
+                address.country?.trim() ||
+                "India",
+            },
 
-      const idempotencyKey =
-        createIdempotencyKey();
+            deliveryMethod:
+              delivery ===
+              "express"
+                ? "express"
+                : "standard",
 
-      const response =
-        await createOrder(
-          orderPayload,
-          idempotencyKey,
+            paymentMethod:
+              "cod",
+
+            couponCode:
+              normalizedCoupon ||
+              undefined,
+
+            items: items.map(
+              (item) => ({
+                productId:
+                  item.productId,
+
+                variantId:
+                  item.variantId,
+
+                quantity:
+                  item.quantity,
+              }),
+            ),
+          };
+
+        /* ----------------------------------------------------
+           IDEMPOTENCY
+        ---------------------------------------------------- */
+
+        const idempotencyKey =
+          createIdempotencyKey();
+
+        /* ----------------------------------------------------
+           CREATE ORDER
+        ---------------------------------------------------- */
+
+        /*
+         * IMPORTANT:
+         *
+         * accessToken is passed here.
+         *
+         * Guest:
+         *   accessToken = null
+         *
+         * Logged-in customer:
+         *   accessToken = valid bearer token
+         *
+         * Backend optionalAuth will then populate
+         * request.user for authenticated orders.
+         */
+
+
+
+  console.log("BEFORE CREATE ORDER:", {
+    accessTokenExists: Boolean(accessToken),
+    accessTokenLength: accessToken?.length ?? 0,
+  });
+
+          
+        const response =
+          await createOrder(
+            orderPayload,
+            idempotencyKey,
+            accessToken,
+          );
+
+        const order =
+          response.order;
+
+        const publicAccessToken =
+          response.publicAccessToken;
+
+        /* ----------------------------------------------------
+           VERIFY PUBLIC ORDER ACCESS TOKEN
+        ---------------------------------------------------- */
+
+        if (
+          !publicAccessToken ||
+          typeof publicAccessToken !==
+            "string"
+        ) {
+          throw new Error(
+            "Order was created, but secure order access information was not returned.",
+          );
+        }
+
+        /* ----------------------------------------------------
+           SAVE PUBLIC ACCESS TOKEN
+        ---------------------------------------------------- */
+
+        const storageKey =
+          getOrderAccessTokenKey(
+            order.orderNumber,
+          );
+
+        try {
+          sessionStorage.setItem(
+            storageKey,
+            publicAccessToken,
+          );
+        } catch (storageError) {
+          console.error(
+            "Unable to store order access token:",
+            storageError,
+          );
+
+          throw new Error(
+            "Your order was created, but we could not securely prepare the confirmation page. Please check your order shortly.",
+          );
+        }
+
+        /* ----------------------------------------------------
+           CLEAR CART
+        ---------------------------------------------------- */
+
+        clearCart();
+
+        /*
+         * Reset only after successful order creation.
+         */
+        idempotencyKeyRef.current =
+          null;
+
+        /* ----------------------------------------------------
+           SUCCESS MESSAGE
+        ---------------------------------------------------- */
+
+        toast.success(
+          "Your order has been placed successfully.",
         );
 
-      const order =
-        response.order;
+        /* ----------------------------------------------------
+           REDIRECT
+        ---------------------------------------------------- */
 
-      /*
-       * Order created successfully.
-       *
-       * Backend is the source of truth for the final
-       * amount, inventory and order status.
-       */
-      clearCart();
+        router.replace(
+          `/checkout/success?orderNumber=${encodeURIComponent(
+            order.orderNumber,
+          )}`,
+        );
+      } catch (error) {
+        console.error(
+          "Place order error:",
+          error,
+        );
 
-      /*
-       * Reset the idempotency key only after
-       * successful order creation.
-       */
-      idempotencyKeyRef.current = null;
-
-      toast.success(
-        "Your order has been placed successfully.",
-      );
-
-      router.replace(
-        `/checkout/success?orderNumber=${encodeURIComponent(
-          order.orderNumber,
-        )}`,
-      );
-    } catch (error) {
-      console.error(
-        "Place order error:",
-        error,
-      );
-
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Unable to place your order. Please try again.",
-      );
-    } finally {
-      setPlacingOrder(false);
-    }
-  };
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "Unable to place your order. Please try again.",
+        );
+      } finally {
+        setPlacingOrder(false);
+      }
+    };
 
   /* ==========================================================
      RENDER
@@ -473,7 +773,9 @@ export function CheckoutPlaceOrder() {
 
   return (
     <section className="border border-[var(--color-border)] bg-white p-5 sm:p-6">
-      {/* SECURITY */}
+      {/* =====================================================
+          SECURITY
+      ===================================================== */}
 
       <div className="flex gap-3">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-[var(--color-cream)]">
@@ -484,7 +786,7 @@ export function CheckoutPlaceOrder() {
         </div>
 
         <div>
-          <p className="text-xs font-semibold">
+          <p className="text-xs font-semibold text-[var(--color-charcoal)]">
             Secure Order Placement
           </p>
 
@@ -495,7 +797,9 @@ export function CheckoutPlaceOrder() {
         </div>
       </div>
 
-      {/* PAYMENT */}
+      {/* =====================================================
+          PAYMENT + DELIVERY
+      ===================================================== */}
 
       <div className="mt-5 border-y border-[var(--color-border)] py-4">
         <div className="flex items-center justify-between gap-5">
@@ -504,7 +808,7 @@ export function CheckoutPlaceOrder() {
               Payment Method
             </p>
 
-            <p className="mt-1 text-sm font-medium">
+            <p className="mt-1 text-sm font-medium text-[var(--color-charcoal)]">
               {payment === "cod"
                 ? "Cash on Delivery"
                 : "Online Payment"}
@@ -523,14 +827,15 @@ export function CheckoutPlaceOrder() {
               Delivery
             </p>
 
-            <p className="mt-1 text-sm font-medium">
-              {delivery === "express"
+            <p className="mt-1 text-sm font-medium text-[var(--color-charcoal)]">
+              {delivery ===
+              "express"
                 ? "Express Delivery"
                 : "Standard Delivery"}
             </p>
           </div>
 
-          <span className="text-xs font-semibold">
+          <span className="text-xs font-semibold text-[var(--color-charcoal)]">
             {delivery === "express"
               ? "₹199"
               : shipping === 0
@@ -540,7 +845,9 @@ export function CheckoutPlaceOrder() {
         </div>
       </div>
 
-      {/* TOTAL */}
+      {/* =====================================================
+          TOTAL
+      ===================================================== */}
 
       <div className="flex items-end justify-between gap-5 py-5">
         <div>
@@ -548,13 +855,13 @@ export function CheckoutPlaceOrder() {
             Payable Total
           </p>
 
-          <p className="mt-1 text-[10px] text-[var(--color-text-muted)]">
+          <p className="mt-1 max-w-[220px] text-[10px] leading-5 text-[var(--color-text-muted)]">
             Final amount is verified securely by
             the server.
           </p>
         </div>
 
-        <p className="text-xl font-semibold">
+        <p className="shrink-0 text-xl font-semibold text-[var(--color-charcoal)]">
           ₹
           {total.toLocaleString(
             "en-IN",
@@ -562,7 +869,9 @@ export function CheckoutPlaceOrder() {
         </p>
       </div>
 
-      {/* CTA */}
+      {/* =====================================================
+          PLACE ORDER BUTTON
+      ===================================================== */}
 
       <button
         type="button"
@@ -588,9 +897,13 @@ export function CheckoutPlaceOrder() {
               : "Online Payment Unavailable"}
       </button>
 
+      {/* =====================================================
+          TERMS
+      ===================================================== */}
+
       <p className="mt-3 text-center text-[9px] leading-5 text-[var(--color-text-muted)]">
         By placing your order, you agree to
-        Ayesha Fashion&apos;s applicable terms,
+        Aayesha Fashion&apos;s applicable terms,
         shipping and return policies.
       </p>
     </section>

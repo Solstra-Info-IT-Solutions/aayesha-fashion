@@ -1,21 +1,40 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Check, Loader2, MapPin } from "lucide-react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+} from "react";
+
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+
+import {
+  ArrowLeft,
+  Check,
+  Loader2,
+  MapPin,
+} from "lucide-react";
+
+import {
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
+
 import toast from "react-hot-toast";
 
 import { useAuthStore } from "@/store/auth-store";
+
 import {
-  createAddress,
-  getAddress,
-  updateAddress,
-} from "@/lib/address-api";
-import type {
-  Address,
-  CreateAddressPayload,
-} from "@/types/address";
+  createCustomerAddress,
+  getCustomerAddress,
+  updateCustomerAddress,
+  type CreateCustomerAddressPayload,
+} from "@/lib/customer-api";
+
+/* =========================================================
+   TYPES
+========================================================= */
 
 type AddressFormProps = {
   mode: "create" | "edit";
@@ -32,6 +51,14 @@ type FormState = {
   isDefault: boolean;
 };
 
+type FormErrors = Partial<
+  Record<keyof FormState, string>
+>;
+
+/* =========================================================
+   INITIAL FORM
+========================================================= */
+
 const initialForm: FormState = {
   name: "",
   phone: "",
@@ -42,6 +69,10 @@ const initialForm: FormState = {
   landmark: "",
   isDefault: false,
 };
+
+/* =========================================================
+   INDIAN STATES / UTs
+========================================================= */
 
 const INDIA_STATES = [
   "Andhra Pradesh",
@@ -80,77 +111,139 @@ const INDIA_STATES = [
   "Ladakh",
   "Lakshadweep",
   "Puducherry",
-];
+] as const;
 
-const normalizePhoneForInput = (phone: string) => {
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function normalizePhoneForInput(
+  phone: string,
+): string {
   const value = phone.trim();
 
   if (value.startsWith("+91")) {
     return value.slice(3);
   }
 
-  if (value.startsWith("91") && value.length === 12) {
+  if (
+    value.startsWith("91") &&
+    value.length === 12
+  ) {
     return value.slice(2);
   }
 
   return value;
-};
+}
 
-const validateForm = (form: FormState) => {
-  const errors: Partial<Record<keyof FormState, string>> = {};
+function validateForm(
+  form: FormState,
+): FormErrors {
+  const errors: FormErrors = {};
 
-  if (form.name.trim().length < 2) {
-    errors.name = "Please enter the recipient name.";
+  if (
+    form.name.trim().length < 2
+  ) {
+    errors.name =
+      "Please enter the recipient name.";
   }
 
-  if (!/^[6-9]\d{9}$/.test(form.phone.trim())) {
-    errors.phone = "Enter a valid 10-digit Indian mobile number.";
+  if (
+    !/^[6-9]\d{9}$/.test(
+      form.phone.trim(),
+    )
+  ) {
+    errors.phone =
+      "Enter a valid 10-digit Indian mobile number.";
   }
 
-  if (form.addressLine.trim().length < 5) {
-    errors.addressLine = "Please enter your complete address.";
+  if (
+    form.addressLine.trim().length < 5
+  ) {
+    errors.addressLine =
+      "Please enter your complete address.";
   }
 
-  if (form.city.trim().length < 2) {
-    errors.city = "Please enter your city.";
+  if (
+    form.city.trim().length < 2
+  ) {
+    errors.city =
+      "Please enter your city.";
   }
 
   if (!form.state) {
-    errors.state = "Please select your state.";
+    errors.state =
+      "Please select your state.";
   }
 
-  if (!/^[1-9][0-9]{5}$/.test(form.pincode.trim())) {
-    errors.pincode = "Enter a valid 6-digit pincode.";
+  if (
+    !/^[1-9][0-9]{5}$/.test(
+      form.pincode.trim(),
+    )
+  ) {
+    errors.pincode =
+      "Enter a valid 6-digit pincode.";
   }
 
-  if (form.landmark.trim().length > 150) {
-    errors.landmark = "Landmark must be 150 characters or less.";
+  if (
+    form.landmark.trim().length > 150
+  ) {
+    errors.landmark =
+      "Landmark must be 150 characters or less.";
   }
 
   return errors;
-};
+}
 
-export function AddressForm({ mode }: AddressFormProps) {
+/* =========================================================
+   COMPONENT
+========================================================= */
+
+export function AddressForm({
+  mode,
+}: AddressFormProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams =
+    useSearchParams();
 
-  const accessToken = useAuthStore((state) => state.accessToken);
-  const isAuthenticated = useAuthStore(
-    (state) => state.isAuthenticated,
-  );
-  const isInitialized = useAuthStore(
-    (state) => state.isInitialized,
-  );
+  const accessToken =
+    useAuthStore(
+      (state) => state.accessToken,
+    );
 
-  const addressId = searchParams.get("id");
+  const isAuthenticated =
+    useAuthStore(
+      (state) =>
+        state.isAuthenticated,
+    );
 
-  const [form, setForm] = useState<FormState>(initialForm);
-  const [errors, setErrors] = useState<
-    Partial<Record<keyof FormState, string>>
-  >({});
-  const [isLoading, setIsLoading] = useState(mode === "edit");
-  const [isSaving, setIsSaving] = useState(false);
-  const [pageError, setPageError] = useState("");
+  const isInitialized =
+    useAuthStore(
+      (state) =>
+        state.isInitialized,
+    );
+
+  const addressId =
+    searchParams.get("id");
+
+  const [form, setForm] =
+    useState<FormState>(
+      initialForm,
+    );
+
+  const [errors, setErrors] =
+    useState<FormErrors>({});
+
+  const [isLoading, setIsLoading] =
+    useState(
+      mode === "edit",
+    );
+
+  const [isSaving, setIsSaving] =
+    useState(false);
+
+  const [pageError, setPageError] =
+    useState("");
 
   const pageTitle = useMemo(
     () =>
@@ -160,86 +253,123 @@ export function AddressForm({ mode }: AddressFormProps) {
     [mode],
   );
 
-  const pageDescription = useMemo(
-    () =>
-      mode === "create"
-        ? "Save a delivery address for a faster checkout experience."
-        : "Update the delivery details saved to your account.",
-    [mode],
-  );
+  const pageDescription =
+    useMemo(
+      () =>
+        mode === "create"
+          ? "Save a delivery address for a faster checkout experience."
+          : "Update the delivery details saved to your account.",
+      [mode],
+    );
+
+  /* =======================================================
+     AUTH + LOAD EDIT ADDRESS
+  ======================================================= */
 
   useEffect(() => {
     if (!isInitialized) {
       return;
     }
 
-    if (!isAuthenticated || !accessToken) {
+    if (
+      !isAuthenticated ||
+      !accessToken
+    ) {
+      const callbackUrl =
+        mode === "create"
+          ? "/account/addresses/new"
+          : `/account/addresses/edit?id=${encodeURIComponent(
+              addressId ?? "",
+            )}`;
+
       router.replace(
         `/login?callbackUrl=${encodeURIComponent(
-          mode === "create"
-            ? "/account/addresses/new"
-            : `/account/addresses/edit?id=${addressId ?? ""}`,
+          callbackUrl,
         )}`,
       );
+
       return;
     }
 
-    if (mode !== "edit") {
+    if (mode === "create") {
       setIsLoading(false);
       return;
     }
 
     if (!addressId) {
-      setPageError("The address could not be identified.");
+      setPageError(
+        "The address could not be identified.",
+      );
+
       setIsLoading(false);
       return;
     }
 
     let cancelled = false;
 
-    const loadAddress = async () => {
-      setIsLoading(true);
-      setPageError("");
+    const loadAddress =
+      async () => {
+        setIsLoading(true);
+        setPageError("");
 
-      try {
-        const address = await getAddress(
-          accessToken,
-          addressId,
-        );
+        try {
+          const address =
+            await getCustomerAddress(
+              accessToken,
+              addressId,
+            );
 
-        if (cancelled) {
-          return;
+          if (cancelled) {
+            return;
+          }
+
+          setForm({
+            name:
+              address.name ?? "",
+
+            phone:
+              normalizePhoneForInput(
+                address.phone ?? "",
+              ),
+
+            addressLine:
+              address.addressLine ??
+              "",
+
+            city:
+              address.city ?? "",
+
+            state:
+              address.state ?? "",
+
+            pincode:
+              address.pincode ?? "",
+
+            landmark:
+              address.landmark ?? "",
+
+            isDefault:
+              Boolean(
+                address.isDefault,
+              ),
+          });
+        } catch (error) {
+          if (cancelled) {
+            return;
+          }
+
+          const message =
+            error instanceof Error
+              ? error.message
+              : "Unable to load this address.";
+
+          setPageError(message);
+        } finally {
+          if (!cancelled) {
+            setIsLoading(false);
+          }
         }
-
-        setForm({
-          name: address.name ?? "",
-          phone: normalizePhoneForInput(
-            address.phone ?? "",
-          ),
-          addressLine: address.addressLine ?? "",
-          city: address.city ?? "",
-          state: address.state ?? "",
-          pincode: address.pincode ?? "",
-          landmark: address.landmark ?? "",
-          isDefault: Boolean(address.isDefault),
-        });
-      } catch (error) {
-        if (cancelled) {
-          return;
-        }
-
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Unable to load this address.";
-
-        setPageError(message);
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
-      }
-    };
+      };
 
     void loadAddress();
 
@@ -255,130 +385,225 @@ export function AddressForm({ mode }: AddressFormProps) {
     router,
   ]);
 
-  const updateField = <K extends keyof FormState>(
+  /* =======================================================
+     UPDATE FIELD
+  ======================================================= */
+
+  const updateField = <
+    K extends keyof FormState,
+  >(
     field: K,
     value: FormState[K],
   ) => {
-    setForm((current) => ({
-      ...current,
-      [field]: value,
-    }));
+    setForm(
+      (current) => ({
+        ...current,
+        [field]: value,
+      }),
+    );
 
-    setErrors((current) => ({
-      ...current,
-      [field]: "",
-    }));
+    setErrors(
+      (current) => ({
+        ...current,
+        [field]: "",
+      }),
+    );
+
+    setPageError("");
   };
 
-  const handleSubmit = async (
-    event: FormEvent<HTMLFormElement>,
-  ) => {
-    event.preventDefault();
+  /* =======================================================
+     SUBMIT
+  ======================================================= */
 
-    if (!accessToken) {
-      router.push(
-        `/login?callbackUrl=${
+  const handleSubmit =
+    async (
+      event: FormEvent<HTMLFormElement>,
+    ) => {
+      event.preventDefault();
+
+      if (!accessToken) {
+        const callbackUrl =
           mode === "create"
             ? "/account/addresses/new"
-            : `/account/addresses/edit?id=${addressId ?? ""}`
-        }`,
-      );
-      return;
-    }
+            : `/account/addresses/edit?id=${encodeURIComponent(
+                addressId ?? "",
+              )}`;
 
-    const validationErrors = validateForm(form);
-
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-
-      const firstError = Object.values(
-        validationErrors,
-      ).find(Boolean);
-
-      if (firstError) {
-        toast.error(firstError);
-      }
-
-      return;
-    }
-
-    if (mode === "edit" && !addressId) {
-      toast.error("Address ID is missing.");
-      return;
-    }
-
-    setIsSaving(true);
-    setPageError("");
-
-    const payload: CreateAddressPayload = {
-      name: form.name.trim(),
-      phone: form.phone.trim(),
-      addressLine: form.addressLine.trim(),
-      city: form.city.trim(),
-      state: form.state,
-      pincode: form.pincode.trim(),
-      landmark: form.landmark.trim(),
-      isDefault: form.isDefault,
-    };
-
-    try {
-      if (mode === "create") {
-        await createAddress(accessToken, payload);
-
-        toast.success("Address added successfully.");
-      } else {
-        await updateAddress(
-          accessToken,
-          addressId as string,
-          payload,
+        router.push(
+          `/login?callbackUrl=${encodeURIComponent(
+            callbackUrl,
+          )}`,
         );
 
-        toast.success("Address updated successfully.");
+        return;
       }
 
-      router.push("/account/addresses");
-      router.refresh();
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : mode === "create"
-            ? "Unable to add the address."
-            : "Unable to update the address.";
+      if (
+        mode === "edit" &&
+        !addressId
+      ) {
+        setPageError(
+          "Address ID is missing.",
+        );
 
-      setPageError(message);
-      toast.error(message);
-    } finally {
-      setIsSaving(false);
-    }
-  };
+        toast.error(
+          "Address ID is missing.",
+        );
 
-  if (!isInitialized || isLoading) {
+        return;
+      }
+
+      const validationErrors =
+        validateForm(form);
+
+      if (
+        Object.keys(
+          validationErrors,
+        ).length > 0
+      ) {
+        setErrors(
+          validationErrors,
+        );
+
+        const firstError =
+          Object.values(
+            validationErrors,
+          ).find(Boolean);
+
+        if (firstError) {
+          toast.error(
+            firstError,
+          );
+        }
+
+        return;
+      }
+
+      setIsSaving(true);
+      setPageError("");
+      setErrors({});
+
+      const payload: CreateCustomerAddressPayload =
+        {
+          name:
+            form.name.trim(),
+
+          phone:
+            form.phone.trim(),
+
+          addressLine:
+            form.addressLine.trim(),
+
+          city:
+            form.city.trim(),
+
+          state:
+            form.state,
+
+          pincode:
+            form.pincode.trim(),
+
+          landmark:
+            form.landmark.trim(),
+
+          isDefault:
+            form.isDefault,
+        };
+
+      try {
+        if (mode === "create") {
+          await createCustomerAddress(
+            accessToken,
+            payload,
+          );
+
+          toast.success(
+            "Address added successfully.",
+          );
+        } else {
+          await updateCustomerAddress(
+            accessToken,
+            addressId as string,
+            payload,
+          );
+
+          toast.success(
+            "Address updated successfully.",
+          );
+        }
+
+        router.push(
+          "/account/addresses",
+        );
+
+        router.refresh();
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : mode === "create"
+              ? "Unable to add the address."
+              : "Unable to update the address.";
+
+        setPageError(message);
+        toast.error(message);
+      } finally {
+        setIsSaving(false);
+      }
+    };
+
+  /* =======================================================
+     LOADING STATE
+  ======================================================= */
+
+  if (
+    !isInitialized ||
+    isLoading
+  ) {
     return (
       <section className="border border-[#e7e2dd] bg-white">
         <div className="border-b border-[#e7e2dd] px-6 py-6 sm:px-8">
           <div className="h-4 w-28 animate-pulse bg-[#f5f1ec]" />
+
           <div className="mt-3 h-9 w-64 animate-pulse bg-[#f5f1ec]" />
+
           <div className="mt-3 h-4 w-96 max-w-full animate-pulse bg-[#f5f1ec]" />
         </div>
 
         <div className="grid gap-5 p-6 sm:p-8 lg:grid-cols-2">
-          {[1, 2, 3, 4, 5, 6].map((item) => (
-            <div
-              key={item}
-              className="h-14 animate-pulse bg-[#f5f1ec]"
-            />
-          ))}
+          {[1, 2, 3, 4, 5, 6].map(
+            (item) => (
+              <div
+                key={item}
+                className="h-14 animate-pulse bg-[#f5f1ec]"
+              />
+            ),
+          )}
         </div>
       </section>
     );
   }
 
-  if (!isAuthenticated || !accessToken) {
+  /* =======================================================
+     AUTH FALLBACK
+  ======================================================= */
+
+  if (
+    !isAuthenticated ||
+    !accessToken
+  ) {
     return null;
   }
 
-  if (mode === "edit" && !addressId) {
+  /* =======================================================
+     MISSING ADDRESS
+  ======================================================= */
+
+  if (
+    mode === "edit" &&
+    !addressId
+  ) {
     return (
       <section className="border border-[#e7e2dd] bg-white px-6 py-16 text-center sm:px-8">
         <div className="mx-auto flex h-14 w-14 items-center justify-center border border-[#e7e2dd] bg-[#fcfbf9]">
@@ -407,8 +632,16 @@ export function AddressForm({ mode }: AddressFormProps) {
     );
   }
 
+  /* =======================================================
+     FORM
+  ======================================================= */
+
   return (
     <section className="border border-[#e7e2dd] bg-white">
+      {/* ===================================================
+          HEADER
+      =================================================== */}
+
       <div className="border-b border-[#e7e2dd] px-6 py-6 sm:px-8">
         <Link
           href="/account/addresses"
@@ -418,6 +651,7 @@ export function AddressForm({ mode }: AddressFormProps) {
             size={14}
             strokeWidth={1.7}
           />
+
           Back to Addresses
         </Link>
 
@@ -436,6 +670,10 @@ export function AddressForm({ mode }: AddressFormProps) {
         </div>
       </div>
 
+      {/* ===================================================
+          PAGE ERROR
+      =================================================== */}
+
       {pageError ? (
         <div className="border-b border-[#e7e2dd] bg-[#fcfbf9] px-6 py-4 sm:px-8">
           <p className="text-sm text-[#7f4a50]">
@@ -444,20 +682,32 @@ export function AddressForm({ mode }: AddressFormProps) {
         </div>
       ) : null}
 
-      <form onSubmit={handleSubmit} noValidate>
+      {/* ===================================================
+          FORM
+      =================================================== */}
+
+      <form
+        onSubmit={handleSubmit}
+        noValidate
+      >
         <div className="p-6 sm:p-8">
+          {/* =================================================
+              RECIPIENT
+          ================================================= */}
+
           <div className="mb-8">
             <h2 className="text-sm font-semibold text-[#171717]">
               Recipient Information
             </h2>
 
             <p className="mt-1 text-xs leading-5 text-[#6f706f]">
-              Enter the name and phone number of the person
-              receiving the order.
+              Enter the name and phone number of the person receiving the order.
             </p>
           </div>
 
           <div className="grid gap-6 lg:grid-cols-2">
+            {/* NAME */}
+
             <div>
               <label
                 htmlFor="address-name"
@@ -478,11 +728,23 @@ export function AddressForm({ mode }: AddressFormProps) {
                   )
                 }
                 placeholder="Enter recipient name"
-                className={`h-12 w-full border bg-white px-4 text-sm text-[#171717] outline-none transition-colors placeholder:text-[#aaa] ${
-                  errors.name
-                    ? "border-[#c47c84]"
-                    : "border-[#d8d1ca] focus:border-[#171717]"
-                }`}
+                className={`
+                  h-12
+                  w-full
+                  border
+                  bg-white
+                  px-4
+                  text-sm
+                  text-[#171717]
+                  outline-none
+                  transition-colors
+                  placeholder:text-[#aaa]
+                  ${
+                    errors.name
+                      ? "border-[#c47c84]"
+                      : "border-[#d8d1ca] focus:border-[#171717]"
+                  }
+                `}
               />
 
               {errors.name ? (
@@ -491,6 +753,8 @@ export function AddressForm({ mode }: AddressFormProps) {
                 </p>
               ) : null}
             </div>
+
+            {/* PHONE */}
 
             <div>
               <label
@@ -501,11 +765,17 @@ export function AddressForm({ mode }: AddressFormProps) {
               </label>
 
               <div
-                className={`flex h-12 border bg-white ${
-                  errors.phone
-                    ? "border-[#c47c84]"
-                    : "border-[#d8d1ca] focus-within:border-[#171717]"
-                }`}
+                className={`
+                  flex
+                  h-12
+                  border
+                  bg-white
+                  ${
+                    errors.phone
+                      ? "border-[#c47c84]"
+                      : "border-[#d8d1ca] focus-within:border-[#171717]"
+                  }
+                `}
               >
                 <div className="flex shrink-0 items-center border-r border-[#e7e2dd] px-4 text-sm text-[#6f706f]">
                   +91
@@ -540,18 +810,23 @@ export function AddressForm({ mode }: AddressFormProps) {
             </div>
           </div>
 
+          {/* =================================================
+              DELIVERY
+          ================================================= */}
+
           <div className="mb-8 mt-10">
             <h2 className="text-sm font-semibold text-[#171717]">
               Delivery Address
             </h2>
 
             <p className="mt-1 text-xs leading-5 text-[#6f706f]">
-              Use the complete address where your order should
-              be delivered.
+              Use the complete address where your order should be delivered.
             </p>
           </div>
 
           <div className="space-y-6">
+            {/* ADDRESS */}
+
             <div>
               <label
                 htmlFor="address-line"
@@ -572,11 +847,25 @@ export function AddressForm({ mode }: AddressFormProps) {
                   )
                 }
                 placeholder="House / Flat / Building / Street"
-                className={`w-full resize-none border bg-white px-4 py-3 text-sm leading-6 text-[#171717] outline-none transition-colors placeholder:text-[#aaa] ${
-                  errors.addressLine
-                    ? "border-[#c47c84]"
-                    : "border-[#d8d1ca] focus:border-[#171717]"
-                }`}
+                className={`
+                  w-full
+                  resize-none
+                  border
+                  bg-white
+                  px-4
+                  py-3
+                  text-sm
+                  leading-6
+                  text-[#171717]
+                  outline-none
+                  transition-colors
+                  placeholder:text-[#aaa]
+                  ${
+                    errors.addressLine
+                      ? "border-[#c47c84]"
+                      : "border-[#d8d1ca] focus:border-[#171717]"
+                  }
+                `}
               />
 
               {errors.addressLine ? (
@@ -585,6 +874,8 @@ export function AddressForm({ mode }: AddressFormProps) {
                 </p>
               ) : null}
             </div>
+
+            {/* CITY + STATE */}
 
             <div className="grid gap-6 lg:grid-cols-2">
               <div>
@@ -607,11 +898,23 @@ export function AddressForm({ mode }: AddressFormProps) {
                     )
                   }
                   placeholder="Enter city"
-                  className={`h-12 w-full border bg-white px-4 text-sm text-[#171717] outline-none transition-colors placeholder:text-[#aaa] ${
-                    errors.city
-                      ? "border-[#c47c84]"
-                      : "border-[#d8d1ca] focus:border-[#171717]"
-                  }`}
+                  className={`
+                    h-12
+                    w-full
+                    border
+                    bg-white
+                    px-4
+                    text-sm
+                    text-[#171717]
+                    outline-none
+                    transition-colors
+                    placeholder:text-[#aaa]
+                    ${
+                      errors.city
+                        ? "border-[#c47c84]"
+                        : "border-[#d8d1ca] focus:border-[#171717]"
+                    }
+                  `}
                 />
 
                 {errors.city ? (
@@ -640,24 +943,39 @@ export function AddressForm({ mode }: AddressFormProps) {
                         event.target.value,
                       )
                     }
-                    className={`h-12 w-full appearance-none border bg-white px-4 pr-10 text-sm text-[#171717] outline-none transition-colors ${
-                      errors.state
-                        ? "border-[#c47c84]"
-                        : "border-[#d8d1ca] focus:border-[#171717]"
-                    }`}
+                    className={`
+                      h-12
+                      w-full
+                      appearance-none
+                      border
+                      bg-white
+                      px-4
+                      pr-10
+                      text-sm
+                      text-[#171717]
+                      outline-none
+                      transition-colors
+                      ${
+                        errors.state
+                          ? "border-[#c47c84]"
+                          : "border-[#d8d1ca] focus:border-[#171717]"
+                      }
+                    `}
                   >
                     <option value="">
                       Select state
                     </option>
 
-                    {INDIA_STATES.map((state) => (
-                      <option
-                        key={state}
-                        value={state}
-                      >
-                        {state}
-                      </option>
-                    ))}
+                    {INDIA_STATES.map(
+                      (state) => (
+                        <option
+                          key={state}
+                          value={state}
+                        >
+                          {state}
+                        </option>
+                      ),
+                    )}
                   </select>
 
                   <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-[#6f706f]">
@@ -687,6 +1005,8 @@ export function AddressForm({ mode }: AddressFormProps) {
               </div>
             </div>
 
+            {/* PINCODE + LANDMARK */}
+
             <div className="grid gap-6 lg:grid-cols-2">
               <div>
                 <label
@@ -713,11 +1033,23 @@ export function AddressForm({ mode }: AddressFormProps) {
                     )
                   }
                   placeholder="6-digit pincode"
-                  className={`h-12 w-full border bg-white px-4 text-sm text-[#171717] outline-none transition-colors placeholder:text-[#aaa] ${
-                    errors.pincode
-                      ? "border-[#c47c84]"
-                      : "border-[#d8d1ca] focus:border-[#171717]"
-                  }`}
+                  className={`
+                    h-12
+                    w-full
+                    border
+                    bg-white
+                    px-4
+                    text-sm
+                    text-[#171717]
+                    outline-none
+                    transition-colors
+                    placeholder:text-[#aaa]
+                    ${
+                      errors.pincode
+                        ? "border-[#c47c84]"
+                        : "border-[#d8d1ca] focus:border-[#171717]"
+                    }
+                  `}
                 />
 
                 {errors.pincode ? (
@@ -733,6 +1065,7 @@ export function AddressForm({ mode }: AddressFormProps) {
                   className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.14em] text-[#6f706f]"
                 >
                   Landmark
+
                   <span className="ml-1 font-normal normal-case tracking-normal text-[#a0a0a0]">
                     (optional)
                   </span>
@@ -749,11 +1082,23 @@ export function AddressForm({ mode }: AddressFormProps) {
                     )
                   }
                   placeholder="Near a known landmark"
-                  className={`h-12 w-full border bg-white px-4 text-sm text-[#171717] outline-none transition-colors placeholder:text-[#aaa] ${
-                    errors.landmark
-                      ? "border-[#c47c84]"
-                      : "border-[#d8d1ca] focus:border-[#171717]"
-                  }`}
+                  className={`
+                    h-12
+                    w-full
+                    border
+                    bg-white
+                    px-4
+                    text-sm
+                    text-[#171717]
+                    outline-none
+                    transition-colors
+                    placeholder:text-[#aaa]
+                    ${
+                      errors.landmark
+                        ? "border-[#c47c84]"
+                        : "border-[#d8d1ca] focus:border-[#171717]"
+                    }
+                  `}
                 />
 
                 {errors.landmark ? (
@@ -763,6 +1108,8 @@ export function AddressForm({ mode }: AddressFormProps) {
                 ) : null}
               </div>
             </div>
+
+            {/* DEFAULT */}
 
             <label className="flex cursor-pointer items-start gap-3 border border-[#e7e2dd] bg-[#fcfbf9] p-4 transition-colors hover:border-[#d8d1ca]">
               <input
@@ -778,11 +1125,22 @@ export function AddressForm({ mode }: AddressFormProps) {
               />
 
               <span
-                className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center border transition-colors ${
-                  form.isDefault
-                    ? "border-[#171717] bg-[#171717] text-white"
-                    : "border-[#cfc8c1] bg-white text-transparent"
-                }`}
+                className={`
+                  mt-0.5
+                  flex
+                  h-5
+                  w-5
+                  shrink-0
+                  items-center
+                  justify-center
+                  border
+                  transition-colors
+                  ${
+                    form.isDefault
+                      ? "border-[#171717] bg-[#171717] text-white"
+                      : "border-[#cfc8c1] bg-white text-transparent"
+                  }
+                `}
               >
                 <Check
                   size={13}
@@ -796,13 +1154,16 @@ export function AddressForm({ mode }: AddressFormProps) {
                 </span>
 
                 <span className="mt-1 block text-xs leading-5 text-[#6f706f]">
-                  This address will be selected automatically
-                  during checkout.
+                  This address will be selected automatically during checkout.
                 </span>
               </span>
             </label>
           </div>
         </div>
+
+        {/* ===================================================
+            FORM ACTIONS
+        =================================================== */}
 
         <div className="flex flex-col-reverse gap-3 border-t border-[#e7e2dd] bg-[#fcfbf9] px-6 py-5 sm:flex-row sm:items-center sm:justify-end sm:px-8">
           <Link
@@ -824,6 +1185,7 @@ export function AddressForm({ mode }: AddressFormProps) {
                   className="animate-spin"
                   strokeWidth={1.8}
                 />
+
                 Saving...
               </>
             ) : (
@@ -832,6 +1194,7 @@ export function AddressForm({ mode }: AddressFormProps) {
                   size={15}
                   strokeWidth={1.8}
                 />
+
                 {mode === "create"
                   ? "Save Address"
                   : "Update Address"}
