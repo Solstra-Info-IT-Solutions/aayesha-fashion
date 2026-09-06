@@ -9,63 +9,80 @@ export function BrandLogo() {
       className="
         group
         inline-flex
-        flex-col
         items-center
         justify-center
         leading-none
         text-[var(--color-charcoal)]
+        transition-opacity
+        duration-200
+        hover:opacity-80
       "
     >
-      {/* BRAND LOGO IMAGE */}
+      {/* =====================================================
+          LOGO MARK
+      ===================================================== */}
+
       <Image
         src="/images/logo.png"
         alt="Aayesha Fashion"
-        width={38}
-        height={38}
+        width={46}
+        height={46}
         priority
         className="
-          h-[34px]
-          w-auto
+          h-[38px]
+          w-[38px]
+          shrink-0
           object-contain
-          transition-opacity
-          duration-200
-          group-hover:opacity-80
-          sm:h-[38px]
+          sm:h-[42px]
+          sm:w-[42px]
         "
       />
 
-      {/* BRAND NAME */}
-      <span
-        className="
-          mt-[5px]
-          font-[var(--font-display)]
-          text-[26px]
-          font-medium
-          leading-none
-          tracking-[-0.045em]
-          transition-opacity
-          duration-200
-          group-hover:opacity-80
-          sm:text-[29px]
-        "
-      >
-        Aayesha
-      </span>
+      {/* =====================================================
+          BRAND WORDMARK
+      ===================================================== */}
 
-      {/* SUB BRAND */}
       <span
         className="
-          mt-[4px]
-          pl-[0.32em]
-          text-[6px]
-          font-medium
-          uppercase
-          tracking-[0.42em]
-          text-[var(--color-text-muted)]
-          sm:text-[6.5px]
+          ml-3
+          flex
+          flex-col
+          items-start
+          justify-center
         "
       >
-        Fashion
+        {/* AAYESHA */}
+
+        <span
+          className="
+            font-[var(--font-display)]
+            text-[26px]
+            font-medium
+            leading-[0.9]
+            tracking-[-0.035em]
+            text-[var(--color-charcoal)]
+            sm:text-[29px]
+          "
+        >
+          Aayesha
+        </span>
+
+        {/* FASHION */}
+
+        <span
+          className="
+            mt-[5px]
+            pl-[0.18em]
+            text-[6px]
+            font-medium
+            uppercase
+            tracking-[0.42em]
+            text-[var(--color-text-muted)]
+            sm:text-[6.5px]
+          "
+        >
+          Fashion
+        </span>
       </span>
     </Link>
   );

@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-
 import {
   ArrowUpRight,
   ChevronRight,
@@ -42,10 +41,6 @@ export function HeaderActions() {
     (state) => state.user,
   );
 
-  const accessToken = useAuthStore(
-    (state) => state.accessToken,
-  );
-
   const isAuthenticated = useAuthStore(
     (state) => state.isAuthenticated,
   );
@@ -55,15 +50,17 @@ export function HeaderActions() {
   );
 
   /*
-   * Use the actual authenticated session state.
+   * Actual authenticated state.
    *
-   * This prevents the header from incorrectly sending
-   * an already logged-in customer to /login.
+   * We only consider the customer logged in when:
+   * 1. Auth initialization is complete
+   * 2. Auth store says authenticated
+   * 3. User object exists
    */
   const loggedIn =
-  isInitialized &&
-  isAuthenticated &&
-  Boolean(user);
+    isInitialized &&
+    isAuthenticated &&
+    Boolean(user);
 
   /* =======================================================
      LOCAL STATE
@@ -93,11 +90,19 @@ export function HeaderActions() {
 
   useEffect(() => {
     /*
-     * If the customer becomes logged out while the
-     * popup is open, close the popup immediately.
+     * Close desktop account popup when the user
+     * becomes logged out.
      */
     if (!loggedIn) {
-      setAccountOpen(false);
+      /*
+       * Do not close the popup here because
+       * logged-out users are also allowed to
+       * have the account popup open.
+       *
+       * This state remains controlled by the
+       * account button.
+       */
+      return;
     }
   }, [loggedIn]);
 
@@ -261,36 +266,29 @@ export function HeaderActions() {
 
   const handleAccountClick = () => {
     /*
-     * During auth initialization, don't navigate anywhere.
-     * This prevents a premature /login redirect while the
-     * refresh session is still being restored.
+     * Don't do anything until the auth
+     * session has finished restoring.
+     *
+     * This avoids accidentally showing the
+     * guest state while refresh is running.
      */
     if (!isInitialized) {
       return;
     }
 
     /*
-     * Authenticated customer:
-     * open account popup.
+     * Close other overlays.
      */
-    if (isAuthenticated && user) {
-      setSearchOpen(false);
-      setMobileMenuOpen(false);
-
-      setAccountOpen(
-        (current) => !current,
-      );
-
-      return;
-    }
+    setSearchOpen(false);
+    setMobileMenuOpen(false);
 
     /*
-     * Guest:
-     * go to login page.
+     * Both authenticated and guest users
+     * now get an account popup.
      */
-    setAccountOpen(false);
-
-    router.push("/login");
+    setAccountOpen(
+      (current) => !current,
+    );
   };
 
   /* =======================================================
@@ -371,12 +369,12 @@ export function HeaderActions() {
             onClick={handleAccountClick}
             aria-label={accountLabel}
             aria-expanded={
-              loggedIn
+              isInitialized
                 ? accountOpen
                 : undefined
             }
             aria-haspopup={
-              loggedIn
+              isInitialized
                 ? "menu"
                 : undefined
             }
@@ -398,6 +396,8 @@ export function HeaderActions() {
               strokeWidth={1.3}
             />
 
+            {/* AUTHENTICATED INDICATOR */}
+
             {isInitialized && loggedIn ? (
               <span
                 aria-hidden="true"
@@ -415,12 +415,24 @@ export function HeaderActions() {
           </button>
 
           {/* =================================================
-              DESKTOP ACCOUNT POPUP
+              LOGGED-IN ACCOUNT POPUP
           ================================================= */}
 
           {isInitialized && loggedIn ? (
             <AccountPopup
               isOpen={accountOpen}
+              onClose={() =>
+                setAccountOpen(false)
+              }
+            />
+          ) : null}
+
+          {/* =================================================
+              LOGGED-OUT ACCOUNT POPUP
+          ================================================= */}
+
+          {isInitialized && !loggedIn && accountOpen ? (
+            <GuestAccountPopup
               onClose={() =>
                 setAccountOpen(false)
               }
@@ -598,7 +610,7 @@ export function HeaderActions() {
             </div>
 
             {/* =================================================
-                ACCOUNT / SIGN IN
+                ACCOUNT
             ================================================= */}
 
             <div className="px-5 pt-5">
@@ -689,41 +701,84 @@ export function HeaderActions() {
                   />
                 </button>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    closeMobileMenu();
-                    router.push("/login");
-                  }}
-                  className="
-                    flex
-                    w-full
-                    items-center
-                    justify-between
-                    border
-                    border-[var(--color-charcoal)]
-                    bg-[var(--color-charcoal)]
-                    px-4
-                    py-4
-                    text-left
-                    text-white
-                  "
-                >
-                  <span>
-                    <span className="block text-sm font-semibold">
+                <div className="space-y-3">
+                  <div>
+                    <p
+                      className="
+                        text-[9px]
+                        font-semibold
+                        uppercase
+                        tracking-[0.18em]
+                        text-[var(--color-muted)]
+                      "
+                    >
+                      Your Account
+                    </p>
+
+                    <p
+                      className="
+                        mt-1.5
+                        text-xs
+                        leading-5
+                        text-[var(--color-secondary)]
+                      "
+                    >
+                      Sign in or create an account
+                      to manage your orders and
+                      details.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link
+                      href="/login"
+                      onClick={closeMobileMenu}
+                      className="
+                        flex
+                        h-11
+                        items-center
+                        justify-center
+                        border
+                        border-[var(--color-charcoal)]
+                        bg-[var(--color-charcoal)]
+                        px-4
+                        text-[10px]
+                        font-semibold
+                        uppercase
+                        tracking-[0.14em]
+                        text-white
+                        transition-opacity
+                        hover:opacity-90
+                      "
+                    >
                       Sign In
-                    </span>
+                    </Link>
 
-                    <span className="mt-1 block text-[10px] text-white/60">
-                      Access your account
-                    </span>
-                  </span>
-
-                  <ArrowUpRight
-                    size={17}
-                    strokeWidth={1.4}
-                  />
-                </button>
+                    <Link
+                      href="/register"
+                      onClick={closeMobileMenu}
+                      className="
+                        flex
+                        h-11
+                        items-center
+                        justify-center
+                        border
+                        border-[var(--color-border)]
+                        bg-white
+                        px-4
+                        text-[10px]
+                        font-semibold
+                        uppercase
+                        tracking-[0.14em]
+                        text-[var(--color-charcoal)]
+                        transition-colors
+                        hover:bg-[var(--color-cream)]
+                      "
+                    >
+                      Sign Up
+                    </Link>
+                  </div>
+                </div>
               )}
             </div>
 
@@ -756,8 +811,6 @@ export function HeaderActions() {
                   bg-white
                 "
               >
-                {/* SHOP */}
-
                 <button
                   type="button"
                   onClick={() =>
@@ -776,7 +829,6 @@ export function HeaderActions() {
                     py-4
                     text-left
                     transition-colors
-                    duration-300
                     hover:bg-[var(--color-cream)]
                   "
                 >
@@ -790,8 +842,6 @@ export function HeaderActions() {
                     className="text-[var(--color-secondary)]"
                   />
                 </button>
-
-                {/* COLLECTIONS */}
 
                 <button
                   type="button"
@@ -811,7 +861,6 @@ export function HeaderActions() {
                     py-4
                     text-left
                     transition-colors
-                    duration-300
                     hover:bg-[var(--color-cream)]
                   "
                 >
@@ -825,8 +874,6 @@ export function HeaderActions() {
                     className="text-[var(--color-secondary)]"
                   />
                 </button>
-
-                {/* WISHLIST */}
 
                 <button
                   type="button"
@@ -846,7 +893,6 @@ export function HeaderActions() {
                     py-4
                     text-left
                     transition-colors
-                    duration-300
                     hover:bg-[var(--color-cream)]
                   "
                 >
@@ -865,8 +911,6 @@ export function HeaderActions() {
                   </div>
                 </button>
 
-                {/* CART */}
-
                 <button
                   type="button"
                   onClick={() =>
@@ -883,7 +927,6 @@ export function HeaderActions() {
                     py-4
                     text-left
                     transition-colors
-                    duration-300
                     hover:bg-[var(--color-cream)]
                   "
                 >
@@ -1114,5 +1157,278 @@ export function HeaderActions() {
         </>
       )}
     </>
+  );
+}
+
+/* =========================================================
+   GUEST ACCOUNT POPUP
+========================================================= */
+
+function GuestAccountPopup({
+  onClose,
+}: {
+  onClose: () => void;
+}) {
+  return (
+    <div
+      className="
+        absolute
+        right-0
+        top-[calc(100%+14px)]
+        z-[100]
+        w-[340px]
+        max-w-[calc(100vw-32px)]
+      "
+    >
+      <div
+        className="
+          overflow-hidden
+          border
+          border-[var(--color-border)]
+          bg-[var(--color-ivory)]
+          shadow-[0_20px_55px_rgba(23,23,23,0.14)]
+        "
+      >
+        {/* =================================================
+            HEADER
+        ================================================= */}
+
+        <div
+          className="
+            relative
+            border-b
+            border-[var(--color-border)]
+            bg-white
+            px-5
+            py-5
+          "
+        >
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close account menu"
+            className="
+              absolute
+              right-4
+              top-4
+              flex
+              h-8
+              w-8
+              items-center
+              justify-center
+              text-[var(--color-secondary)]
+              transition-colors
+              duration-300
+              hover:bg-[var(--color-cream)]
+              hover:text-[var(--color-charcoal)]
+            "
+          >
+            <X
+              size={16}
+              strokeWidth={1.5}
+            />
+          </button>
+
+          <div className="pr-8">
+            <p
+              className="
+                text-[9px]
+                font-semibold
+                uppercase
+                tracking-[0.26em]
+                text-[var(--color-rose-dark)]
+              "
+            >
+              Your Account
+            </p>
+
+            <h3
+              className="
+                mt-2.5
+                font-[var(--font-display)]
+                text-3xl
+                leading-none
+                tracking-[-0.02em]
+                text-[var(--color-charcoal)]
+              "
+            >
+              Welcome to Aayesha
+            </h3>
+
+            <p
+              className="
+                mt-4
+                max-w-[270px]
+                text-xs
+                leading-6
+                text-[var(--color-secondary)]
+              "
+            >
+              Sign in to manage your orders,
+              addresses and account details, or
+              create a new account to get started.
+            </p>
+          </div>
+        </div>
+
+        {/* =================================================
+            AUTH ACTIONS
+        ================================================= */}
+
+        <div
+          className="
+            border-b
+            border-[var(--color-border)]
+            bg-white
+            p-4
+          "
+        >
+          <div className="grid grid-cols-2 gap-2">
+            {/* SIGN IN */}
+
+            <Link
+              href="/login"
+              onClick={onClose}
+              className="
+                flex
+                h-11
+                items-center
+                justify-center
+                border
+                border-[var(--color-charcoal)]
+                bg-[var(--color-charcoal)]
+                text-[9px]
+                font-semibold
+                uppercase
+                tracking-[0.17em]
+                text-white
+                transition-opacity
+                duration-300
+                hover:opacity-90
+              "
+            >
+              Sign In
+            </Link>
+
+            {/* SIGN UP */}
+
+            <Link
+              href="/register"
+              onClick={onClose}
+              className="
+                flex
+                h-11
+                items-center
+                justify-center
+                border
+                border-[var(--color-border)]
+                bg-[var(--color-ivory)]
+                text-[9px]
+                font-semibold
+                uppercase
+                tracking-[0.17em]
+                text-[var(--color-charcoal)]
+                transition-colors
+                duration-300
+                hover:bg-[var(--color-cream)]
+              "
+            >
+              Sign Up
+            </Link>
+          </div>
+        </div>
+
+        {/* =================================================
+            ACCOUNT BENEFITS
+        ================================================= */}
+
+        <div
+          className="
+            bg-[var(--color-ivory)]
+            px-5
+            py-5
+          "
+        >
+          <p
+            className="
+              text-[9px]
+              font-semibold
+              uppercase
+              tracking-[0.2em]
+              text-[var(--color-muted)]
+            "
+          >
+            With an account
+          </p>
+
+          <div className="mt-4 space-y-3">
+            <GuestBenefit
+              title="Track your orders"
+              description="View order status and history."
+            />
+
+            <GuestBenefit
+              title="Save your addresses"
+              description="Checkout faster with saved details."
+            />
+
+            <GuestBenefit
+              title="Manage your profile"
+              description="Keep your account information updated."
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
+   GUEST BENEFIT
+========================================================= */
+
+function GuestBenefit({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <span
+        className="
+          mt-1
+          h-1.5
+          w-1.5
+          shrink-0
+          rounded-full
+          bg-[var(--color-rose-dark)]
+        "
+      />
+
+      <div>
+        <p
+          className="
+            text-[11px]
+            font-semibold
+            text-[var(--color-charcoal)]
+          "
+        >
+          {title}
+        </p>
+
+        <p
+          className="
+            mt-0.5
+            text-[10px]
+            leading-5
+            text-[var(--color-secondary)]
+          "
+        >
+          {description}
+        </p>
+      </div>
+    </div>
   );
 }

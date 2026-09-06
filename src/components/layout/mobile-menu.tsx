@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 import {
   ChevronRight,
   Heart,
+  LogOut,
   MapPin,
   Menu,
   Search,
@@ -70,6 +73,11 @@ export function MobileMenu({
   onClose,
   onOpen,
 }: MobileMenuProps) {
+  const router = useRouter();
+
+  const [isLoggingOut, setIsLoggingOut] =
+    useState(false);
+
   const user = useAuthStore(
     (state) => state.user,
   );
@@ -80,6 +88,10 @@ export function MobileMenu({
 
   const isInitialized = useAuthStore(
     (state) => state.isInitialized,
+  );
+
+  const logout = useAuthStore(
+    (state) => state.logout,
   );
 
   /* =======================================================
@@ -156,9 +168,36 @@ export function MobileMenu({
     isAuthenticated &&
     !!user;
 
-  const accountHref = isLoggedIn
-    ? "/account"
-    : "/login";
+  /* =======================================================
+     LOGOUT
+  ======================================================= */
+
+  const handleLogout = async () => {
+    if (isLoggingOut) {
+      return;
+    }
+
+    setIsLoggingOut(true);
+
+    try {
+      await logout();
+
+      toast.success(
+        "You have been signed out.",
+      );
+
+      onClose();
+
+      router.push("/");
+      router.refresh();
+    } catch {
+      toast.error(
+        "Unable to sign out. Please try again.",
+      );
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   return (
     <>
@@ -347,9 +386,10 @@ export function MobileMenu({
           <div className="px-5 pt-5 sm:px-7">
             {isLoggedIn ? (
               <Link
-                href={accountHref}
+                href="/account"
                 onClick={onClose}
                 className="
+                  group
                   flex
                   items-center
                   gap-3
@@ -408,7 +448,7 @@ export function MobileMenu({
                       text-[var(--color-secondary)]
                     "
                   >
-                    View your account
+                    {user.email}
                   </span>
                 </span>
 
@@ -418,6 +458,9 @@ export function MobileMenu({
                   className="
                     shrink-0
                     text-[var(--color-secondary)]
+                    transition-transform
+                    duration-300
+                    group-hover:translate-x-0.5
                   "
                 />
               </Link>
@@ -552,11 +595,13 @@ export function MobileMenu({
               <div
                 className="
                   overflow-hidden
-                  border-y
+                  border
                   border-[var(--color-border)]
                   bg-white
                 "
               >
+                {/* ACCOUNT LINKS */}
+
                 {accountLinks.map(
                   (item) => {
                     const Icon = item.icon;
@@ -575,7 +620,6 @@ export function MobileMenu({
                           border-[var(--color-border)]
                           px-4
                           py-3.5
-                          last:border-b-0
                           transition-colors
                           duration-300
                           hover:bg-[var(--color-cream)]
@@ -650,6 +694,103 @@ export function MobileMenu({
                     );
                   },
                 )}
+
+                {/* =================================================
+                    SIGN OUT
+                ================================================= */}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    void handleLogout();
+                  }}
+                  disabled={isLoggingOut}
+                  className="
+                    group
+                    flex
+                    w-full
+                    items-center
+                    gap-3
+                    px-4
+                    py-3.5
+                    text-left
+                    transition-colors
+                    duration-300
+                    hover:bg-[var(--color-rose-light)]
+                    disabled:cursor-not-allowed
+                    disabled:opacity-60
+                  "
+                >
+                  {/* ICON */}
+
+                  <span
+                    className="
+                      flex
+                      h-9
+                      w-9
+                      shrink-0
+                      items-center
+                      justify-center
+                      border
+                      border-[var(--color-border)]
+                      bg-[var(--color-ivory)]
+                      text-[var(--color-secondary)]
+                      transition-colors
+                      duration-300
+                      group-hover:border-[var(--color-rose)]
+                      group-hover:bg-white
+                      group-hover:text-[var(--color-charcoal)]
+                    "
+                  >
+                    <LogOut
+                      size={15}
+                      strokeWidth={1.6}
+                    />
+                  </span>
+
+                  {/* TEXT */}
+
+                  <span className="min-w-0 flex-1">
+                    <span
+                      className="
+                        block
+                        text-xs
+                        font-semibold
+                        text-[var(--color-charcoal)]
+                      "
+                    >
+                      {isLoggingOut
+                        ? "Signing Out..."
+                        : "Sign Out"}
+                    </span>
+
+                    <span
+                      className="
+                        mt-0.5
+                        block
+                        text-[10px]
+                        leading-4
+                        text-[var(--color-muted)]
+                      "
+                    >
+                      Sign out from this device
+                    </span>
+                  </span>
+
+                  {!isLoggingOut && (
+                    <ChevronRight
+                      size={14}
+                      strokeWidth={1.45}
+                      className="
+                        shrink-0
+                        text-[var(--color-secondary)]
+                        transition-transform
+                        duration-300
+                        group-hover:translate-x-0.5
+                      "
+                    />
+                  )}
+                </button>
               </div>
             </section>
           )}
