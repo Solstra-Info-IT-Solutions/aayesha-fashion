@@ -2,6 +2,7 @@
 
 import {
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -60,6 +61,50 @@ const sortOptions: {
   },
 ];
 
+function getCollectionContext() {
+  if (typeof window === "undefined") {
+    return {
+      pathname: "/shop",
+      isNew: false,
+      isBestSeller: false,
+    };
+  }
+
+  const pathname =
+    window.location.pathname;
+
+  const params = new URLSearchParams(
+    window.location.search,
+  );
+
+  const isNew =
+    pathname ===
+      "/collections/new-arrivals" ||
+    params.get("isNew") === "true";
+
+  const isBestSeller =
+    pathname ===
+      "/collections/best-sellers" ||
+    params.get("isBestSeller") === "true";
+
+  return {
+    pathname,
+    isNew,
+    isBestSeller,
+  };
+}
+
+function buildCurrentPath(
+  pathname: string,
+  params: URLSearchParams,
+) {
+  const query = params.toString();
+
+  return query
+    ? `${pathname}?${query}`
+    : pathname;
+}
+
 export function ShopHeader({
   products = [],
   selectedCategory,
@@ -68,17 +113,77 @@ export function ShopHeader({
   const [mobileFiltersOpen, setMobileFiltersOpen] =
     useState(false);
 
-  const [sortOpen, setSortOpen] = useState(false);
+  const [sortOpen, setSortOpen] =
+    useState(false);
 
-  const sortRef = useRef<HTMLDivElement>(null);
+  const sortRef =
+    useRef<HTMLDivElement>(null);
+
+  const collectionContext =
+    useMemo(
+      () => getCollectionContext(),
+      [],
+    );
 
   const activeSort =
     sortOptions.find(
-      (item) => item.value === selectedSort,
+      (item) =>
+        item.value === selectedSort,
     ) ?? sortOptions[0];
 
+  /* ==========================================================
+     COLLECTION CONTENT
+  ========================================================== */
+
+  const collectionContent = useMemo(() => {
+    if (collectionContext.isNew) {
+      return {
+        eyebrow: "The New Edit",
+        title: "New Arrivals",
+        description:
+          "Discover the latest Aayesha Fashion pieces, thoughtfully selected for the season ahead.",
+        noteLabel: "Freshly curated",
+        note:
+          "New silhouettes and considered details introduced for the modern Indian wardrobe.",
+      };
+    }
+
+    if (
+      collectionContext.isBestSeller
+    ) {
+      return {
+        eyebrow: "Most Loved",
+        title: "Best Sellers",
+        description:
+          "Explore the pieces our customers keep coming back to — timeless styles chosen for their exceptional appeal.",
+        noteLabel: "Customer favourites",
+        note:
+          "Signature pieces that continue to define the Aayesha Fashion edit.",
+      };
+    }
+
+    return {
+      eyebrow: "Aayesha Fashion",
+      title: "The Collection",
+      description:
+        "A considered edit of refined Indian silhouettes, contemporary essentials and occasion dressing designed with a timeless point of view.",
+      noteLabel: "Curated",
+      note:
+        "Designed for modern Indian wardrobes, from everyday elegance to celebrations.",
+    };
+  }, [
+    collectionContext.isNew,
+    collectionContext.isBestSeller,
+  ]);
+
+  /* ==========================================================
+     OUTSIDE CLICK / ESCAPE
+  ========================================================== */
+
   useEffect(() => {
-    function handleOutsideClick(event: MouseEvent) {
+    function handleOutsideClick(
+      event: MouseEvent,
+    ) {
       if (
         sortRef.current &&
         !sortRef.current.contains(
@@ -89,7 +194,9 @@ export function ShopHeader({
       }
     }
 
-    function handleEscape(event: KeyboardEvent) {
+    function handleEscape(
+      event: KeyboardEvent,
+    ) {
       if (event.key === "Escape") {
         setSortOpen(false);
       }
@@ -118,24 +225,60 @@ export function ShopHeader({
     };
   }, []);
 
-  function handleSortChange(value: ProductSort) {
-    const params = new URLSearchParams(
-      window.location.search,
-    );
+  /* ==========================================================
+     SORT
+  ========================================================== */
+
+  function handleSortChange(
+    value: ProductSort,
+  ) {
+    const {
+      pathname,
+    } = getCollectionContext();
+
+    const params =
+      new URLSearchParams(
+        window.location.search,
+      );
 
     if (value === "relevance") {
       params.delete("sort");
     } else {
-      params.set("sort", value);
+      params.set(
+        "sort",
+        value,
+      );
+    }
+
+    /*
+     * Keep collection scope intact.
+     */
+    if (
+      pathname ===
+      "/collections/new-arrivals"
+    ) {
+      params.delete("isNew");
+      params.delete("isBestSeller");
+    }
+
+    if (
+      pathname ===
+      "/collections/best-sellers"
+    ) {
+      params.delete("isNew");
+      params.delete("isBestSeller");
     }
 
     setSortOpen(false);
 
-    const query = params.toString();
+    const destination =
+      buildCurrentPath(
+        pathname,
+        params,
+      );
 
-    window.location.href = query
-      ? `/shop?${query}`
-      : "/shop";
+    window.location.href =
+      destination;
   }
 
   return (
@@ -174,13 +317,13 @@ export function ShopHeader({
                 <span className="h-px w-7 bg-[var(--color-rose-dark)]" />
 
                 <span className="text-[9px] font-semibold uppercase tracking-[0.28em] text-[var(--color-text-secondary)]">
-                  Aayesha Fashion
+                  {collectionContent.eyebrow}
                 </span>
               </div>
 
               <h1
                 className="
-                  font-serif
+                  font-[var(--font-display)]
                   text-[2.8rem]
                   leading-[0.94]
                   tracking-[-0.035em]
@@ -191,7 +334,7 @@ export function ShopHeader({
                   lg:text-[4.4rem]
                 "
               >
-                The Collection
+                {collectionContent.title}
               </h1>
 
               <p
@@ -206,10 +349,9 @@ export function ShopHeader({
                   sm:leading-7
                 "
               >
-                A considered edit of refined Indian
-                silhouettes, contemporary essentials and
-                occasion dressing designed with a timeless
-                point of view.
+                {
+                  collectionContent.description
+                }
               </p>
             </div>
 
@@ -219,12 +361,13 @@ export function ShopHeader({
 
             <div className="hidden max-w-[230px] pb-1 md:block">
               <p className="text-right text-[10px] uppercase tracking-[0.2em] text-[var(--color-muted)]">
-                Curated
+                {
+                  collectionContent.noteLabel
+                }
               </p>
 
               <p className="mt-2 text-right text-xs leading-5 text-[var(--color-text-secondary)]">
-                Designed for modern Indian wardrobes,
-                from everyday elegance to celebrations.
+                {collectionContent.note}
               </p>
             </div>
           </div>
@@ -267,15 +410,16 @@ export function ShopHeader({
           "
         >
           {/* -------------------------------------------------
-              LEFT SIDE
+              LEFT
           ------------------------------------------------- */}
 
           <div className="flex items-center gap-5">
-            {/* MOBILE FILTER */}
             <button
               type="button"
               onClick={() =>
-                setMobileFiltersOpen(true)
+                setMobileFiltersOpen(
+                  true,
+                )
               }
               className="
                 group
@@ -299,12 +443,11 @@ export function ShopHeader({
               Filters
             </button>
 
-            {/* DESKTOP COLLECTION INDICATOR */}
             <div className="hidden items-center gap-3 lg:flex">
               <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-rose-dark)]" />
 
               <span className="text-[10px] font-semibold uppercase tracking-[0.17em] text-[var(--color-text-secondary)]">
-                Collection
+                {collectionContent.title}
               </span>
             </div>
           </div>
@@ -322,7 +465,10 @@ export function ShopHeader({
               aria-haspopup="menu"
               aria-expanded={sortOpen}
               onClick={() =>
-                setSortOpen((current) => !current)
+                setSortOpen(
+                  (current) =>
+                    !current,
+                )
               }
               className="
                 group
@@ -348,22 +494,20 @@ export function ShopHeader({
                 Sort
               </span>
 
-              <span>{activeSort.label}</span>
+              <span>
+                {activeSort.label}
+              </span>
 
               <ChevronDown
                 size={14}
                 strokeWidth={1.6}
-                className={`transition-transform duration-200 ${
+                className={`transition-transform ${
                   sortOpen
                     ? "rotate-180"
                     : ""
                 }`}
               />
             </button>
-
-            {/* -------------------------------------------------
-                SORT MENU
-            ------------------------------------------------- */}
 
             {sortOpen && (
               <div
@@ -381,82 +525,83 @@ export function ShopHeader({
                   shadow-[0_20px_55px_rgba(23,23,23,0.12)]
                 "
               >
-                {/* MENU HEADER */}
-
                 <div className="border-b border-[var(--color-border)] px-5 py-4">
                   <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[var(--color-muted)]">
                     Refine view
                   </p>
 
-                  <p className="mt-1.5 font-serif text-lg text-[var(--color-charcoal)]">
+                  <p className="mt-1.5 font-[var(--font-display)] text-lg text-[var(--color-charcoal)]">
                     Sort by
                   </p>
                 </div>
 
-                {/* OPTIONS */}
-
                 <div className="p-1.5">
-                  {sortOptions.map((option) => {
-                    const active =
-                      option.value === selectedSort;
+                  {sortOptions.map(
+                    (option) => {
+                      const active =
+                        option.value ===
+                        selectedSort;
 
-                    return (
-                      <button
-                        key={option.value}
-                        type="button"
-                        role="menuitem"
-                        onClick={() =>
-                          handleSortChange(
-                            option.value,
-                          )
-                        }
-                        className={`
-                          group/item
-                          flex
-                          w-full
-                          items-center
-                          justify-between
-                          px-3.5
-                          py-3
-                          text-left
-                          transition-colors
-                          duration-200
-
-                          ${
-                            active
-                              ? "bg-[var(--color-cream)] text-[var(--color-charcoal)]"
-                              : "text-[var(--color-text-secondary)] hover:bg-[var(--color-cream)] hover:text-[var(--color-charcoal)]"
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          role="menuitem"
+                          onClick={() =>
+                            handleSortChange(
+                              option.value,
+                            )
                           }
-                        `}
-                      >
-                        <span
-                          className={
-                            active
-                              ? "text-sm font-medium"
-                              : "text-sm"
-                          }
-                        >
-                          {option.label}
-                        </span>
-
-                        <span
                           className={`
-                            h-1.5
-                            w-1.5
-                            rounded-full
-                            bg-[var(--color-rose-dark)]
-                            transition-all
+                            group/item
+                            flex
+                            w-full
+                            items-center
+                            justify-between
+                            px-3.5
+                            py-3
+                            text-left
+                            transition-colors
                             duration-200
+
                             ${
                               active
-                                ? "scale-100 opacity-100"
-                                : "scale-50 opacity-0"
+                                ? "bg-[var(--color-cream)] text-[var(--color-charcoal)]"
+                                : "text-[var(--color-text-secondary)] hover:bg-[var(--color-cream)] hover:text-[var(--color-charcoal)]"
                             }
                           `}
-                        />
-                      </button>
-                    );
-                  })}
+                        >
+                          <span
+                            className={
+                              active
+                                ? "text-sm font-medium"
+                                : "text-sm"
+                            }
+                          >
+                            {
+                              option.label
+                            }
+                          </span>
+
+                          <span
+                            className={`
+                              h-1.5
+                              w-1.5
+                              rounded-full
+                              bg-[var(--color-rose-dark)]
+                              transition-all
+                              duration-200
+                              ${
+                                active
+                                  ? "scale-100 opacity-100"
+                                  : "scale-50 opacity-0"
+                              }
+                            `}
+                          />
+                        </button>
+                      );
+                    },
+                  )}
                 </div>
               </div>
             )}
@@ -470,23 +615,20 @@ export function ShopHeader({
 
       {mobileFiltersOpen && (
         <div className="fixed inset-0 z-[70] lg:hidden">
-          {/* BACKDROP */}
-
           <button
             type="button"
             aria-label="Close filters"
             onClick={() =>
-              setMobileFiltersOpen(false)
+              setMobileFiltersOpen(
+                false,
+              )
             }
             className="
               absolute
               inset-0
               bg-black/30
-              transition-opacity
             "
           />
-
-          {/* DRAWER */}
 
           <div
             className="
@@ -502,15 +644,13 @@ export function ShopHeader({
               shadow-[-18px_0_55px_rgba(23,23,23,0.12)]
             "
           >
-            {/* HEADER */}
-
             <div className="flex items-center justify-between border-b border-[var(--color-border)] px-5 py-5">
               <div>
                 <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[var(--color-muted)]">
                   Refine
                 </p>
 
-                <h2 className="mt-1 font-serif text-[1.8rem] leading-none text-[var(--color-charcoal)]">
+                <h2 className="mt-1 font-[var(--font-display)] text-[1.8rem] leading-none text-[var(--color-charcoal)]">
                   Filters
                 </h2>
               </div>
@@ -519,7 +659,9 @@ export function ShopHeader({
                 type="button"
                 aria-label="Close filters"
                 onClick={() =>
-                  setMobileFiltersOpen(false)
+                  setMobileFiltersOpen(
+                    false,
+                  )
                 }
                 className="
                   grid
@@ -539,8 +681,6 @@ export function ShopHeader({
               </button>
             </div>
 
-            {/* FILTER CONTENT */}
-
             <div className="min-h-0 flex-1 overflow-y-auto px-5">
               <ShopFilters
                 products={products}
@@ -549,18 +689,20 @@ export function ShopHeader({
                 }
                 mobile
                 onClose={() =>
-                  setMobileFiltersOpen(false)
+                  setMobileFiltersOpen(
+                    false,
+                  )
                 }
               />
             </div>
-
-            {/* BOTTOM ACTION */}
 
             <div className="border-t border-[var(--color-border)] bg-[var(--color-ivory)] p-4">
               <button
                 type="button"
                 onClick={() =>
-                  setMobileFiltersOpen(false)
+                  setMobileFiltersOpen(
+                    false,
+                  )
                 }
                 className="
                   flex

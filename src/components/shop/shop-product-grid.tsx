@@ -1,8 +1,14 @@
 "use client";
 
-import { useMemo } from "react";
+import {
+  useMemo,
+} from "react";
+
 import Link from "next/link";
-import { SlidersHorizontal } from "lucide-react";
+
+import {
+  SlidersHorizontal,
+} from "lucide-react";
 
 import type {
   Product,
@@ -24,270 +30,441 @@ interface ShopProductGridProps {
   sort?: ProductSort;
 }
 
+function getUrlParams() {
+  if (
+    typeof window ===
+    "undefined"
+  ) {
+    return {
+      type: null,
+      color: null,
+      size: null,
+      availability: null,
+    };
+  }
+
+  const params =
+    new URLSearchParams(
+      window.location.search,
+    );
+
+  return {
+    type: params.get(
+      "type",
+    ),
+
+    color: params.get(
+      "color",
+    ),
+
+    size: params.get(
+      "size",
+    ),
+
+    availability:
+      params.get(
+        "availability",
+      ),
+  };
+}
+
+function getCollectionContext() {
+  if (
+    typeof window ===
+    "undefined"
+  ) {
+    return {
+      isNew: false,
+      isBestSeller: false,
+    };
+  }
+
+  const pathname =
+    window.location.pathname;
+
+  const params =
+    new URLSearchParams(
+      window.location.search,
+    );
+
+  return {
+    isNew:
+      pathname ===
+        "/collections/new-arrivals" ||
+      params.get(
+        "isNew",
+      ) === "true",
+
+    isBestSeller:
+      pathname ===
+        "/collections/best-sellers" ||
+      params.get(
+        "isBestSeller",
+      ) === "true",
+  };
+}
+
 export function ShopProductGrid({
   products,
   category,
   sort = "relevance",
 }: ShopProductGridProps) {
-  const filteredProducts = useMemo(() => {
-    let result = products.filter(
-      (product) => product.status === "active",
+  /*
+   * Reading the current query string
+   * at render time allows the server
+   * page to provide the correctly
+   * filtered product array while this
+   * component applies the presentation
+   * layer filters as well.
+   */
+  const urlParams =
+    useMemo(
+      () => getUrlParams(),
+      [
+        products,
+        category,
+        sort,
+      ],
     );
 
-    /* =========================================================
-       CATEGORY
-    ========================================================= */
+  const collectionContext =
+    useMemo(
+      () =>
+        getCollectionContext(),
+      [
+        products,
+        category,
+        sort,
+      ],
+    );
 
-    if (category) {
-      result = result.filter(
-        (product) => product.category === category,
-      );
-    }
-
-    /* =========================================================
-       URL FILTERS
-    ========================================================= */
-
-    const params =
-      typeof window !== "undefined"
-        ? new URLSearchParams(window.location.search)
-        : null;
-
-    const type = params?.get("type");
-    const color = params?.get("color");
-    const size = params?.get("size");
-    const availability = params?.get("availability");
-
-    /* =========================================================
-       PRODUCT TYPE
-    ========================================================= */
-
-    if (type) {
-      result = result.filter(
-        (product) =>
-          product.productType === type,
-      );
-    }
-
-    /* =========================================================
-       COLOR
-    ========================================================= */
-
-    if (color) {
-      result = result.filter((product) =>
-        getProductColors(product).some(
-          (item) => item.id === color,
-        ),
-      );
-    }
-
-    /* =========================================================
-       SIZE
-    ========================================================= */
-
-    if (size) {
-      result = result.filter((product) =>
-        getProductSizes(product).some(
-          (item) => item.code === size,
-        ),
-      );
-    }
-
-    /* =========================================================
-       AVAILABILITY
-       
-       Uses actual variant inventory data instead of relying
-       on ProductAvailability fields.
-    ========================================================= */
-
-    if (availability) {
-      result = result.filter((product) => {
-        const activeVariants = product.variants.filter(
-          (variant) =>
-            variant.status === "active",
+  const filteredProducts =
+    useMemo(() => {
+      let result =
+        products.filter(
+          (product) =>
+            product.status ===
+            "active",
         );
 
-        const availableVariants =
-          activeVariants.filter((variant) => {
-            const availableStock =
-              variant.inventory.stock -
-              variant.inventory.reserved;
+      /* =====================================================
+         CATEGORY
+      ===================================================== */
 
-            return availableStock > 0;
-          });
+      if (category) {
+        result =
+          result.filter(
+            (product) =>
+              product.category ===
+              category,
+          );
+      }
 
-        /* -----------------------------------------------
-           OUT OF STOCK
-        ----------------------------------------------- */
+      /* =====================================================
+         COLLECTION SCOPE
+      ===================================================== */
 
-        if (availability === "out-of-stock") {
-          return availableVariants.length === 0;
-        }
+      if (
+        collectionContext.isNew
+      ) {
+        result =
+          result.filter(
+            (product) =>
+              product.merchandising
+                ?.isNew === true,
+          );
+      }
 
-        /* -----------------------------------------------
-           IN STOCK
-        ----------------------------------------------- */
+      if (
+        collectionContext.isBestSeller
+      ) {
+        result =
+          result.filter(
+            (product) =>
+              product.merchandising
+                ?.isBestSeller ===
+              true,
+          );
+      }
 
-        if (availability === "in-stock") {
-          return availableVariants.some(
-            (variant) => {
-              const availableStock =
-                variant.inventory.stock -
-                variant.inventory.reserved;
+      /* =====================================================
+         PRODUCT TYPE
+      ===================================================== */
+
+      if (urlParams.type) {
+        result =
+          result.filter(
+            (product) =>
+              product.productType ===
+              urlParams.type,
+          );
+      }
+
+      /* =====================================================
+         COLOR
+      ===================================================== */
+
+      if (urlParams.color) {
+        result =
+          result.filter(
+            (product) =>
+              getProductColors(
+                product,
+              ).some(
+                (item) =>
+                  item.id ===
+                  urlParams.color,
+              ),
+          );
+      }
+
+      /* =====================================================
+         SIZE
+      ===================================================== */
+
+      if (urlParams.size) {
+        result =
+          result.filter(
+            (product) =>
+              getProductSizes(
+                product,
+              ).some(
+                (item) =>
+                  item.code ===
+                  urlParams.size,
+              ),
+          );
+      }
+
+      /* =====================================================
+         AVAILABILITY
+      ===================================================== */
+
+      if (
+        urlParams.availability
+      ) {
+        result =
+          result.filter(
+            (product) => {
+              const activeVariants =
+                product.variants.filter(
+                  (variant) =>
+                    variant.status ===
+                    "active",
+                );
+
+              const availableVariants =
+                activeVariants.filter(
+                  (variant) => {
+                    const availableStock =
+                      variant.inventory.stock -
+                      variant.inventory.reserved;
+
+                    return (
+                      availableStock >
+                      0
+                    );
+                  },
+                );
+
+              if (
+                urlParams.availability ===
+                "out-of-stock"
+              ) {
+                return (
+                  availableVariants.length ===
+                  0
+                );
+              }
+
+              if (
+                urlParams.availability ===
+                "in-stock"
+              ) {
+                return availableVariants.some(
+                  (variant) => {
+                    const availableStock =
+                      variant.inventory.stock -
+                      variant.inventory.reserved;
+
+                    return (
+                      availableStock >
+                      variant.inventory
+                        .lowStockThreshold
+                    );
+                  },
+                );
+              }
+
+              if (
+                urlParams.availability ===
+                "low"
+              ) {
+                return availableVariants.some(
+                  (variant) => {
+                    const availableStock =
+                      variant.inventory.stock -
+                      variant.inventory.reserved;
+
+                    return (
+                      availableStock >
+                        0 &&
+                      availableStock <=
+                        variant
+                          .inventory
+                          .lowStockThreshold
+                    );
+                  },
+                );
+              }
+
+              return true;
+            },
+          );
+      }
+
+      /* =====================================================
+         SORT
+      ===================================================== */
+
+      switch (sort) {
+        case "price-low":
+          result.sort(
+            (a, b) =>
+              getProductStartingPrice(
+                a,
+              ) -
+              getProductStartingPrice(
+                b,
+              ),
+          );
+          break;
+
+        case "price-high":
+          result.sort(
+            (a, b) =>
+              getProductStartingPrice(
+                b,
+              ) -
+              getProductStartingPrice(
+                a,
+              ),
+          );
+          break;
+
+        case "newest":
+          result.sort(
+            (a, b) =>
+              new Date(
+                b.createdAt,
+              ).getTime() -
+              new Date(
+                a.createdAt,
+              ).getTime(),
+          );
+          break;
+
+        case "best-selling":
+          result.sort(
+            (a, b) => {
+              const aScore =
+                a.merchandising
+                  ?.isBestSeller
+                  ? 1
+                  : 0;
+
+              const bScore =
+                b.merchandising
+                  ?.isBestSeller
+                  ? 1
+                  : 0;
 
               return (
-                availableStock >
-                variant.inventory.lowStockThreshold
+                bScore -
+                aScore
               );
             },
           );
-        }
+          break;
 
-        /* -----------------------------------------------
-           LOW STOCK
-        ----------------------------------------------- */
+        case "featured":
+          result.sort(
+            (a, b) => {
+              const aScore =
+                a.merchandising
+                  ?.isFeatured
+                  ? 1
+                  : 0;
 
-        if (availability === "low") {
-          return availableVariants.some(
-            (variant) => {
-              const availableStock =
-                variant.inventory.stock -
-                variant.inventory.reserved;
+              const bScore =
+                b.merchandising
+                  ?.isFeatured
+                  ? 1
+                  : 0;
 
               return (
-                availableStock > 0 &&
-                availableStock <=
-                  variant.inventory.lowStockThreshold
+                bScore -
+                aScore
               );
             },
           );
-        }
+          break;
 
-        return true;
-      });
-    }
+        case "rating":
+        case "relevance":
+        default:
+          break;
+      }
 
-    /* =========================================================
-       SORTING
-    ========================================================= */
+      return result;
+    }, [
+      products,
+      category,
+      sort,
+      urlParams.type,
+      urlParams.color,
+      urlParams.size,
+      urlParams.availability,
+      collectionContext.isNew,
+      collectionContext.isBestSeller,
+    ]);
 
-    switch (sort) {
-      /* -------------------------------------------------------
-         PRICE LOW → HIGH
-      ------------------------------------------------------- */
+  /* ==========================================================
+     CURRENT COLLECTION LINK
+  ========================================================== */
 
-      case "price-low":
-        result.sort(
-          (a, b) =>
-            getProductStartingPrice(a) -
-            getProductStartingPrice(b),
-        );
-        break;
+  const refineHref =
+    collectionContext.isNew
+      ? "/collections/new-arrivals"
+      : collectionContext.isBestSeller
+        ? "/collections/best-sellers"
+        : "/shop";
 
-      /* -------------------------------------------------------
-         PRICE HIGH → LOW
-      ------------------------------------------------------- */
-
-      case "price-high":
-        result.sort(
-          (a, b) =>
-            getProductStartingPrice(b) -
-            getProductStartingPrice(a),
-        );
-        break;
-
-      /* -------------------------------------------------------
-         NEWEST
-      ------------------------------------------------------- */
-
-      case "newest":
-        result.sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() -
-            new Date(a.createdAt).getTime(),
-        );
-        break;
-
-      /* -------------------------------------------------------
-         BEST SELLING
-      ------------------------------------------------------- */
-
-      case "best-selling":
-        result.sort((a, b) => {
-          const aScore =
-            a.merchandising?.isBestSeller
-              ? 1
-              : 0;
-
-          const bScore =
-            b.merchandising?.isBestSeller
-              ? 1
-              : 0;
-
-          return bScore - aScore;
-        });
-        break;
-
-      /* -------------------------------------------------------
-         FEATURED
-      ------------------------------------------------------- */
-
-      case "featured":
-        result.sort((a, b) => {
-          const aScore =
-            a.merchandising?.isFeatured
-              ? 1
-              : 0;
-
-          const bScore =
-            b.merchandising?.isFeatured
-              ? 1
-              : 0;
-
-          return bScore - aScore;
-        });
-        break;
-
-      /* -------------------------------------------------------
-         RATING
-         
-         Temporarily preserve original product order because
-         the exact ProductReviewSummary rating field has not
-         been verified.
-      ------------------------------------------------------- */
-
-      case "rating":
-      case "relevance":
-      default:
-        break;
-    }
-
-    return result;
-  }, [products, category, sort]);
-
-  /* ===========================================================
+  /* ==========================================================
      RENDER
-  =========================================================== */
+  ========================================================== */
 
   return (
     <div className="min-w-0">
-      {/* =======================================================
+      {/* =====================================================
           TOOLBAR
-      ======================================================= */}
+      ===================================================== */}
 
       <div className="mb-6 flex items-center justify-between gap-4 sm:mb-7">
         <div>
           <p className="text-sm text-[var(--color-text-secondary)]">
-            {filteredProducts.length}{" "}
-            {filteredProducts.length === 1
+            {
+              filteredProducts.length
+            }{" "}
+            {filteredProducts.length ===
+            1
               ? "piece"
               : "pieces"}
           </p>
         </div>
 
-        {/* Mobile refine */}
         <Link
-          href="/shop"
+          href={refineHref}
           className="
             inline-flex
             items-center
@@ -311,11 +488,12 @@ export function ShopProductGrid({
         </Link>
       </div>
 
-      {/* =======================================================
+      {/* =====================================================
           EMPTY STATE
-      ======================================================= */}
+      ===================================================== */}
 
-      {filteredProducts.length === 0 ? (
+      {filteredProducts.length ===
+      0 ? (
         <div
           className="
             border
@@ -330,7 +508,7 @@ export function ShopProductGrid({
         >
           <p
             className="
-              font-serif
+              font-[var(--font-display)]
               text-3xl
               tracking-[-0.02em]
               text-[var(--color-charcoal)]
@@ -350,12 +528,12 @@ export function ShopProductGrid({
               text-[var(--color-text-secondary)]
             "
           >
-            Try adjusting your filters or explore
-            the complete collection.
+            Try adjusting your filters or
+            explore the complete collection.
           </p>
 
           <Link
-            href="/shop"
+            href={refineHref}
             className="
               mt-7
               inline-flex
@@ -377,10 +555,6 @@ export function ShopProductGrid({
           </Link>
         </div>
       ) : (
-        /* =====================================================
-           PRODUCT GRID
-        ===================================================== */
-
         <div
           className="
             grid
@@ -400,12 +574,14 @@ export function ShopProductGrid({
             xl:gap-y-14
           "
         >
-          {filteredProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-            />
-          ))}
+          {filteredProducts.map(
+            (product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+              />
+            ),
+          )}
         </div>
       )}
     </div>

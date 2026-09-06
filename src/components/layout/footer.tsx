@@ -145,20 +145,65 @@ export function Footer() {
 
               <div className="lg:col-span-5">
                 <Link
-                  href="/"
-                  aria-label={`${siteConfig.name} home`}
-                  className="inline-flex flex-col"
-                >
-                  <span className="font-display text-[3.4rem] font-medium leading-none tracking-[-0.03em] sm:text-[3.8rem]">
-                    {siteConfig.name
-                      .split(" ")[0]}
-                  </span>
+  href="/"
+  aria-label={`${siteConfig.name} home`}
+  className="
+    group
+    inline-flex
+    flex-col
+    items-start
+    leading-none
+  "
+>
+  {/* BRAND LOGO IMAGE */}
+  <img
+    src="/images/logo.png"
+    alt="Aayesha Fashion"
+    className="
+      h-10
+      w-auto
+      object-contain
+      opacity-95
+      transition-opacity
+      duration-300
+      group-hover:opacity-80
+    "
+  />
 
-                  <span className="mt-2 text-[8px] font-medium uppercase tracking-[0.42em] text-white/45">
-                    Fashion
-                  </span>
-                </Link>
+  {/* BRAND NAME */}
+  <span
+    className="
+      mt-3
+      font-[var(--font-display)]
+      text-[3.1rem]
+      font-medium
+      leading-none
+      tracking-[-0.04em]
+      text-white
+      transition-opacity
+      duration-300
+      group-hover:opacity-80
+      sm:text-[3.5rem]
+    "
+  >
+    {siteConfig.name.split(" ")[0]}
+  </span>
 
+  {/* SUB BRAND */}
+  <span
+    className="
+      mt-2
+      pl-[0.32em]
+      text-[7px]
+      font-medium
+      uppercase
+      tracking-[0.42em]
+      text-white/45
+    "
+  >
+    Fashion
+  </span>
+</Link>
                 <p className="mt-7 max-w-[420px] text-[15px] leading-8 text-white/58 sm:text-[16px] sm:leading-8">
                   {siteConfig.description}
                 </p>
