@@ -1,13 +1,19 @@
 import { ArrowUpRight } from "lucide-react";
 
-import { getBestSellers } from "@/lib/api/products";
+import { getProducts } from "@/services/product.service";
 
 import { ProductCarousel } from "@/components/product/product-carousel";
 import { Container } from "@/components/shared/container";
 import { LinkButton } from "@/components/ui/button";
 
 export async function BestSellers() {
-  const response = await getBestSellers(8);
+  const response = await getProducts({
+    page: 1,
+    limit: 8,
+    isBestSeller: true,
+    status: "active",
+    sort: "best-selling",
+  });
 
   const bestSellers = response.products;
 

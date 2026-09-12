@@ -6,39 +6,37 @@ import {
 } from "lucide-react";
 
 import { Container } from "@/components/shared/container";
+import type {
+  HomepageWhyChooseUs,
+  HomepageWhyChooseUsValue,
+} from "@/types/homepage";
 
-const values = [
-  {
-    id: "craftsmanship",
-    title: "Thoughtful Craftsmanship",
-    description:
-      "Every piece is selected for its detail, finish, and enduring beauty.",
-    icon: Scissors,
-  },
-  {
-    id: "quality",
-    title: "Considered Quality",
-    description:
-      "We focus on fabrics, silhouettes, and finishes that feel beautiful from the first wear.",
-    icon: Gem,
-  },
-  {
-    id: "femininity",
-    title: "Refined Femininity",
-    description:
-      "Graceful silhouettes designed to feel elegant, confident, and effortless.",
-    icon: Heart,
-  },
-  {
-    id: "timeless",
-    title: "Made to Last",
-    description:
-      "Pieces created to remain relevant beyond a single season or occasion.",
-    icon: Sparkles,
-  },
-] as const;
+interface WhyChooseUsProps {
+  data: HomepageWhyChooseUs;
+}
 
-export function WhyChooseUs() {
+const iconMap = {
+  scissors: Scissors,
+  gem: Gem,
+  heart: Heart,
+  sparkles: Sparkles,
+} as const;
+
+function getIcon(
+  icon: HomepageWhyChooseUsValue["icon"]
+) {
+  return iconMap[icon];
+}
+
+export function WhyChooseUs({
+  data,
+}: WhyChooseUsProps) {
+  const values = data.values
+    .filter((value) => value.isActive)
+    .sort(
+      (a, b) => a.sortOrder - b.sortOrder
+    );
+
   return (
     <section
       id="why-ayesha"
@@ -56,12 +54,12 @@ export function WhyChooseUs() {
                 <span className="h-px w-9 bg-[var(--color-rose-dark)]" />
 
                 <p className="text-[8px] font-semibold uppercase tracking-[0.3em] text-[var(--color-text-secondary)] sm:text-[9px]">
-                  Why Ayesha
+                  {data.eyebrow}
                 </p>
               </div>
 
               <span className="font-display text-lg text-[var(--color-text-muted)] sm:text-xl">
-                10
+                {data.number}
               </span>
             </div>
 
@@ -80,16 +78,11 @@ export function WhyChooseUs() {
                   xl:text-[5.8rem]
                 "
               >
-                Made with{" "}
-                <span className="italic text-[var(--color-rose-dark)]">
-                  intention.
-                </span>
+                {data.title}
               </h2>
 
               <p className="mx-auto mt-5 max-w-[560px] text-sm leading-7 text-[var(--color-text-secondary)] sm:text-[15px] sm:leading-8">
-                From the first detail to the final finish,
-                everything is chosen to make getting dressed
-                feel effortlessly beautiful.
+                {data.description}
               </p>
             </div>
           </div>
@@ -98,82 +91,91 @@ export function WhyChooseUs() {
               VALUES
           ===================================================== */}
 
-          <div className="mt-14 grid border-y border-[var(--color-border)] sm:mt-16 sm:grid-cols-2 lg:grid-cols-4 lg:border-y">
-            {values.map((value, index) => {
-              const Icon = value.icon;
+          {values.length > 0 && (
+            <div className="mt-14 grid border-y border-[var(--color-border)] sm:mt-16 sm:grid-cols-2 lg:grid-cols-4 lg:border-y">
+              {values.map(
+                (value, index) => {
+                  const Icon = getIcon(
+                    value.icon
+                  );
 
-              return (
-                <div
-                  key={value.id}
-                  className={`
-                    flex
-                    flex-col
-                    items-center
-                    px-6
-                    py-9
-                    text-center
-                    sm:px-8
-                    sm:py-10
-                    lg:px-7
-                    lg:py-12
-                    xl:px-9
-                    ${
-                      index !== values.length - 1
-                        ? "border-b border-[var(--color-border)] sm:odd:border-r lg:border-b-0 lg:border-r"
-                        : ""
-                    }
-                    ${
-                      index === 2
-                        ? "sm:border-b-0"
-                        : ""
-                    }
-                  `}
-                >
-                  {/* ICON */}
+                  return (
+                    <div
+                      key={value.id}
+                      className={`
+                        flex
+                        flex-col
+                        items-center
+                        px-6
+                        py-9
+                        text-center
+                        sm:px-8
+                        sm:py-10
+                        lg:px-7
+                        lg:py-12
+                        xl:px-9
+                        ${
+                          index !==
+                          values.length - 1
+                            ? "border-b border-[var(--color-border)] sm:odd:border-r lg:border-b-0 lg:border-r"
+                            : ""
+                        }
+                        ${
+                          index === 2
+                            ? "sm:border-b-0"
+                            : ""
+                        }
+                      `}
+                    >
+                      {/* ICON */}
 
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-rose-dark)]">
-                    <Icon
-                      size={17}
-                      strokeWidth={1.2}
-                    />
-                  </span>
+                      <span className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-rose-dark)]">
+                        <Icon
+                          size={17}
+                          strokeWidth={1.2}
+                        />
+                      </span>
 
-                  {/* TITLE */}
+                      {/* TITLE */}
 
-                  <h3
-                    className="
-                      mt-5
-                      font-display
-                      text-[1.45rem]
-                      font-medium
-                      leading-none
-                      tracking-[-0.02em]
-                      text-[var(--color-charcoal)]
-                      sm:text-[1.6rem]
-                    "
-                  >
-                    {value.title}
-                  </h3>
+                      <h3
+                        className="
+                          mt-5
+                          font-display
+                          text-[1.45rem]
+                          font-medium
+                          leading-none
+                          tracking-[-0.02em]
+                          text-[var(--color-charcoal)]
+                          sm:text-[1.6rem]
+                        "
+                      >
+                        {value.title}
+                      </h3>
 
-                  {/* DESCRIPTION */}
+                      {/* DESCRIPTION */}
 
-                  <p className="mt-4 max-w-[250px] text-[12px] leading-6 text-[var(--color-text-secondary)]">
-                    {value.description}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
+                      <p className="mt-4 max-w-[250px] text-[12px] leading-6 text-[var(--color-text-secondary)]">
+                        {value.description}
+                      </p>
+                    </div>
+                  );
+                }
+              )}
+            </div>
+          )}
 
           {/* =====================================================
               CLOSING STATEMENT
           ===================================================== */}
 
-          <div className="mt-10 text-center sm:mt-12">
-            <p className="font-display text-[1.5rem] italic leading-none tracking-[-0.02em] text-[var(--color-charcoal)] sm:text-[1.8rem]">
-              Elegance, thoughtfully considered.
-            </p>
-          </div>
+          {data.closingStatement && (
+            <div className="mt-10 text-center sm:mt-12">
+              <p className="font-display text-[1.5rem] italic leading-none tracking-[-0.02em] text-[var(--color-charcoal)] sm:text-[1.8rem]">
+                {data.closingStatement}
+              </p>
+            </div>
+          )}
         </div>
       </Container>
     </section>

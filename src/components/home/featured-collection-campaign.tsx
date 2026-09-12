@@ -1,9 +1,24 @@
 import Image from "next/image";
 
+import { getFeaturedCollectionCampaign } from "@/services/marketing.service";
+
 import { Container } from "@/components/shared/container";
 import { LinkButton } from "@/components/ui/button";
 
-export function FeaturedCollectionCampaign() {
+export async function FeaturedCollectionCampaign() {
+  const campaign =
+    await getFeaturedCollectionCampaign();
+
+  /*
+   * No active featured collection campaign:
+   * Do not render an empty homepage section.
+   */
+  if (!campaign) {
+    return null;
+  }
+
+  const data = campaign.metadata;
+
   return (
     <section
       id="featured-collection"
@@ -15,8 +30,8 @@ export function FeaturedCollectionCampaign() {
 
       <div className="relative min-h-[620px] sm:min-h-[680px] lg:min-h-[760px] xl:min-h-[820px]">
         <Image
-          src="/images/home/featured-collection-campaign.jpg"
-          alt="Ayesha Fashion featured collection campaign"
+          src={data.image}
+          alt={data.imageAlt}
           fill
           sizes="100vw"
           className="object-cover object-center"
@@ -44,7 +59,7 @@ export function FeaturedCollectionCampaign() {
                 <span className="h-px w-8 bg-[var(--color-rose-light)]" />
 
                 <p className="text-[8px] font-semibold uppercase tracking-[0.32em] text-white/75 sm:text-[9px]">
-                  Featured Collection
+                  {data.eyebrow}
                 </p>
               </div>
 
@@ -65,25 +80,20 @@ export function FeaturedCollectionCampaign() {
                   xl:text-[6.6rem]
                 "
               >
-                The Festive
-                <span className="block italic text-[var(--color-rose-light)]">
-                  Collection.
-                </span>
+                {formatCampaignTitle(data.title)}
               </h2>
 
               {/* DESCRIPTION */}
 
               <p className="mt-6 max-w-[430px] text-sm leading-7 text-white/72 sm:text-[15px] sm:leading-8">
-                Statement silhouettes, intricate details, and
-                timeless Indian craftsmanship designed for
-                moments worth celebrating.
+                {data.description}
               </p>
 
               {/* CTA */}
 
               <div className="mt-8">
                 <LinkButton
-                  href="/collections/festive"
+                  href={data.ctaHref}
                   variant="darkOutline"
                   size="lg"
                   icon={
@@ -95,7 +105,7 @@ export function FeaturedCollectionCampaign() {
                     </span>
                   }
                 >
-                  Explore The Collection
+                  {data.ctaLabel}
                 </LinkButton>
               </div>
             </div>
@@ -109,7 +119,7 @@ export function FeaturedCollectionCampaign() {
         <div className="absolute right-6 top-6 z-20 hidden sm:block lg:right-10 lg:top-10 xl:right-14">
           <div className="flex items-center gap-3">
             <span className="text-[8px] font-semibold uppercase tracking-[0.28em] text-white/45">
-              Ayesha Fashion
+              {data.brandLabel}
             </span>
 
             <span className="h-px w-8 bg-white/25" />
@@ -125,15 +135,52 @@ export function FeaturedCollectionCampaign() {
         <Container>
           <div className="flex min-h-20 items-center justify-between gap-6 py-5">
             <p className="text-[8px] font-semibold uppercase tracking-[0.28em] text-white/45">
-              Designed for celebration
+              {data.bottomLabel}
             </p>
 
             <p className="font-display text-lg italic text-white/75">
-              Festive 2026
+              {data.bottomTitle}
             </p>
           </div>
         </Container>
       </div>
     </section>
+  );
+}
+
+/* =========================================================
+   TITLE FORMATTER
+========================================================= */
+
+/**
+ * Keeps the existing visual treatment:
+ *
+ * "The Festive Collection."
+ *        ↓
+ * The Festive
+ * Collection.
+ *
+ * The final word is rendered in italic rose.
+ */
+function formatCampaignTitle(title: string) {
+  const words = title.trim().split(/\s+/);
+
+  if (words.length <= 1) {
+    return (
+      <span className="italic text-[var(--color-rose-light)]">
+        {title}
+      </span>
+    );
+  }
+
+  const lastWord = words.pop();
+
+  return (
+    <>
+      {words.join(" ")}
+      <span className="block italic text-[var(--color-rose-light)]">
+        {lastWord}
+      </span>
+    </>
   );
 }

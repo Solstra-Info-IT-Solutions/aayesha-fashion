@@ -2,15 +2,22 @@ import Image from "next/image";
 
 import { Container } from "@/components/shared/container";
 import { LinkButton } from "@/components/ui/button";
+import type { HomepageBrandStory } from "@/types/homepage";
 
-export function BrandStory() {
+interface BrandStoryProps {
+  data: HomepageBrandStory;
+}
+
+export function BrandStory({
+  data,
+}: BrandStoryProps) {
   return (
     <section
       id="brand-story"
       className="bg-[var(--color-ivory)]"
     >
       <Container>
-          <div className="pt-2 pb-8 sm:pt-3 sm:pb-12 lg:pt-2 lg:pb-11">
+        <div className="pt-2 pb-8 sm:pt-3 sm:pb-12 lg:pt-2 lg:pb-11">
           {/* =====================================================
               SECTION HEADER
           ===================================================== */}
@@ -20,12 +27,12 @@ export function BrandStory() {
               <span className="h-px w-8 bg-[var(--color-rose-dark)]" />
 
               <p className="text-[8px] font-semibold uppercase tracking-[0.3em] text-[var(--color-text-secondary)] sm:text-[9px]">
-                Brand Story
+                {data.eyebrow}
               </p>
             </div>
 
             <span className="font-display text-lg text-[var(--color-text-muted)] sm:text-xl">
-              06
+              {data.number}
             </span>
           </div>
 
@@ -59,44 +66,47 @@ export function BrandStory() {
                   xl:text-[6.2rem]
                 "
               >
-                The art of
-                <span className="block italic text-[var(--color-rose-dark)]">
-                  modern Indian
-                </span>
-                <span className="block">
-                  elegance.
-                </span>
+                {data.title}
               </h2>
 
               <div className="mt-8 max-w-[520px]">
-                <p className="text-sm leading-7 text-[var(--color-text-secondary)] sm:text-[15px] sm:leading-8">
-                  Ayesha brings together the richness
-                  of Indian craftsmanship with the ease
-                  of contemporary dressing.
-                </p>
-
-                <p className="mt-5 text-sm leading-7 text-[var(--color-text-secondary)] sm:text-[15px] sm:leading-8">
-                  Every silhouette is considered with
-                  intention — balancing graceful detail,
-                  confident femininity, and timeless
-                  appeal.
-                </p>
+                {data.descriptions.map(
+                  (description, index) => (
+                    <p
+                      key={`${index}-${description}`}
+                      className={
+                        index === 0
+                          ? "text-sm leading-7 text-[var(--color-text-secondary)] sm:text-[15px] sm:leading-8"
+                          : "mt-5 text-sm leading-7 text-[var(--color-text-secondary)] sm:text-[15px] sm:leading-8"
+                      }
+                    >
+                      {description}
+                    </p>
+                  )
+                )}
               </div>
 
-              <div className="mt-8">
-                <LinkButton
-                  href="/our-story"
-                  variant="secondary"
-                  size="md"
-                  icon={
-                    <span aria-hidden="true">
-                      ↗
-                    </span>
-                  }
-                >
-                  Discover Our Story
-                </LinkButton>
-              </div>
+              {/* =================================================
+                  CTA
+              ================================================= */}
+
+              {data.ctaLabel &&
+                data.ctaHref && (
+                  <div className="mt-8">
+                    <LinkButton
+                      href={data.ctaHref}
+                      variant="secondary"
+                      size="md"
+                      icon={
+                        <span aria-hidden="true">
+                          ↗
+                        </span>
+                      }
+                    >
+                      {data.ctaLabel}
+                    </LinkButton>
+                  </div>
+                )}
             </div>
 
             {/* ===================================================
@@ -106,8 +116,8 @@ export function BrandStory() {
             <div className="lg:col-span-6">
               <div className="relative mx-auto w-full max-w-[620px] overflow-hidden bg-[var(--color-warm-gray)]">
                 <Image
-                  src="/images/home/brand-story.jpg"
-                  alt="Ayesha Fashion editorial portrait representing modern Indian elegance"
+                  src={data.image}
+                  alt={data.imageAlt}
                   width={1200}
                   height={1500}
                   className="
@@ -125,11 +135,11 @@ export function BrandStory() {
 
               <div className="mt-4 flex items-center justify-between">
                 <p className="text-[8px] font-semibold uppercase tracking-[0.25em] text-[var(--color-text-muted)]">
-                  Modern Indian Elegance
+                  {data.caption}
                 </p>
 
                 <p className="text-[8px] font-semibold uppercase tracking-[0.25em] text-[var(--color-text-muted)]">
-                  Ayesha Fashion
+                  {data.brandLabel}
                 </p>
               </div>
             </div>
@@ -139,13 +149,13 @@ export function BrandStory() {
               BOTTOM STATEMENT
           ===================================================== */}
 
-          <div className="mt-14 border-t border-[var(--color-border)] pt-6 sm:mt-16 lg:mt-20">
-            <p className="max-w-3xl font-display text-[1.6rem] leading-[1.1] tracking-[-0.02em] text-[var(--color-charcoal)] sm:text-[2rem]">
-              Thoughtful design, beautiful craftsmanship,
-              and pieces made to remain relevant beyond
-              the season.
-            </p>
-          </div>
+          {data.statement && (
+            <div className="mt-14 border-t border-[var(--color-border)] pt-6 sm:mt-16 lg:mt-20">
+              <p className="max-w-3xl font-display text-[1.6rem] leading-[1.1] tracking-[-0.02em] text-[var(--color-charcoal)] sm:text-[2rem]">
+                {data.statement}
+              </p>
+            </div>
+          )}
         </div>
       </Container>
     </section>

@@ -4,11 +4,18 @@ import { FormEvent, useState } from "react";
 import { ArrowUpRight, Check } from "lucide-react";
 
 import { Container } from "@/components/shared/container";
-import { newsletter } from "@/data/home";
+import type { HomepageNewsletter } from "@/types/homepage";
 
-export function Newsletter() {
+interface NewsletterProps {
+  data: HomepageNewsletter;
+}
+
+export function Newsletter({
+  data,
+}: NewsletterProps) {
   const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const [submitted, setSubmitted] =
+    useState(false);
 
   function handleSubmit(
     event: FormEvent<HTMLFormElement>
@@ -42,7 +49,7 @@ export function Newsletter() {
                 <span className="h-px w-9 bg-[var(--color-rose-dark)]" />
 
                 <p className="text-[8px] font-semibold uppercase tracking-[0.3em] text-[var(--color-text-secondary)] sm:text-[9px]">
-                  {newsletter.eyebrow}
+                  {data.eyebrow}
                 </p>
               </div>
 
@@ -70,15 +77,15 @@ export function Newsletter() {
                 lg:text-[5.4rem]
               "
             >
-              {newsletter.title.lineOne}
+              {data.title.lineOne}
 
               <span className="block italic text-[var(--color-rose-dark)]">
-                {newsletter.title.lineTwo}
+                {data.title.lineTwo}
               </span>
             </h2>
 
             <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-[var(--color-text-secondary)] sm:text-[15px] sm:leading-8">
-              {newsletter.description}
+              {data.description}
             </p>
           </div>
 
@@ -161,9 +168,13 @@ export function Newsletter() {
                       type="email"
                       value={email}
                       onChange={(event) =>
-                        setEmail(event.target.value)
+                        setEmail(
+                          event.target.value
+                        )
                       }
-                      placeholder={newsletter.placeholder}
+                      placeholder={
+                        data.inputPlaceholder
+                      }
                       autoComplete="email"
                       required
                       className="
@@ -212,7 +223,7 @@ export function Newsletter() {
                   "
                 >
                   <span>
-                    {newsletter.buttonLabel}
+                    {data.buttonLabel}
                   </span>
 
                   <ArrowUpRight
@@ -226,7 +237,7 @@ export function Newsletter() {
 
             {!submitted && (
               <p className="mt-4 text-center text-[8px] uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
-                {newsletter.note}
+                {data.disclaimer}
               </p>
             )}
           </div>
