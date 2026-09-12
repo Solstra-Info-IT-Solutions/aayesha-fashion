@@ -49,35 +49,29 @@ export function HeroSection({
 
   const goToSlide = useCallback(
     (index: number) => {
-      if (totalSlides === 0) {
-        return;
-      }
+      if (totalSlides === 0) return;
 
       setActiveIndex(
-        (index + totalSlides) % totalSlides
+        (index + totalSlides) % totalSlides,
       );
     },
-    [totalSlides]
+    [totalSlides],
   );
 
   const nextSlide = useCallback(() => {
-    if (totalSlides === 0) {
-      return;
-    }
+    if (totalSlides === 0) return;
 
     setActiveIndex(
-      (current) => (current + 1) % totalSlides
+      (current) => (current + 1) % totalSlides,
     );
   }, [totalSlides]);
 
   const previousSlide = useCallback(() => {
-    if (totalSlides === 0) {
-      return;
-    }
+    if (totalSlides === 0) return;
 
     setActiveIndex(
       (current) =>
-        (current - 1 + totalSlides) % totalSlides
+        (current - 1 + totalSlides) % totalSlides,
     );
   }, [totalSlides]);
 
@@ -86,13 +80,11 @@ export function HeroSection({
   ========================================================= */
 
   useEffect(() => {
-    if (isPaused || totalSlides <= 1) {
-      return;
-    }
+    if (isPaused || totalSlides <= 1) return;
 
     const interval = window.setInterval(
       nextSlide,
-      AUTOPLAY_DELAY
+      AUTOPLAY_DELAY,
     );
 
     return () => {
@@ -109,13 +101,9 @@ export function HeroSection({
   ========================================================= */
 
   useEffect(() => {
-    if (totalSlides <= 1) {
-      return;
-    }
+    if (totalSlides <= 1) return;
 
-    function handleKeyDown(
-      event: KeyboardEvent
-    ) {
+    function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "ArrowRight") {
         nextSlide();
       }
@@ -127,13 +115,13 @@ export function HeroSection({
 
     window.addEventListener(
       "keydown",
-      handleKeyDown
+      handleKeyDown,
     );
 
     return () => {
       window.removeEventListener(
         "keydown",
-        handleKeyDown
+        handleKeyDown,
       );
     };
   }, [
@@ -148,7 +136,7 @@ export function HeroSection({
 
   useEffect(() => {
     const mediaQuery = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
+      "(prefers-reduced-motion: reduce)",
     );
 
     if (mediaQuery.matches) {
@@ -161,7 +149,7 @@ export function HeroSection({
   ========================================================= */
 
   function handleTouchStart(
-    event: React.TouchEvent<HTMLDivElement>
+    event: React.TouchEvent<HTMLDivElement>,
   ) {
     touchStartX.current =
       event.touches[0]?.clientX ?? null;
@@ -171,7 +159,7 @@ export function HeroSection({
   }
 
   function handleTouchMove(
-    event: React.TouchEvent<HTMLDivElement>
+    event: React.TouchEvent<HTMLDivElement>,
   ) {
     touchEndX.current =
       event.touches[0]?.clientX ?? null;
@@ -209,28 +197,29 @@ export function HeroSection({
     return null;
   }
 
-  const activeSlide =
-    slides[activeIndex];
+  const activeSlide = slides[activeIndex];
 
   return (
     <section
       aria-label="Ayesha Fashion featured banners"
-      className="relative w-full overflow-hidden bg-[var(--color-warm-gray)]"
+      className="
+        relative
+        w-full
+        overflow-hidden
+        bg-[var(--color-bg-soft)]
+      "
     >
       {/* =====================================================
-          BANNER STAGE
-
-          The parent MUST have an aspect ratio because all
-          slides are absolutely positioned.
+          HERO STAGE
       ===================================================== */}
 
       <div
         className="
           relative
-          aspect-[4/5]
+          min-h-[calc(100svh-0px)]
           w-full
           overflow-hidden
-          md:aspect-[16/11]
+          md:min-h-[100svh]
         "
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -250,32 +239,36 @@ export function HeroSection({
               aria-hidden={!isActive}
               className={[
                 "absolute inset-0",
-                "transition-opacity duration-1000 ease-in-out",
+                "transition-opacity duration-[1200ms]",
+                "ease-[cubic-bezier(0.22,1,0.36,1)]",
                 isActive
                   ? "z-10 opacity-100"
                   : "z-0 opacity-0",
               ].join(" ")}
             >
-              {/* =============================================
-                  DESKTOP
-              ============================================= */}
+              {/* ---------------------------------------------
+                  DESKTOP IMAGE
+              --------------------------------------------- */}
 
-              <div className="absolute inset-0 hidden items-center justify-center md:flex">
+              <div className="absolute inset-0 hidden md:block">
                 <Image
                   src={slide.image}
                   alt={slide.title}
                   fill
                   priority={index === 0}
                   sizes="100vw"
-                  className="object-contain"
+                  className="
+                    object-cover
+                    object-center
+                  "
                 />
               </div>
 
-              {/* =============================================
-                  MOBILE
-              ============================================= */}
+              {/* ---------------------------------------------
+                  MOBILE IMAGE
+              --------------------------------------------- */}
 
-              <div className="absolute inset-0 flex items-center justify-center md:hidden">
+              <div className="absolute inset-0 md:hidden">
                 <Image
                   src={
                     slide.mobileImage ||
@@ -285,198 +278,372 @@ export function HeroSection({
                   fill
                   priority={index === 0}
                   sizes="100vw"
-                  className="object-contain"
+                  className="
+                    object-cover
+                    object-center
+                  "
                 />
+              </div>
+
+              {/* ---------------------------------------------
+                  SUBTLE CINEMATIC OVERLAY
+
+                  Keeps text readable without making the
+                  photography look dark.
+              --------------------------------------------- */}
+
+              <div
+                className="
+                  absolute
+                  inset-0
+                  bg-gradient-to-t
+                  from-black/35
+                  via-black/5
+                  to-transparent
+                "
+              />
+
+              {/* ---------------------------------------------
+                  EDITORIAL CONTENT
+              --------------------------------------------- */}
+
+              <div
+                className="
+                  absolute
+                  inset-x-0
+                  bottom-0
+                  z-20
+                "
+              >
+                <div
+                  className="
+                    container-premium
+                    pb-24
+                    sm:pb-28
+                    md:pb-32
+                    lg:pb-36
+                  "
+                >
+                  <div
+                    className="
+                      max-w-[720px]
+                      text-white
+                    "
+                  >
+                    {slide.eyebrow && (
+                      <p
+                        className="
+                          mb-4
+                          font-body
+                          text-[10px]
+                          font-medium
+                          uppercase
+                          tracking-[0.28em]
+                          text-white/85
+                          sm:text-[11px]
+                        "
+                      >
+                        {slide.eyebrow}
+                      </p>
+                    )}
+
+                    <h1
+                      className="
+                        font-display
+                        text-[clamp(3.25rem,7vw,7rem)]
+                        font-normal
+                        leading-[0.88]
+                        tracking-[-0.035em]
+                        text-balance
+                      "
+                    >
+                      {slide.title}
+                    </h1>
+
+                    {slide.subtitle && (
+                      <p
+                        className="
+                          mt-5
+                          max-w-[560px]
+                          font-display
+                          text-[clamp(1.25rem,2vw,1.75rem)]
+                          leading-[1.15]
+                          text-white/90
+                        "
+                      >
+                        {slide.subtitle}
+                      </p>
+                    )}
+
+                    {slide.description && (
+                      <p
+                        className="
+                          mt-4
+                          max-w-[500px]
+                          font-body
+                          text-sm
+                          font-light
+                          leading-6
+                          text-white/80
+                          sm:text-[15px]
+                        "
+                      >
+                        {slide.description}
+                      </p>
+                    )}
+
+                    {slide.buttonLabel &&
+                      slide.href && (
+                        <a
+                          href={slide.href}
+                          className="
+                            group
+                            mt-7
+                            inline-flex
+                            items-center
+                            gap-4
+                            border-b
+                            border-white/70
+                            pb-2
+                            font-body
+                            text-[10px]
+                            font-medium
+                            uppercase
+                            tracking-[0.22em]
+                            text-white
+                            transition-all
+                            duration-300
+                            hover:border-white
+                            sm:mt-8
+                            sm:text-[11px]
+                          "
+                        >
+                          <span>
+                            {slide.buttonLabel}
+                          </span>
+
+                          <ArrowRight
+                            size={15}
+                            strokeWidth={1.3}
+                            className="
+                              transition-transform
+                              duration-300
+                              group-hover:translate-x-1
+                            "
+                          />
+                        </a>
+                      )}
+                  </div>
+                </div>
               </div>
             </div>
           );
         })}
 
         {/* ===================================================
-            PREVIOUS / NEXT
+            SLIDE CONTROLS
         =================================================== */}
 
         {totalSlides > 1 && (
-          <div
-            className="
-              absolute
-              bottom-5
-              right-5
-              z-30
-              flex
-              items-center
-              gap-2
-              sm:bottom-7
-              sm:right-7
-              lg:bottom-8
-              lg:right-10
-              xl:right-14
-            "
-          >
-            <button
-              type="button"
-              onClick={previousSlide}
-              aria-label="Previous banner"
+          <>
+            {/* ---------------------------------------------
+                PREVIOUS / NEXT
+            --------------------------------------------- */}
+
+            <div
               className="
+                absolute
+                bottom-7
+                right-5
+                z-30
                 flex
-                h-10
-                w-10
                 items-center
-                justify-center
-                border
-                border-white/55
-                bg-black/10
-                text-white
-                transition-all
-                duration-300
-                hover:border-white
-                hover:bg-white
-                hover:text-[var(--color-charcoal)]
-                sm:h-11
-                sm:w-11
+                gap-2
+                sm:bottom-9
+                sm:right-8
+                lg:right-12
+                xl:right-16
               "
             >
-              <ArrowLeft
-                size={16}
-                strokeWidth={1.4}
-              />
-            </button>
+              <button
+                type="button"
+                onClick={previousSlide}
+                aria-label="Previous banner"
+                className="
+                  group
+                  flex
+                  h-10
+                  w-10
+                  items-center
+                  justify-center
+                  border
+                  border-white/45
+                  bg-black/10
+                  text-white
+                  backdrop-blur-[2px]
+                  transition-all
+                  duration-300
+                  hover:border-white
+                  hover:bg-white
+                  hover:text-[var(--color-text)]
+                  sm:h-11
+                  sm:w-11
+                "
+              >
+                <ArrowLeft
+                  size={15}
+                  strokeWidth={1.3}
+                  className="
+                    transition-transform
+                    duration-300
+                    group-hover:-translate-x-0.5
+                  "
+                />
+              </button>
 
-            <button
-              type="button"
-              onClick={nextSlide}
-              aria-label="Next banner"
+              <button
+                type="button"
+                onClick={nextSlide}
+                aria-label="Next banner"
+                className="
+                  group
+                  flex
+                  h-10
+                  w-10
+                  items-center
+                  justify-center
+                  border
+                  border-white/45
+                  bg-black/10
+                  text-white
+                  backdrop-blur-[2px]
+                  transition-all
+                  duration-300
+                  hover:border-white
+                  hover:bg-white
+                  hover:text-[var(--color-text)]
+                  sm:h-11
+                  sm:w-11
+                "
+              >
+                <ArrowRight
+                  size={15}
+                  strokeWidth={1.3}
+                  className="
+                    transition-transform
+                    duration-300
+                    group-hover:translate-x-0.5
+                  "
+                />
+              </button>
+            </div>
+
+            {/* ---------------------------------------------
+                INDICATORS
+            --------------------------------------------- */}
+
+            <div
               className="
+                absolute
+                bottom-8
+                left-5
+                z-30
                 flex
-                h-10
-                w-10
                 items-center
-                justify-center
-                border
-                border-white/55
-                bg-black/10
-                text-white
-                transition-all
-                duration-300
-                hover:border-white
-                hover:bg-white
-                hover:text-[var(--color-charcoal)]
-                sm:h-11
-                sm:w-11
+                gap-2
+                sm:left-8
+                lg:left-12
+                xl:left-16
               "
             >
-              <ArrowRight
-                size={16}
-                strokeWidth={1.4}
-              />
-            </button>
-          </div>
-        )}
+              {slides.map(
+                (slide, index) => {
+                  const isActive =
+                    index === activeIndex;
 
-        {/* ===================================================
-            INDICATORS
-        =================================================== */}
-
-        {totalSlides > 1 && (
-          <div
-            className="
-              absolute
-              bottom-7
-              left-5
-              z-30
-              flex
-              items-center
-              gap-2
-              sm:left-8
-              lg:left-10
-              xl:left-14
-            "
-          >
-            {slides.map(
-              (slide, index) => {
-                const isActive =
-                  index === activeIndex;
-
-                return (
-                  <button
-                    key={slide.id}
-                    type="button"
-                    aria-label={`Go to banner ${
-                      index + 1
-                    }`}
-                    aria-current={
-                      isActive
-                    }
-                    onClick={() =>
-                      goToSlide(index)
-                    }
-                    className="group flex h-7 items-center"
-                  >
-                    <span
-                      className={[
-                        "h-px transition-all duration-500",
+                  return (
+                    <button
+                      key={slide.id}
+                      type="button"
+                      aria-label={`Go to banner ${
+                        index + 1
+                      }`}
+                      aria-current={
                         isActive
-                          ? "w-10 bg-white"
-                          : "w-5 bg-white/55 group-hover:w-8 group-hover:bg-white",
-                      ].join(" ")}
-                    />
-                  </button>
-                );
+                      }
+                      onClick={() =>
+                        goToSlide(index)
+                      }
+                      className="
+                        group
+                        flex
+                        h-7
+                        items-center
+                      "
+                    >
+                      <span
+                        className={[
+                          "h-px",
+                          "transition-all",
+                          "duration-500",
+                          isActive
+                            ? "w-10 bg-white"
+                            : "w-5 bg-white/45 group-hover:w-8 group-hover:bg-white/80",
+                        ].join(" ")}
+                      />
+                    </button>
+                  );
+                },
+              )}
+            </div>
+
+            {/* ---------------------------------------------
+                PAUSE / PLAY
+            --------------------------------------------- */}
+
+            <button
+              type="button"
+              onClick={() =>
+                setIsPaused(
+                  (value) => !value,
+                )
               }
-            )}
-          </div>
-        )}
-
-        {/* ===================================================
-            PAUSE / PLAY
-        =================================================== */}
-
-        {totalSlides > 1 && (
-          <button
-            type="button"
-            onClick={() =>
-              setIsPaused(
-                (value) => !value
-              )
-            }
-            aria-label={
-              isPaused
-                ? "Resume banners"
-                : "Pause banners"
-            }
-            className="
-              absolute
-              bottom-8
-              left-1/2
-              z-30
-              hidden
-              -translate-x-1/2
-              text-white/70
-              transition-colors
-              duration-300
-              hover:text-white
-              md:block
-            "
-          >
-            {isPaused ? (
-              <Play
-                size={14}
-                strokeWidth={1.4}
-              />
-            ) : (
-              <Pause
-                size={14}
-                strokeWidth={1.4}
-              />
-            )}
-          </button>
+              aria-label={
+                isPaused
+                  ? "Resume banners"
+                  : "Pause banners"
+              }
+              className="
+                absolute
+                bottom-8
+                left-1/2
+                z-30
+                hidden
+                -translate-x-1/2
+                text-white/65
+                transition-colors
+                duration-300
+                hover:text-white
+                md:block
+              "
+            >
+              {isPaused ? (
+                <Play
+                  size={13}
+                  strokeWidth={1.3}
+                />
+              ) : (
+                <Pause
+                  size={13}
+                  strokeWidth={1.3}
+                />
+              )}
+            </button>
+          </>
         )}
 
         {/* ===================================================
             SCREEN READER CONTENT
-
-            Keeps the backend-provided content available
-            without changing the visual design.
         =================================================== */}
 
         <div className="sr-only">
