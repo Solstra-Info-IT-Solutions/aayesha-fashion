@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { BrandLogo } from "@/components/layout/brand-logo";
 import { DesktopNavigation } from "@/components/layout/desktop-navigation";
@@ -11,35 +11,78 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] =
     useState(false);
 
+  const [isScrolled, setIsScrolled] =
+    useState(false);
+
+  /* =========================================================
+     SCROLL STATE
+  ========================================================= */
+
+  useEffect(() => {
+    function handleScroll() {
+      setIsScrolled(window.scrollY > 24);
+    }
+
+    handleScroll();
+
+    window.addEventListener(
+      "scroll",
+      handleScroll,
+      { passive: true },
+    );
+
+    return () => {
+      window.removeEventListener(
+        "scroll",
+        handleScroll,
+      );
+    };
+  }, []);
+
   return (
     <header
-      className="
-        sticky
-        top-0
-        z-50
-        w-full
-        border-b
-        border-[var(--color-border)]
-        bg-[var(--color-ivory)]
-        text-[var(--color-charcoal)]
-      "
+      className={[
+        "fixed",
+        "top-0",
+        "z-[var(--z-header)]",
+        "w-full",
+        "transition-all",
+        "duration-[400ms]",
+        "ease-[cubic-bezier(0.22,1,0.36,1)]",
+
+        isScrolled
+          ? [
+              "border-b",
+              "border-[var(--color-border-light)]",
+              "bg-[rgba(247,243,238,0.94)]",
+              "text-[var(--color-text)]",
+              "backdrop-blur-md",
+            ].join(" ")
+          : [
+              "border-b",
+              "border-transparent",
+              "bg-transparent",
+              "text-white",
+            ].join(" "),
+      ].join(" ")}
     >
       <div
         className="
           relative
           mx-auto
           flex
-          h-[74px]
+          h-[72px]
           w-full
           max-w-[1600px]
           items-center
           px-5
-          sm:h-[78px]
+          sm:h-[76px]
           sm:px-8
-          md:h-[82px]
+          md:h-[80px]
           md:px-10
-          lg:px-14
-          xl:px-20
+          lg:h-[84px]
+          lg:px-12
+          xl:px-16
         "
       >
         {/* =====================================================
@@ -86,7 +129,15 @@ export function Header() {
             HEADER ACTIONS
         ===================================================== */}
 
-        <div className="relative z-[20] ml-auto flex items-center">
+        <div
+          className="
+            relative
+            z-[20]
+            ml-auto
+            flex
+            items-center
+          "
+        >
           <HeaderActions />
         </div>
       </div>
