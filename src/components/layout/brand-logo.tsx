@@ -24,9 +24,9 @@ export function BrandLogo() {
         items-center
         justify-center
         leading-none
-        text-[var(--color-charcoal)]
+        text-[var(--color-text)]
         transition-opacity
-        duration-200
+        duration-[var(--duration-fast)]
         hover:opacity-80
         cursor-pointer
       "
@@ -43,12 +43,14 @@ export function BrandLogo() {
         priority
         className="
           pointer-events-none
-          h-[38px]
-          w-[38px]
+          h-[36px]
+          w-[36px]
           shrink-0
           object-contain
-          sm:h-[42px]
-          sm:w-[42px]
+          sm:h-[40px]
+          sm:w-[40px]
+          md:h-[42px]
+          md:w-[42px]
         "
       />
 
@@ -59,24 +61,26 @@ export function BrandLogo() {
       <span
         className="
           pointer-events-none
-          ml-3
+          ml-2.5
           flex
           flex-col
           items-start
           justify-center
+          sm:ml-3
         "
       >
         {/* AAYESHA */}
 
         <span
           className="
-            font-[var(--font-display)]
-            text-[26px]
+            font-display
+            text-[25px]
             font-medium
-            leading-[0.9]
+            leading-[0.88]
             tracking-[-0.035em]
-            text-[var(--color-charcoal)]
-            sm:text-[29px]
+            text-[var(--color-text)]
+            sm:text-[28px]
+            md:text-[30px]
           "
         >
           Aayesha
@@ -87,10 +91,12 @@ export function BrandLogo() {
         <span
           className="
             mt-[5px]
-            pl-[0.18em]
+            pl-[0.2em]
+            font-body
             text-[6px]
             font-medium
             uppercase
+            leading-none
             tracking-[0.42em]
             text-[var(--color-text-muted)]
             sm:text-[6.5px]
