@@ -1,5 +1,16 @@
 import { ContentPage } from "@/components/content/content-page";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Returns & Exchange",
+  description:
+    "Review Aayesha Fashion's return and exchange information before placing your order.",
+  alternates: {
+    canonical: "/returns",
+  },
+};
+
 export default function ReturnsPage() {
   return (
     <ContentPage

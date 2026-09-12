@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getProducts } from "@/lib/api/products";
 import type { ProductSort } from "@/types/product";
 
@@ -18,6 +19,15 @@ const validSorts: ProductSort[] = [
   "best-selling",
   "featured",
 ];
+
+export const metadata: Metadata = {
+  title: "Contemporary Collection",
+  description:
+    "Explore contemporary women's fashion by Aayesha Fashion, designed with clean silhouettes, modern details, and effortless elegance.",
+  alternates: {
+    canonical: "/collections/contemporary",
+  },
+};
 
 export default async function ContemporaryPage({
   searchParams,

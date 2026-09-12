@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getProducts } from "@/lib/api/products";
 
 import type {
@@ -68,6 +69,22 @@ function parseNumber(value?: string) {
 
   return Number.isFinite(parsed) ? parsed : undefined;
 }
+
+export const metadata: Metadata = {
+  title: "Best Sellers",
+  description:
+    "Shop Aayesha Fashion's best-selling Indian and contemporary styles, loved for their elegant silhouettes and timeless appeal.",
+  alternates: {
+    canonical: "/collections/best-sellers",
+  },
+  openGraph: {
+    title: "Best Sellers | Aayesha Fashion",
+    description:
+      "Discover the pieces our customers love most.",
+    url: "/collections/best-sellers",
+    type: "website",
+  },
+};
 
 export default async function BestSellersPage({
   searchParams,

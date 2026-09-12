@@ -110,6 +110,16 @@ export function CheckoutPlaceOrder() {
     (state) => state.couponCode,
   );
 
+  const couponDiscount = useCheckoutStore(
+    (state) => state.couponDiscount,
+  );
+
+  const couponShippingDiscount =
+    useCheckoutStore(
+      (state) =>
+        state.couponShippingDiscount,
+    );
+
   /* ========================================================
      LOCAL STATE
   ======================================================== */
@@ -269,25 +279,22 @@ export function CheckoutPlaceOrder() {
       item.quantity;
   }
 
-  const shipping =
+  const baseShipping =
     delivery === "express"
       ? 199
       : subtotal >= 2999
         ? 0
         : 99;
 
-  const normalizedCoupon =
-    couponCode
-      .trim()
-      .toUpperCase();
-
-  const couponDiscount =
-    normalizedCoupon ===
-    "AYESHA10"
-      ? Math.round(
-          subtotal * 0.1,
-        )
-      : 0;
+  /*
+   * Coupon values come from the server-validated
+   * coupon stored in the checkout store.
+   */
+  const shipping = Math.max(
+    0,
+    baseShipping -
+      couponShippingDiscount,
+  );
 
   const total = Math.max(
     0,
@@ -543,12 +550,16 @@ export function CheckoutPlaceOrder() {
            SAVE ADDRESS
         ---------------------------------------------------- */
 
-          console.log("CHECKOUT AUTH STATE:", {
-    isAuthenticated,
-    accessTokenExists: Boolean(accessToken),
-    accessTokenLength: accessToken?.length ?? 0,
-  });
-
+        console.log(
+          "CHECKOUT AUTH STATE:",
+          {
+            isAuthenticated,
+            accessTokenExists:
+              Boolean(accessToken),
+            accessTokenLength:
+              accessToken?.length ?? 0,
+          },
+        );
 
         try {
           await saveAddressForFutureOrders();
@@ -565,6 +576,11 @@ export function CheckoutPlaceOrder() {
         /* ----------------------------------------------------
            ORDER PAYLOAD
         ---------------------------------------------------- */
+
+        const normalizedCoupon =
+          couponCode
+            .trim()
+            .toUpperCase();
 
         const orderPayload: CreateOrderPayload =
           {
@@ -647,29 +663,16 @@ export function CheckoutPlaceOrder() {
            CREATE ORDER
         ---------------------------------------------------- */
 
-        /*
-         * IMPORTANT:
-         *
-         * accessToken is passed here.
-         *
-         * Guest:
-         *   accessToken = null
-         *
-         * Logged-in customer:
-         *   accessToken = valid bearer token
-         *
-         * Backend optionalAuth will then populate
-         * request.user for authenticated orders.
-         */
+        console.log(
+          "BEFORE CREATE ORDER:",
+          {
+            accessTokenExists:
+              Boolean(accessToken),
+            accessTokenLength:
+              accessToken?.length ?? 0,
+          },
+        );
 
-
-
-  console.log("BEFORE CREATE ORDER:", {
-    accessTokenExists: Boolean(accessToken),
-    accessTokenLength: accessToken?.length ?? 0,
-  });
-
-          
         const response =
           await createOrder(
             orderPayload,
@@ -836,14 +839,61 @@ export function CheckoutPlaceOrder() {
           </div>
 
           <span className="text-xs font-semibold text-[var(--color-charcoal)]">
-            {delivery === "express"
-              ? "₹199"
-              : shipping === 0
-                ? "FREE"
-                : `₹${shipping}`}
+            {shipping === 0
+              ? "FREE"
+              : `₹${shipping}`}
           </span>
         </div>
       </div>
+
+      {/* =====================================================
+          COUPON
+      ===================================================== */}
+
+      {couponCode && (
+        <div className="border-b border-[var(--color-border)] py-4">
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
+              Coupon
+            </span>
+
+            <span className="text-xs font-semibold text-[var(--color-success)]">
+              {couponCode}
+            </span>
+          </div>
+
+          {couponDiscount > 0 && (
+            <div className="mt-2 flex items-center justify-between gap-4">
+              <span className="text-[10px] text-[var(--color-text-muted)]">
+                Coupon Discount
+              </span>
+
+              <span className="text-[10px] font-semibold text-[var(--color-success)]">
+                - ₹
+                {couponDiscount.toLocaleString(
+                  "en-IN",
+                )}
+              </span>
+            </div>
+          )}
+
+          {couponShippingDiscount >
+            0 && (
+            <div className="mt-2 flex items-center justify-between gap-4">
+              <span className="text-[10px] text-[var(--color-text-muted)]">
+                Shipping Discount
+              </span>
+
+              <span className="text-[10px] font-semibold text-[var(--color-success)]">
+                - ₹
+                {couponShippingDiscount.toLocaleString(
+                  "en-IN",
+                )}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* =====================================================
           TOTAL

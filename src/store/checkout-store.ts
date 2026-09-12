@@ -24,6 +24,16 @@ interface CheckoutStore {
 
   couponCode: string;
 
+  couponDiscount: number;
+
+  couponShippingDiscount: number;
+
+  couponDiscountType:
+    | "percentage"
+    | "fixed"
+    | "free_shipping"
+    | null;
+
   step: CheckoutStep;
 
   setContact: (
@@ -44,6 +54,22 @@ interface CheckoutStore {
 
   setCouponCode: (
     code: string,
+  ) => void;
+
+  setCouponDiscount: (
+    couponDiscount: number,
+  ) => void;
+
+  setCouponShippingDiscount: (
+    couponShippingDiscount: number,
+  ) => void;
+
+  setCouponDiscountType: (
+    couponDiscountType:
+      | "percentage"
+      | "fixed"
+      | "free_shipping"
+      | null,
   ) => void;
 
   setStep: (
@@ -75,7 +101,9 @@ export const useCheckoutStore =
           phone: "",
         },
 
-        address: emptyAddress,
+        address: {
+          ...emptyAddress,
+        },
 
         delivery: "standard",
 
@@ -83,7 +111,17 @@ export const useCheckoutStore =
 
         couponCode: "",
 
+        couponDiscount: 0,
+
+        couponShippingDiscount: 0,
+
+        couponDiscountType: null,
+
         step: "contact",
+
+        /* =====================================================
+           CONTACT
+        ===================================================== */
 
         setContact: (contact) =>
           set((state) => ({
@@ -93,6 +131,10 @@ export const useCheckoutStore =
             },
           })),
 
+        /* =====================================================
+           ADDRESS
+        ===================================================== */
+
         setAddress: (address) =>
           set((state) => ({
             address: {
@@ -101,25 +143,77 @@ export const useCheckoutStore =
             },
           })),
 
+        /* =====================================================
+           DELIVERY
+        ===================================================== */
+
         setDelivery: (delivery) =>
           set({
             delivery,
           }),
+
+        /* =====================================================
+           PAYMENT
+        ===================================================== */
 
         setPayment: (payment) =>
           set({
             payment,
           }),
 
+        /* =====================================================
+           COUPON
+        ===================================================== */
+
         setCouponCode: (couponCode) =>
           set({
-            couponCode: couponCode.toUpperCase(),
+            couponCode:
+              couponCode
+                .trim()
+                .toUpperCase(),
           }),
+
+        setCouponDiscount: (
+          couponDiscount,
+        ) =>
+          set({
+            couponDiscount:
+              Math.max(
+                0,
+                couponDiscount,
+              ),
+          }),
+
+        setCouponShippingDiscount: (
+          couponShippingDiscount,
+        ) =>
+          set({
+            couponShippingDiscount:
+              Math.max(
+                0,
+                couponShippingDiscount,
+              ),
+          }),
+
+        setCouponDiscountType: (
+          couponDiscountType,
+        ) =>
+          set({
+            couponDiscountType,
+          }),
+
+        /* =====================================================
+           STEP
+        ===================================================== */
 
         setStep: (step) =>
           set({
             step,
           }),
+
+        /* =====================================================
+           RESET
+        ===================================================== */
 
         resetCheckout: () =>
           set({
@@ -137,6 +231,12 @@ export const useCheckoutStore =
             payment: "cod",
 
             couponCode: "",
+
+            couponDiscount: 0,
+
+            couponShippingDiscount: 0,
+
+            couponDiscountType: null,
 
             step: "contact",
           }),

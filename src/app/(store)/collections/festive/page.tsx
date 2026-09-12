@@ -1,5 +1,7 @@
+import type { Metadata } from "next";
 import { getProducts } from "@/lib/api/products";
 import type { ProductSort } from "@/types/product";
+import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-json-ld";
 
 import { CollectionPage } from "@/components/collections/collection-page";
 
@@ -18,6 +20,15 @@ const validSorts: ProductSort[] = [
   "best-selling",
   "featured",
 ];
+
+export const metadata: Metadata = {
+  title: "Festive Collection",
+  description:
+    "Explore elegant festive fashion from Aayesha Fashion, crafted for celebrations, special occasions, and memorable evenings.",
+  alternates: {
+    canonical: "/collections/festive",
+  },
+};
 
 export default async function FestivePage({
   searchParams,

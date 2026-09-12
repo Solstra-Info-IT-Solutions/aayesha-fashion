@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getProducts } from "@/lib/api/products";
 
 import type {
@@ -66,6 +67,22 @@ function parseNumber(value?: string) {
 
   return Number.isFinite(parsed) ? parsed : undefined;
 }
+
+export const metadata: Metadata = {
+  title: "Shop Women's Fashion",
+  description:
+    "Explore Aayesha Fashion's curated collection of elegant Indian fashion, contemporary silhouettes, festive wear, and timeless everyday styles.",
+  alternates: {
+    canonical: "/shop",
+  },
+  openGraph: {
+    title: "Shop Women's Fashion | Aayesha Fashion",
+    description:
+      "Explore elegant Indian fashion, festive silhouettes, and contemporary styles from Aayesha Fashion.",
+    url: "/shop",
+    type: "website",
+  },
+};
 
 export default async function ShopPage({
   searchParams,

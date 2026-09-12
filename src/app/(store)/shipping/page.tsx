@@ -1,5 +1,16 @@
 import { ContentPage } from "@/components/content/content-page";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Shipping & Delivery",
+  description:
+    "Learn about Aayesha Fashion's shipping and delivery information for online orders.",
+  alternates: {
+    canonical: "/shipping",
+  },
+};
+
 export default function ShippingPage() {
   return (
     <ContentPage

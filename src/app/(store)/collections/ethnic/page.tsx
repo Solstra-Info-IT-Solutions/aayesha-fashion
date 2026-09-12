@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getProducts } from "@/lib/api/products";
 import type { ProductSort } from "@/types/product";
 
@@ -18,6 +19,15 @@ const validSorts: ProductSort[] = [
   "best-selling",
   "featured",
 ];
+
+export const metadata: Metadata = {
+  title: "Ethnic Collection",
+  description:
+    "Discover refined ethnic wear by Aayesha Fashion, blending Indian craftsmanship, graceful silhouettes, and modern styling.",
+  alternates: {
+    canonical: "/collections/ethnic",
+  },
+};
 
 export default async function EthnicPage({
   searchParams,

@@ -18,8 +18,11 @@ type ResolvedCheckoutItem = {
     variantId: string;
     quantity: number;
   };
+
   product: Product;
+
   variant: ProductVariant;
+
   image?: Product["media"][number];
 };
 
@@ -36,11 +39,22 @@ export function CheckoutSummary() {
     (state) => state.couponCode,
   );
 
+  const couponDiscount = useCheckoutStore(
+    (state) => state.couponDiscount,
+  );
+
+  const couponShippingDiscount =
+    useCheckoutStore(
+      (state) =>
+        state.couponShippingDiscount,
+    );
+
   const [items, setItems] = useState<
     ResolvedCheckoutItem[]
   >([]);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] =
+    useState(true);
 
   /* ==========================================================
      LOAD PRODUCTS FROM BACKEND
@@ -59,53 +73,64 @@ export function CheckoutSummary() {
       setLoading(true);
 
       try {
-        const productIds = Array.from(
-          new Set(
-            cartItems.map(
-              (item) => item.productId,
+        const productIds =
+          Array.from(
+            new Set(
+              cartItems.map(
+                (item) =>
+                  item.productId,
+              ),
             ),
-          ),
-        );
+          );
 
-        const responses = await Promise.all(
-          productIds.map(
-            async (productId) => {
-              try {
-                return await getProductById(
-                  productId,
-                );
-              } catch {
-                return null;
-              }
-            },
-          ),
-        );
+        const responses =
+          await Promise.all(
+            productIds.map(
+              async (
+                productId,
+              ) => {
+                try {
+                  return await getProductById(
+                    productId,
+                  );
+                } catch {
+                  return null;
+                }
+              },
+            ),
+          );
 
         if (cancelled) {
           return;
         }
 
-        const productMap = new Map<
-          string,
-          Product
-        >();
+        const productMap =
+          new Map<
+            string,
+            Product
+          >();
 
-        responses.forEach((product) => {
-          if (product) {
-            productMap.set(
-              product.id,
-              product,
-            );
-          }
-        });
+        responses.forEach(
+          (product) => {
+            if (product) {
+              productMap.set(
+                product.id,
+                product,
+              );
+            }
+          },
+        );
 
         const resolved: ResolvedCheckoutItem[] =
           [];
 
-        for (const cartItem of cartItems) {
-          const product = productMap.get(
-            cartItem.productId,
-          );
+        for (
+          const cartItem of cartItems
+        ) {
+          const product =
+            productMap.get(
+              cartItem.productId,
+            );
 
           if (!product) {
             continue;
@@ -135,13 +160,17 @@ export function CheckoutSummary() {
             ) ??
             product.media.find(
               (media) =>
-                media.type === "image",
+                media.type ===
+                "image",
             );
 
           resolved.push({
             cartItem,
+
             product,
+
             variant,
+
             image,
           });
         }
@@ -166,11 +195,15 @@ export function CheckoutSummary() {
   ========================================================== */
 
   let subtotal = 0;
+
   let mrpTotal = 0;
 
-  for (const item of items) {
+  for (
+    const item of items
+  ) {
     subtotal +=
-      item.variant.pricing.sellingPrice *
+      item.variant.pricing
+        .sellingPrice *
       item.cartItem.quantity;
 
     mrpTotal +=
@@ -178,30 +211,51 @@ export function CheckoutSummary() {
       item.cartItem.quantity;
   }
 
-  const shipping =
+  /*
+   * Base shipping before coupon.
+   */
+  const baseShipping =
     delivery === "express"
       ? 199
       : subtotal >= 2999
         ? 0
         : 99;
 
-  const productSavings = Math.max(
+  /*
+   * Coupon can discount shipping.
+   *
+   * Backend has already validated this amount.
+   */
+  const shipping = Math.max(
     0,
-    mrpTotal - subtotal,
+    baseShipping -
+      couponShippingDiscount,
   );
 
-  const couponDiscount =
-    couponCode.trim().toUpperCase() ===
-    "AYESHA10"
-      ? Math.round(subtotal * 0.1)
-      : 0;
+  const productSavings =
+    Math.max(
+      0,
+      mrpTotal -
+        subtotal,
+    );
 
+  /*
+   * Coupon discount is now taken
+   * directly from checkout-store.
+   *
+   * It is populated by the backend
+   * coupon validation API.
+   */
   const total = Math.max(
     0,
     subtotal +
       shipping -
       couponDiscount,
   );
+
+  /* ==========================================================
+     RENDER
+  ========================================================== */
 
   return (
     <aside className="lg:sticky lg:top-28">
@@ -239,7 +293,9 @@ export function CheckoutSummary() {
                     <div className="relative h-20 w-16 shrink-0 overflow-hidden bg-[var(--color-cream)]">
                       {image?.src ? (
                         <Image
-                          src={image.src}
+                          src={
+                            image.src
+                          }
                           alt={
                             image.alt ??
                             product.name
@@ -255,18 +311,31 @@ export function CheckoutSummary() {
                       )}
 
                       <span className="absolute bottom-1 right-1 flex h-5 min-w-5 items-center justify-center bg-[var(--color-charcoal)] px-1 text-[8px] font-semibold text-white">
-                        {cartItem.quantity}
+                        {
+                          cartItem.quantity
+                        }
                       </span>
                     </div>
 
                     <div className="min-w-0 flex-1">
                       <p className="font-[var(--font-cormorant)] text-lg leading-tight">
-                        {product.name}
+                        {
+                          product.name
+                        }
                       </p>
 
                       <p className="mt-1 text-[10px] text-[var(--color-text-muted)]">
-                        {variant.color.name} ·{" "}
-                        {variant.size.label}
+                        {
+                          variant
+                            .color
+                            .name
+                        }{" "}
+                        ·{" "}
+                        {
+                          variant
+                            .size
+                            .label
+                        }
                       </p>
 
                       <p className="mt-2 text-xs font-semibold">
@@ -307,10 +376,22 @@ export function CheckoutSummary() {
             />
           )}
 
-          {couponDiscount > 0 && (
+          {couponDiscount > 0 &&
+            couponCode && (
+              <SummaryRow
+                label={`Coupon (${couponCode.toUpperCase()})`}
+                value={`- ₹${couponDiscount.toLocaleString(
+                  "en-IN",
+                )}`}
+                valueClass="text-[var(--color-success)]"
+              />
+            )}
+
+          {couponShippingDiscount >
+            0 && (
             <SummaryRow
-              label={`Coupon (${couponCode.toUpperCase()})`}
-              value={`- ₹${couponDiscount.toLocaleString(
+              label={`Shipping Discount (${couponCode.toUpperCase()})`}
+              value={`- ₹${couponShippingDiscount.toLocaleString(
                 "en-IN",
               )}`}
               valueClass="text-[var(--color-success)]"
@@ -402,7 +483,9 @@ function SummaryRow({
 function CheckoutItemsSkeleton() {
   return (
     <>
-      {Array.from({ length: 2 }).map(
+      {Array.from({
+        length: 2,
+      }).map(
         (_, index) => (
           <div
             key={index}

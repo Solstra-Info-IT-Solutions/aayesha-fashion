@@ -1,6 +1,17 @@
 import { ContentPage } from "@/components/content/content-page";
 import { siteConfig } from "@/config/site";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Contact Us",
+  description:
+    "Get in touch with Aayesha Fashion for product, order, shipping, returns, and general enquiries.",
+  alternates: {
+    canonical: "/contact",
+  },
+};
+
 export default function ContactPage() {
   return (
     <>

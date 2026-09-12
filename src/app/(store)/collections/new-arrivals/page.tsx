@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { getProducts } from "@/lib/api/products";
 
 import type {
@@ -69,6 +71,22 @@ function parseNumber(value?: string) {
   return Number.isFinite(parsed) ? parsed : undefined;
 }
 
+export const metadata: Metadata = {
+  title: "New Arrivals",
+  description:
+    "Discover the latest arrivals from Aayesha Fashion — refined Indian silhouettes, contemporary styles, and fresh seasonal edits.",
+  alternates: {
+    canonical: "/collections/new-arrivals",
+  },
+  openGraph: {
+    title: "New Arrivals | Aayesha Fashion",
+    description:
+      "Discover the latest fashion arrivals designed for effortless elegance.",
+    url: "/collections/new-arrivals",
+    type: "website",
+  },
+};
+
 export default async function NewArrivalsPage({
   searchParams,
 }: NewArrivalsPageProps) {
@@ -98,8 +116,13 @@ export default async function NewArrivalsPage({
       ? (params.type as ProductType)
       : undefined;
 
-  const minPrice = parseNumber(params.minPrice);
-  const maxPrice = parseNumber(params.maxPrice);
+  const minPrice = parseNumber(
+    params.minPrice,
+  );
+
+  const maxPrice = parseNumber(
+    params.maxPrice,
+  );
 
   const inStockOnly =
     params.availability === "in-stock"

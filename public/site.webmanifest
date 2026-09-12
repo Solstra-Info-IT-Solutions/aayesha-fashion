@@ -1,0 +1,10 @@
+{
+  "name": "Aayesha Fashion",
+  "short_name": "Aayesha",
+  "description": "Elegant Indian fashion for the modern woman.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fcfbf9",
+  "theme_color": "#fcfbf9",
+  "lang": "en-IN"
+}

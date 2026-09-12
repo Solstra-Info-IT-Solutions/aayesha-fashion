@@ -14,10 +14,12 @@ import { PromotionalBanner } from "@/components/home/promotional-banner";
 import { WhyChooseUs } from "@/components/home/why-choose-us";
 import { Testimonials } from "@/components/home/testimonials";
 import { InstagramGallery } from "@/components/home/instagram-gallery";
+import { SiteJsonLd } from "@/components/seo/site-json-ld";
 
 export default function HomePage() {
   return (
     <>
+      <SiteJsonLd />
       <HeroSection />
       <FeaturedCategories />
       <NewArrivals />
