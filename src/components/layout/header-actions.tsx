@@ -49,14 +49,6 @@ export function HeaderActions() {
     (state) => state.isInitialized,
   );
 
-  /*
-   * Actual authenticated state.
-   *
-   * We only consider the customer logged in when:
-   * 1. Auth initialization is complete
-   * 2. Auth store says authenticated
-   * 3. User object exists
-   */
   const loggedIn =
     isInitialized &&
     isAuthenticated &&
@@ -85,35 +77,11 @@ export function HeaderActions() {
     useRef<HTMLDivElement>(null);
 
   /* =======================================================
-     AUTH STATE SYNC
-  ======================================================= */
-
-  useEffect(() => {
-    /*
-     * Close desktop account popup when the user
-     * becomes logged out.
-     */
-    if (!loggedIn) {
-      /*
-       * Do not close the popup here because
-       * logged-out users are also allowed to
-       * have the account popup open.
-       *
-       * This state remains controlled by the
-       * account button.
-       */
-      return;
-    }
-  }, [loggedIn]);
-
-  /* =======================================================
      SEARCH FOCUS
   ======================================================= */
 
   useEffect(() => {
-    if (!searchOpen) {
-      return;
-    }
+    if (!searchOpen) return;
 
     const timer = window.setTimeout(() => {
       inputRef.current?.focus();
@@ -140,9 +108,7 @@ export function HeaderActions() {
     const handleKeyDown = (
       event: KeyboardEvent,
     ) => {
-      if (event.key !== "Escape") {
-        return;
-      }
+      if (event.key !== "Escape") return;
 
       setSearchOpen(false);
       setAccountOpen(false);
@@ -171,9 +137,7 @@ export function HeaderActions() {
   ======================================================= */
 
   useEffect(() => {
-    if (!accountOpen) {
-      return;
-    }
+    if (!accountOpen) return;
 
     const handlePointerDown = (
       event: MouseEvent,
@@ -205,19 +169,16 @@ export function HeaderActions() {
   }, [accountOpen]);
 
   /* =======================================================
-     BODY SCROLL LOCK FOR MOBILE MENU
+     BODY SCROLL LOCK
   ======================================================= */
 
   useEffect(() => {
-    if (!mobileMenuOpen) {
-      return;
-    }
+    if (!mobileMenuOpen) return;
 
     const previousOverflow =
       document.body.style.overflow;
 
-    document.body.style.overflow =
-      "hidden";
+    document.body.style.overflow = "hidden";
 
     return () => {
       document.body.style.overflow =
@@ -247,9 +208,7 @@ export function HeaderActions() {
     const trimmedQuery =
       query.trim();
 
-    if (!trimmedQuery) {
-      return;
-    }
+    if (!trimmedQuery) return;
 
     setSearchOpen(false);
 
@@ -265,27 +224,11 @@ export function HeaderActions() {
   ======================================================= */
 
   const handleAccountClick = () => {
-    /*
-     * Don't do anything until the auth
-     * session has finished restoring.
-     *
-     * This avoids accidentally showing the
-     * guest state while refresh is running.
-     */
-    if (!isInitialized) {
-      return;
-    }
+    if (!isInitialized) return;
 
-    /*
-     * Close other overlays.
-     */
     setSearchOpen(false);
     setMobileMenuOpen(false);
 
-    /*
-     * Both authenticated and guest users
-     * now get an account popup.
-     */
     setAccountOpen(
       (current) => !current,
     );
@@ -294,13 +237,6 @@ export function HeaderActions() {
   /* =======================================================
      MOBILE MENU
   ======================================================= */
-
-  const openMobileMenu = () => {
-    setSearchOpen(false);
-    setAccountOpen(false);
-
-    setMobileMenuOpen(true);
-  };
 
   const closeMobileMenu = () => {
     setMobileMenuOpen(false);
@@ -323,10 +259,20 @@ export function HeaderActions() {
 
   return (
     <>
-      <div className="flex items-center gap-0.5">
-        {/* ===================================================
+      {/* ===================================================
+          HEADER ACTIONS
+      =================================================== */}
+
+      <div
+        className="
+          flex
+          items-center
+          gap-0
+        "
+      >
+        {/* =================================================
             SEARCH
-        =================================================== */}
+        ================================================= */}
 
         <button
           type="button"
@@ -334,27 +280,34 @@ export function HeaderActions() {
           aria-label="Search"
           aria-expanded={searchOpen}
           className="
+            group
             relative
             flex
             h-10
             w-10
             items-center
             justify-center
-            text-[var(--color-charcoal)]
+            text-[var(--color-text)]
             transition-colors
-            duration-300
-            hover:text-[var(--color-rose-dark)]
+            duration-[var(--duration-base)]
+            hover:text-[var(--color-accent)]
           "
         >
           <Search
             size={18}
-            strokeWidth={1.3}
+            strokeWidth={1.25}
+            className="
+              transition-transform
+              duration-[var(--duration-base)]
+              ease-[var(--ease-luxury)]
+              group-hover:scale-[1.06]
+            "
           />
         </button>
 
-        {/* ===================================================
+        {/* =================================================
             ACCOUNT
-        =================================================== */}
+        ================================================= */}
 
         <div
           ref={accountWrapperRef}
@@ -379,44 +332,47 @@ export function HeaderActions() {
                 : undefined
             }
             className="
+              group
               relative
               flex
               h-10
               w-10
               items-center
               justify-center
-              text-[var(--color-charcoal)]
+              text-[var(--color-text)]
               transition-colors
-              duration-300
-              hover:text-[var(--color-rose-dark)]
+              duration-[var(--duration-base)]
+              hover:text-[var(--color-accent)]
             "
           >
             <UserRound
               size={18}
-              strokeWidth={1.3}
+              strokeWidth={1.25}
+              className="
+                transition-transform
+                duration-[var(--duration-base)]
+                ease-[var(--ease-luxury)]
+                group-hover:scale-[1.06]
+              "
             />
 
-            {/* AUTHENTICATED INDICATOR */}
-
-            {isInitialized && loggedIn ? (
+            {isInitialized && loggedIn && (
               <span
                 aria-hidden="true"
                 className="
                   absolute
-                  right-1.5
-                  top-1.5
+                  right-[7px]
+                  top-[7px]
                   h-1.5
                   w-1.5
                   rounded-full
-                  bg-[var(--color-rose-dark)]
+                  bg-[var(--color-accent)]
                 "
               />
-            ) : null}
+            )}
           </button>
 
-          {/* =================================================
-              LOGGED-IN ACCOUNT POPUP
-          ================================================= */}
+          {/* LOGGED-IN ACCOUNT */}
 
           {isInitialized && loggedIn ? (
             <AccountPopup
@@ -427,11 +383,11 @@ export function HeaderActions() {
             />
           ) : null}
 
-          {/* =================================================
-              LOGGED-OUT ACCOUNT POPUP
-          ================================================= */}
+          {/* GUEST ACCOUNT */}
 
-          {isInitialized && !loggedIn && accountOpen ? (
+          {isInitialized &&
+          !loggedIn &&
+          accountOpen ? (
             <GuestAccountPopup
               onClose={() =>
                 setAccountOpen(false)
@@ -440,9 +396,9 @@ export function HeaderActions() {
           ) : null}
         </div>
 
-        {/* ===================================================
+        {/* =================================================
             WISHLIST
-        =================================================== */}
+        ================================================= */}
 
         <Link
           href="/wishlist"
@@ -452,29 +408,36 @@ export function HeaderActions() {
             setAccountOpen(false);
           }}
           className="
+            group
             relative
             flex
             h-10
             w-10
             items-center
             justify-center
-            text-[var(--color-charcoal)]
+            text-[var(--color-text)]
             transition-colors
-            duration-300
-            hover:text-[var(--color-rose-dark)]
+            duration-[var(--duration-base)]
+            hover:text-[var(--color-accent)]
           "
         >
           <Heart
             size={18}
-            strokeWidth={1.3}
+            strokeWidth={1.25}
+            className="
+              transition-transform
+              duration-[var(--duration-base)]
+              ease-[var(--ease-luxury)]
+              group-hover:scale-[1.06]
+            "
           />
 
           <WishlistCount />
         </Link>
 
-        {/* ===================================================
-            CART
-        =================================================== */}
+        {/* =================================================
+            SHOPPING BAG
+        ================================================= */}
 
         <Link
           href="/cart"
@@ -484,35 +447,40 @@ export function HeaderActions() {
             setAccountOpen(false);
           }}
           className="
+            group
             relative
             flex
             h-10
             w-10
             items-center
             justify-center
-            text-[var(--color-charcoal)]
+            text-[var(--color-text)]
             transition-colors
-            duration-300
-            hover:text-[var(--color-rose-dark)]
+            duration-[var(--duration-base)]
+            hover:text-[var(--color-accent)]
           "
         >
           <ShoppingBag
             size={18}
-            strokeWidth={1.3}
+            strokeWidth={1.25}
+            className="
+              transition-transform
+              duration-[var(--duration-base)]
+              ease-[var(--ease-luxury)]
+              group-hover:scale-[1.06]
+            "
           />
 
           <CartCount />
         </Link>
       </div>
 
-      {/* =======================================================
+      {/* =====================================================
           MOBILE MENU PANEL
-      ======================================================= */}
+      ===================================================== */}
 
       {mobileMenuOpen && (
         <>
-          {/* BACKDROP */}
-
           <button
             type="button"
             aria-label="Close menu"
@@ -522,11 +490,10 @@ export function HeaderActions() {
               inset-0
               z-[55]
               bg-black/15
+              backdrop-blur-[1px]
               sm:hidden
             "
           />
-
-          {/* PANEL */}
 
           <div
             className="
@@ -536,8 +503,8 @@ export function HeaderActions() {
               z-[60]
               border-b
               border-[var(--color-border)]
-              bg-[var(--color-ivory)]
-              shadow-[0_20px_50px_rgba(23,23,23,0.10)]
+              bg-[var(--color-bg)]
+              shadow-[var(--shadow-lg)]
               sm:hidden
             "
           >
@@ -559,11 +526,11 @@ export function HeaderActions() {
               <div>
                 <p
                   className="
-                    font-[var(--font-display)]
-                    text-[24px]
+                    font-display
+                    text-[25px]
                     leading-none
-                    tracking-[-0.02em]
-                    text-[var(--color-charcoal)]
+                    tracking-[-0.025em]
+                    text-[var(--color-text)]
                   "
                 >
                   Aayesha Fashion
@@ -572,11 +539,12 @@ export function HeaderActions() {
                 <p
                   className="
                     mt-1.5
+                    font-body
                     text-[8px]
-                    font-semibold
+                    font-medium
                     uppercase
-                    tracking-[0.20em]
-                    text-[var(--color-muted)]
+                    tracking-[0.22em]
+                    text-[var(--color-text-muted)]
                   "
                 >
                   Discover your style
@@ -595,16 +563,16 @@ export function HeaderActions() {
                   justify-center
                   border
                   border-[var(--color-border)]
-                  text-[var(--color-secondary)]
+                  text-[var(--color-text-secondary)]
                   transition-colors
-                  duration-300
-                  hover:bg-[var(--color-cream)]
-                  hover:text-[var(--color-charcoal)]
+                  duration-[var(--duration-base)]
+                  hover:bg-[var(--color-bg-soft)]
+                  hover:text-[var(--color-text)]
                 "
               >
                 <X
                   size={18}
-                  strokeWidth={1.3}
+                  strokeWidth={1.25}
                 />
               </button>
             </div>
@@ -629,7 +597,7 @@ export function HeaderActions() {
                     gap-3
                     border
                     border-[var(--color-border)]
-                    bg-white
+                    bg-[var(--color-surface)]
                     px-4
                     py-4
                     text-left
@@ -644,11 +612,11 @@ export function HeaderActions() {
                       items-center
                       justify-center
                       border
-                      border-[var(--color-rose)]
-                      bg-[var(--color-rose-light)]
-                      font-[var(--font-display)]
+                      border-[var(--color-accent-soft)]
+                      bg-[var(--color-bg-soft)]
+                      font-display
                       text-base
-                      text-[var(--color-charcoal)]
+                      text-[var(--color-text)]
                     "
                   >
                     {user?.name
@@ -669,9 +637,10 @@ export function HeaderActions() {
                       className="
                         block
                         truncate
+                        font-body
                         text-sm
-                        font-semibold
-                        text-[var(--color-charcoal)]
+                        font-medium
+                        text-[var(--color-text)]
                       "
                     >
                       {user?.name ||
@@ -683,8 +652,9 @@ export function HeaderActions() {
                         mt-0.5
                         block
                         truncate
+                        font-body
                         text-[10px]
-                        text-[var(--color-secondary)]
+                        text-[var(--color-text-secondary)]
                       "
                     >
                       View your account
@@ -693,10 +663,10 @@ export function HeaderActions() {
 
                   <ChevronRight
                     size={16}
-                    strokeWidth={1.5}
+                    strokeWidth={1.4}
                     className="
                       shrink-0
-                      text-[var(--color-secondary)]
+                      text-[var(--color-text-secondary)]
                     "
                   />
                 </button>
@@ -705,11 +675,8 @@ export function HeaderActions() {
                   <div>
                     <p
                       className="
-                        text-[9px]
-                        font-semibold
-                        uppercase
-                        tracking-[0.18em]
-                        text-[var(--color-muted)]
+                        eyebrow
+                        text-[var(--color-text-muted)]
                       "
                     >
                       Your Account
@@ -718,9 +685,10 @@ export function HeaderActions() {
                     <p
                       className="
                         mt-1.5
+                        font-body
                         text-xs
                         leading-5
-                        text-[var(--color-secondary)]
+                        text-[var(--color-text-secondary)]
                       "
                     >
                       Sign in or create an account
@@ -739,15 +707,16 @@ export function HeaderActions() {
                         items-center
                         justify-center
                         border
-                        border-[var(--color-charcoal)]
-                        bg-[var(--color-charcoal)]
-                        px-4
+                        border-[var(--color-text)]
+                        bg-[var(--color-text)]
+                        font-body
                         text-[10px]
-                        font-semibold
+                        font-medium
                         uppercase
-                        tracking-[0.14em]
-                        text-white
+                        tracking-[0.16em]
+                        text-[var(--color-text-inverse)]
                         transition-opacity
+                        duration-[var(--duration-base)]
                         hover:opacity-90
                       "
                     >
@@ -764,15 +733,16 @@ export function HeaderActions() {
                         justify-center
                         border
                         border-[var(--color-border)]
-                        bg-white
-                        px-4
+                        bg-[var(--color-surface)]
+                        font-body
                         text-[10px]
-                        font-semibold
+                        font-medium
                         uppercase
-                        tracking-[0.14em]
-                        text-[var(--color-charcoal)]
+                        tracking-[0.16em]
+                        text-[var(--color-text)]
                         transition-colors
-                        hover:bg-[var(--color-cream)]
+                        duration-[var(--duration-base)]
+                        hover:bg-[var(--color-bg-soft)]
                       "
                     >
                       Sign Up
@@ -792,12 +762,9 @@ export function HeaderActions() {
             >
               <p
                 className="
+                  eyebrow
                   mb-3
-                  text-[9px]
-                  font-semibold
-                  uppercase
-                  tracking-[0.18em]
-                  text-[var(--color-muted)]
+                  text-[var(--color-text-muted)]
                 "
               >
                 Explore
@@ -808,48 +775,28 @@ export function HeaderActions() {
                   overflow-hidden
                   border-y
                   border-[var(--color-border)]
-                  bg-white
+                  bg-[var(--color-surface)]
                 "
               >
-                <button
-                  type="button"
+                <MobileNavigationItem
+                  label="Shop"
                   onClick={() =>
                     navigateFromMobileMenu(
                       "/shop",
                     )
                   }
-                  className="
-                    flex
-                    w-full
-                    items-center
-                    justify-between
-                    border-b
-                    border-[var(--color-border)]
-                    px-4
-                    py-4
-                    text-left
-                    transition-colors
-                    hover:bg-[var(--color-cream)]
-                  "
-                >
-                  <span className="text-sm text-[var(--color-charcoal)]">
-                    Shop
-                  </span>
+                />
 
-                  <ChevronRight
-                    size={15}
-                    strokeWidth={1.5}
-                    className="text-[var(--color-secondary)]"
-                  />
-                </button>
-
-                <button
-                  type="button"
+                <MobileNavigationItem
+                  label="Collections"
                   onClick={() =>
                     navigateFromMobileMenu(
                       "/collections",
                     )
                   }
+                />
+
+                <div
                   className="
                     flex
                     w-full
@@ -859,65 +806,49 @@ export function HeaderActions() {
                     border-[var(--color-border)]
                     px-4
                     py-4
-                    text-left
-                    transition-colors
-                    hover:bg-[var(--color-cream)]
                   "
                 >
-                  <span className="text-sm text-[var(--color-charcoal)]">
-                    Collections
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      navigateFromMobileMenu(
+                        "/wishlist",
+                      )
+                    }
+                    className="
+                      flex
+                      min-w-0
+                      flex-1
+                      items-center
+                      justify-between
+                      text-left
+                    "
+                  >
+                    <span
+                      className="
+                        font-body
+                        text-sm
+                        text-[var(--color-text)]
+                      "
+                    >
+                      Wishlist
+                    </span>
+
+                    <WishlistCount />
+                  </button>
 
                   <ChevronRight
                     size={15}
-                    strokeWidth={1.5}
-                    className="text-[var(--color-secondary)]"
+                    strokeWidth={1.4}
+                    className="
+                      ml-3
+                      shrink-0
+                      text-[var(--color-text-secondary)]
+                    "
                   />
-                </button>
+                </div>
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    navigateFromMobileMenu(
-                      "/wishlist",
-                    )
-                  }
-                  className="
-                    flex
-                    w-full
-                    items-center
-                    justify-between
-                    border-b
-                    border-[var(--color-border)]
-                    px-4
-                    py-4
-                    text-left
-                    transition-colors
-                    hover:bg-[var(--color-cream)]
-                  "
-                >
-                  <span className="text-sm text-[var(--color-charcoal)]">
-                    Wishlist
-                  </span>
-
-                  <div className="flex items-center gap-3">
-                    <WishlistCount />
-
-                    <ChevronRight
-                      size={15}
-                      strokeWidth={1.5}
-                      className="text-[var(--color-secondary)]"
-                    />
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    navigateFromMobileMenu(
-                      "/cart",
-                    )
-                  }
+                <div
                   className="
                     flex
                     w-full
@@ -925,25 +856,47 @@ export function HeaderActions() {
                     justify-between
                     px-4
                     py-4
-                    text-left
-                    transition-colors
-                    hover:bg-[var(--color-cream)]
                   "
                 >
-                  <span className="text-sm text-[var(--color-charcoal)]">
-                    Shopping Bag
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      navigateFromMobileMenu(
+                        "/cart",
+                      )
+                    }
+                    className="
+                      flex
+                      min-w-0
+                      flex-1
+                      items-center
+                      justify-between
+                      text-left
+                    "
+                  >
+                    <span
+                      className="
+                        font-body
+                        text-sm
+                        text-[var(--color-text)]
+                      "
+                    >
+                      Shopping Bag
+                    </span>
 
-                  <div className="flex items-center gap-3">
                     <CartCount />
+                  </button>
 
-                    <ChevronRight
-                      size={15}
-                      strokeWidth={1.5}
-                      className="text-[var(--color-secondary)]"
-                    />
-                  </div>
-                </button>
+                  <ChevronRight
+                    size={15}
+                    strokeWidth={1.4}
+                    className="
+                      ml-3
+                      shrink-0
+                      text-[var(--color-text-secondary)]
+                    "
+                  />
+                </div>
               </div>
             </nav>
 
@@ -955,7 +908,7 @@ export function HeaderActions() {
               className="
                 border-t
                 border-[var(--color-border)]
-                bg-[var(--color-cream)]
+                bg-[var(--color-bg-soft)]
                 px-5
                 py-4
               "
@@ -963,10 +916,11 @@ export function HeaderActions() {
               <div className="flex items-center justify-between gap-4">
                 <p
                   className="
+                    font-body
                     text-[9px]
                     uppercase
                     tracking-[0.16em]
-                    text-[var(--color-muted)]
+                    text-[var(--color-text-muted)]
                   "
                 >
                   Timeless. Elegant. Yours.
@@ -979,18 +933,19 @@ export function HeaderActions() {
                     inline-flex
                     items-center
                     gap-1.5
+                    font-body
                     text-[9px]
-                    font-semibold
+                    font-medium
                     uppercase
                     tracking-[0.15em]
-                    text-[var(--color-charcoal)]
+                    text-[var(--color-text)]
                   "
                 >
                   Search
 
                   <ArrowUpRight
                     size={12}
-                    strokeWidth={1.4}
+                    strokeWidth={1.3}
                   />
                 </button>
               </div>
@@ -999,14 +954,12 @@ export function HeaderActions() {
         </>
       )}
 
-      {/* =======================================================
+      {/* =====================================================
           SEARCH PANEL
-      ======================================================= */}
+      ===================================================== */}
 
       {searchOpen && (
         <>
-          {/* BACKDROP */}
-
           <button
             type="button"
             aria-label="Close search"
@@ -1020,8 +973,6 @@ export function HeaderActions() {
             "
           />
 
-          {/* PANEL */}
-
           <div
             className="
               absolute
@@ -1031,15 +982,30 @@ export function HeaderActions() {
               z-[60]
               border-b
               border-[var(--color-border)]
-              bg-[var(--color-ivory)]
-              shadow-[0_18px_45px_rgba(23,23,23,0.08)]
+              bg-[var(--color-bg)]
+              shadow-[var(--shadow-md)]
             "
           >
-            <div className="mx-auto max-w-[1600px] px-5 sm:px-8 md:px-10 lg:px-14 xl:px-20">
-              <div className="border-t border-[var(--color-border)] py-5 sm:py-6">
+            <div
+              className="
+                mx-auto
+                max-w-[1600px]
+                px-5
+                sm:px-8
+                md:px-10
+                lg:px-12
+                xl:px-16
+              "
+            >
+              <div
+                className="
+                  border-t
+                  border-[var(--color-border)]
+                  py-5
+                  sm:py-6
+                "
+              >
                 <div className="flex items-center justify-between gap-6">
-                  {/* SEARCH FORM */}
-
                   <form
                     onSubmit={
                       handleSearchSubmit
@@ -1049,10 +1015,10 @@ export function HeaderActions() {
                     <div className="flex items-center gap-4">
                       <Search
                         size={19}
-                        strokeWidth={1.25}
+                        strokeWidth={1.2}
                         className="
                           shrink-0
-                          text-[var(--color-secondary)]
+                          text-[var(--color-text-secondary)]
                         "
                       />
 
@@ -1062,8 +1028,7 @@ export function HeaderActions() {
                         value={query}
                         onChange={(event) =>
                           setQuery(
-                            event.target
-                              .value,
+                            event.target.value,
                           )
                         }
                         placeholder="Search pieces, collections or styles"
@@ -1075,11 +1040,12 @@ export function HeaderActions() {
                           border-0
                           bg-transparent
                           p-0
+                          font-body
                           text-[15px]
                           font-normal
-                          text-[var(--color-charcoal)]
+                          text-[var(--color-text)]
                           outline-none
-                          placeholder:text-[var(--color-muted)]
+                          placeholder:text-[var(--color-text-muted)]
                           sm:text-[17px]
                         "
                       />
@@ -1091,14 +1057,15 @@ export function HeaderActions() {
                             hidden
                             items-center
                             gap-2
+                            font-body
                             text-[10px]
-                            font-semibold
+                            font-medium
                             uppercase
                             tracking-[0.18em]
-                            text-[var(--color-charcoal)]
+                            text-[var(--color-text)]
                             transition-colors
-                            duration-300
-                            hover:text-[var(--color-rose-dark)]
+                            duration-[var(--duration-base)]
+                            hover:text-[var(--color-accent)]
                             sm:inline-flex
                           "
                         >
@@ -1112,21 +1079,43 @@ export function HeaderActions() {
                       )}
                     </div>
 
-                    <div className="mt-4 h-px bg-[var(--color-border)]" />
+                    <div
+                      className="
+                        mt-4
+                        h-px
+                        bg-[var(--color-border)]
+                      "
+                    />
 
                     <div className="mt-3 flex items-center justify-between gap-4">
-                      <p className="text-[9px] uppercase tracking-[0.18em] text-[var(--color-muted)]">
+                      <p
+                        className="
+                          font-body
+                          text-[9px]
+                          uppercase
+                          tracking-[0.16em]
+                          text-[var(--color-text-muted)]
+                        "
+                      >
                         Try “anarkali”, “ivory”
                         or “festive”
                       </p>
 
-                      <p className="hidden text-[9px] uppercase tracking-[0.18em] text-[var(--color-muted)] sm:block">
+                      <p
+                        className="
+                          hidden
+                          font-body
+                          text-[9px]
+                          uppercase
+                          tracking-[0.16em]
+                          text-[var(--color-text-muted)]
+                          sm:block
+                        "
+                      >
                         Press Enter to search
                       </p>
                     </div>
                   </form>
-
-                  {/* CLOSE */}
 
                   <button
                     type="button"
@@ -1139,15 +1128,15 @@ export function HeaderActions() {
                       shrink-0
                       items-center
                       justify-center
-                      text-[var(--color-secondary)]
+                      text-[var(--color-text-secondary)]
                       transition-colors
-                      duration-300
-                      hover:text-[var(--color-charcoal)]
+                      duration-[var(--duration-base)]
+                      hover:text-[var(--color-text)]
                     "
                   >
                     <X
                       size={19}
-                      strokeWidth={1.25}
+                      strokeWidth={1.2}
                     />
                   </button>
                 </div>
@@ -1157,6 +1146,57 @@ export function HeaderActions() {
         </>
       )}
     </>
+  );
+}
+
+/* =========================================================
+   MOBILE NAVIGATION ITEM
+========================================================= */
+
+function MobileNavigationItem({
+  label,
+  onClick,
+}: {
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="
+        flex
+        w-full
+        items-center
+        justify-between
+        border-b
+        border-[var(--color-border)]
+        px-4
+        py-4
+        text-left
+        transition-colors
+        duration-[var(--duration-base)]
+        hover:bg-[var(--color-bg-soft)]
+      "
+    >
+      <span
+        className="
+          font-body
+          text-sm
+          text-[var(--color-text)]
+        "
+      >
+        {label}
+      </span>
+
+      <ChevronRight
+        size={15}
+        strokeWidth={1.4}
+        className="
+          text-[var(--color-text-secondary)]
+        "
+      />
+    </button>
   );
 }
 
@@ -1185,20 +1225,18 @@ function GuestAccountPopup({
           overflow-hidden
           border
           border-[var(--color-border)]
-          bg-[var(--color-ivory)]
-          shadow-[0_20px_55px_rgba(23,23,23,0.14)]
+          bg-[var(--color-bg)]
+          shadow-[var(--shadow-lg)]
         "
       >
-        {/* =================================================
-            HEADER
-        ================================================= */}
+        {/* HEADER */}
 
         <div
           className="
             relative
             border-b
             border-[var(--color-border)]
-            bg-white
+            bg-[var(--color-surface)]
             px-5
             py-5
           "
@@ -1216,27 +1254,24 @@ function GuestAccountPopup({
               w-8
               items-center
               justify-center
-              text-[var(--color-secondary)]
+              text-[var(--color-text-secondary)]
               transition-colors
-              duration-300
-              hover:bg-[var(--color-cream)]
-              hover:text-[var(--color-charcoal)]
+              duration-[var(--duration-base)]
+              hover:bg-[var(--color-bg-soft)]
+              hover:text-[var(--color-text)]
             "
           >
             <X
               size={16}
-              strokeWidth={1.5}
+              strokeWidth={1.4}
             />
           </button>
 
           <div className="pr-8">
             <p
               className="
-                text-[9px]
-                font-semibold
-                uppercase
-                tracking-[0.26em]
-                text-[var(--color-rose-dark)]
+                eyebrow
+                text-[var(--color-accent)]
               "
             >
               Your Account
@@ -1245,11 +1280,11 @@ function GuestAccountPopup({
             <h3
               className="
                 mt-2.5
-                font-[var(--font-display)]
+                font-display
                 text-3xl
                 leading-none
-                tracking-[-0.02em]
-                text-[var(--color-charcoal)]
+                tracking-[-0.025em]
+                text-[var(--color-text)]
               "
             >
               Welcome to Aayesha
@@ -1259,9 +1294,10 @@ function GuestAccountPopup({
               className="
                 mt-4
                 max-w-[270px]
+                font-body
                 text-xs
                 leading-6
-                text-[var(--color-secondary)]
+                text-[var(--color-text-secondary)]
               "
             >
               Sign in to manage your orders,
@@ -1271,21 +1307,17 @@ function GuestAccountPopup({
           </div>
         </div>
 
-        {/* =================================================
-            AUTH ACTIONS
-        ================================================= */}
+        {/* AUTH ACTIONS */}
 
         <div
           className="
             border-b
             border-[var(--color-border)]
-            bg-white
+            bg-[var(--color-surface)]
             p-4
           "
         >
           <div className="grid grid-cols-2 gap-2">
-            {/* SIGN IN */}
-
             <Link
               href="/login"
               onClick={onClose}
@@ -1295,22 +1327,21 @@ function GuestAccountPopup({
                 items-center
                 justify-center
                 border
-                border-[var(--color-charcoal)]
-                bg-[var(--color-charcoal)]
+                border-[var(--color-text)]
+                bg-[var(--color-text)]
+                font-body
                 text-[9px]
-                font-semibold
+                font-medium
                 uppercase
                 tracking-[0.17em]
-                text-white
+                text-[var(--color-text-inverse)]
                 transition-opacity
-                duration-300
+                duration-[var(--duration-base)]
                 hover:opacity-90
               "
             >
               Sign In
             </Link>
-
-            {/* SIGN UP */}
 
             <Link
               href="/register"
@@ -1322,15 +1353,16 @@ function GuestAccountPopup({
                 justify-center
                 border
                 border-[var(--color-border)]
-                bg-[var(--color-ivory)]
+                bg-[var(--color-bg)]
+                font-body
                 text-[9px]
-                font-semibold
+                font-medium
                 uppercase
                 tracking-[0.17em]
-                text-[var(--color-charcoal)]
+                text-[var(--color-text)]
                 transition-colors
-                duration-300
-                hover:bg-[var(--color-cream)]
+                duration-[var(--duration-base)]
+                hover:bg-[var(--color-bg-soft)]
               "
             >
               Sign Up
@@ -1338,24 +1370,19 @@ function GuestAccountPopup({
           </div>
         </div>
 
-        {/* =================================================
-            ACCOUNT BENEFITS
-        ================================================= */}
+        {/* ACCOUNT BENEFITS */}
 
         <div
           className="
-            bg-[var(--color-ivory)]
+            bg-[var(--color-bg)]
             px-5
             py-5
           "
         >
           <p
             className="
-              text-[9px]
-              font-semibold
-              uppercase
-              tracking-[0.2em]
-              text-[var(--color-muted)]
+              eyebrow
+              text-[var(--color-text-muted)]
             "
           >
             With an account
@@ -1403,16 +1430,17 @@ function GuestBenefit({
           w-1.5
           shrink-0
           rounded-full
-          bg-[var(--color-rose-dark)]
+          bg-[var(--color-accent)]
         "
       />
 
       <div>
         <p
           className="
+            font-body
             text-[11px]
-            font-semibold
-            text-[var(--color-charcoal)]
+            font-medium
+            text-[var(--color-text)]
           "
         >
           {title}
@@ -1421,9 +1449,10 @@ function GuestBenefit({
         <p
           className="
             mt-0.5
+            font-body
             text-[10px]
             leading-5
-            text-[var(--color-secondary)]
+            text-[var(--color-text-secondary)]
           "
         >
           {description}
