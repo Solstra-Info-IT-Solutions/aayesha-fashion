@@ -89,7 +89,8 @@ export function ForgotPasswordForm() {
         )}`;
     } catch {
       /*
-       * Auth store already handles the API error.
+       * Auth store already handles
+       * the API error.
        */
     }
   };
@@ -106,14 +107,22 @@ export function ForgotPasswordForm() {
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="space-y-[13px]"
+      className="space-y-4"
     >
       {/* ===================================================
           DESCRIPTION
       =================================================== */}
 
-      <div className="mb-2 border-l-2 border-[var(--color-rose)] pl-4">
-        <p className="text-sm leading-6 text-[var(--color-secondary)]">
+      <div
+        className="
+          border-l-2
+          border-[var(--color-accent)]
+          bg-[var(--color-surface-soft)]
+          px-4
+          py-3
+        "
+      >
+        <p className="text-sm leading-6 text-[var(--color-text-secondary)]">
           Enter the email address associated
           with your account. We&apos;ll send
           you a secure password reset code.
@@ -124,8 +133,18 @@ export function ForgotPasswordForm() {
           EMAIL
       =================================================== */}
 
-      <label className="block">
-        <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--color-secondary)]">
+      <label className="block pt-1">
+        <span
+          className="
+            mb-2
+            block
+            text-[10px]
+            font-semibold
+            uppercase
+            tracking-[0.16em]
+            text-[var(--color-text-secondary)]
+          "
+        >
           Email address
         </span>
 
@@ -135,28 +154,26 @@ export function ForgotPasswordForm() {
           placeholder="you@example.com"
           autoComplete="email"
           onChange={(event) => {
-            setEmail(
-              event.target.value,
-            );
+            setEmail(event.target.value);
 
             setLocalError("");
             clearError();
           }}
           className="
-            h-12
+            h-11
             w-full
             border
             border-[var(--color-border)]
-            bg-white
+            bg-[var(--color-surface)]
             px-4
             text-sm
-            text-[var(--color-charcoal)]
+            text-[var(--color-text)]
             outline-none
             transition-colors
-            duration-200
-            placeholder:text-[var(--color-muted)]
-            hover:border-[#d8d1ca]
-            focus:border-[var(--color-charcoal)]
+            duration-[var(--duration-base)]
+            placeholder:text-[var(--color-text-muted)]
+            hover:border-[var(--color-border-dark)]
+            focus:border-[var(--color-accent-dark)]
           "
         />
       </label>
@@ -170,13 +187,13 @@ export function ForgotPasswordForm() {
           role="alert"
           className="
             border
-            border-[var(--color-rose-dark)]
-            bg-[var(--color-rose-light)]
+            border-[var(--color-error)]
+            bg-[var(--color-surface-soft)]
             px-4
             py-3
             text-sm
             leading-5
-            text-[var(--color-charcoal)]
+            text-[var(--color-error)]
           "
         >
           {errorMessage}
@@ -191,22 +208,26 @@ export function ForgotPasswordForm() {
         type="submit"
         disabled={isLoading}
         className="
+          group
           flex
-          h-12
+          h-11
           w-full
           items-center
           justify-center
           gap-2
-          bg-[var(--color-charcoal)]
+          border
+          border-[var(--color-text)]
+          bg-[var(--color-text)]
           px-5
           text-[10px]
-          font-medium
+          font-semibold
           uppercase
           tracking-[0.2em]
-          text-white
-          transition-colors
-          duration-200
-          hover:bg-black
+          text-[var(--color-text-inverse)]
+          transition-all
+          duration-[var(--duration-base)]
+          hover:bg-[var(--color-accent-dark)]
+          hover:border-[var(--color-accent-dark)]
           disabled:cursor-not-allowed
           disabled:opacity-60
         "
@@ -215,6 +236,7 @@ export function ForgotPasswordForm() {
           <>
             <Loader2
               size={15}
+              strokeWidth={1.7}
               className="animate-spin"
             />
 
@@ -227,6 +249,11 @@ export function ForgotPasswordForm() {
             <ArrowRight
               size={15}
               strokeWidth={1.7}
+              className="
+                transition-transform
+                duration-[var(--duration-base)]
+                group-hover:translate-x-0.5
+              "
             />
           </>
         )}
@@ -236,12 +263,28 @@ export function ForgotPasswordForm() {
           BACK TO LOGIN
       =================================================== */}
 
-      <div className="mt-2 border-t border-[var(--color-border)] pt-5 text-center">
-        <p className="text-sm text-[var(--color-secondary)]">
+      <div
+        className="
+          mt-3
+          border-t
+          border-[var(--color-border-light)]
+          pt-5
+          text-center
+        "
+      >
+        <p className="text-sm text-[var(--color-text-secondary)]">
           Remember your password?{" "}
           <Link
             href="/login"
-            className="font-medium text-[var(--color-charcoal)] underline underline-offset-4 transition-opacity hover:opacity-60"
+            className="
+              font-semibold
+              text-[var(--color-text)]
+              underline
+              underline-offset-4
+              transition-opacity
+              duration-[var(--duration-fast)]
+              hover:opacity-60
+            "
           >
             Sign in
           </Link>

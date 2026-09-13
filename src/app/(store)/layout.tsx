@@ -9,7 +9,7 @@ export default function StoreLayout({
 }>) {
   return (
     <div className="min-h-screen">
-      <AnnouncementBar />
+      {/*<AnnouncementBar />*/}
 
       <Header />
 

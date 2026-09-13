@@ -275,11 +275,11 @@ export function SavedAddresses() {
     isLoading
   ) {
     return (
-      <section className="border border-[#e7e2dd] bg-white">
-        <div className="border-b border-[#e7e2dd] px-6 py-6 sm:px-8">
-          <div className="h-7 w-52 animate-pulse bg-[#f5f1ec]" />
+      <section className="border border-[var(--color-border-light)] bg-white">
+        <div className="border-b border-[var(--color-border-light)] px-6 py-6 sm:px-8">
+          <div className="h-7 w-52 animate-pulse bg-[var(--color-bg-subtle)]" />
 
-          <div className="mt-3 h-4 w-80 max-w-full animate-pulse bg-[#f5f1ec]" />
+          <div className="mt-3 h-4 w-80 max-w-full animate-pulse bg-[var(--color-bg-subtle)]" />
         </div>
 
         <div className="grid gap-5 p-6 sm:p-8 lg:grid-cols-2">
@@ -291,8 +291,8 @@ export function SavedAddresses() {
                   h-64
                   animate-pulse
                   border
-                  border-[#e7e2dd]
-                  bg-[#fcfbf9]
+                  border-[var(--color-border-light)]
+                  bg-[var(--color-surface-soft)]
                 "
               />
             ),
@@ -311,18 +311,18 @@ export function SavedAddresses() {
     !accessToken
   ) {
     return (
-      <section className="border border-[#e7e2dd] bg-white px-6 py-16 text-center sm:px-8">
+      <section className="border border-[var(--color-border-light)] bg-white px-6 py-16 text-center sm:px-8">
         <MapPin
           size={28}
           strokeWidth={1.5}
-          className="mx-auto text-[#6f706f]"
+          className="mx-auto text-[var(--color-text-secondary)]"
         />
 
-        <h1 className="mt-5 font-[var(--font-display)] text-3xl text-[#171717]">
+        <h1 className="mt-5 font-[var(--font-display)] text-3xl text-[var(--color-text)]">
           Saved Addresses
         </h1>
 
-        <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-[#6f706f]">
+        <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-[var(--color-text-secondary)]">
           Sign in to save and manage your delivery addresses.
         </p>
 
@@ -335,8 +335,8 @@ export function SavedAddresses() {
             items-center
             justify-center
             border
-            border-[#171717]
-            bg-[#171717]
+            border-[var(--color-text)]
+            bg-[var(--color-text)]
             px-6
             text-[11px]
             font-semibold
@@ -345,7 +345,7 @@ export function SavedAddresses() {
             text-white
             transition-colors
             duration-200
-            hover:bg-[#292c2c]
+            hover:bg-[var(--color-charcoal-soft)]
           "
         >
           Sign In
@@ -359,22 +359,22 @@ export function SavedAddresses() {
   ======================================================= */
 
   return (
-    <section className="border border-[#e7e2dd] bg-white">
+    <section className="border border-[var(--color-border-light)] bg-white">
       {/* =====================================================
           HEADER
       ===================================================== */}
 
-      <div className="flex flex-col gap-5 border-b border-[#e7e2dd] px-6 py-6 sm:px-8 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-5 border-b border-[var(--color-border-light)] px-6 py-6 sm:px-8 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#969696]">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
             Delivery
           </p>
 
-          <h1 className="mt-2 font-[var(--font-display)] text-3xl leading-none text-[#171717] sm:text-4xl">
+          <h1 className="mt-2 font-[var(--font-display)] text-3xl leading-none text-[var(--color-text)] sm:text-4xl">
             Saved Addresses
           </h1>
 
-          <p className="mt-3 max-w-xl text-sm leading-6 text-[#6f706f]">
+          <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--color-text-secondary)]">
             Manage the addresses you use for your Aayesha Fashion
             orders.
           </p>
@@ -391,8 +391,8 @@ export function SavedAddresses() {
             justify-center
             gap-2
             border
-            border-[#171717]
-            bg-[#171717]
+            border-[var(--color-text)]
+            bg-[var(--color-text)]
             px-5
             text-[11px]
             font-semibold
@@ -401,7 +401,7 @@ export function SavedAddresses() {
             text-white
             transition-colors
             duration-200
-            hover:bg-[#292c2c]
+            hover:bg-[var(--color-charcoal-soft)]
           "
         >
           <Plus
@@ -418,9 +418,9 @@ export function SavedAddresses() {
       ===================================================== */}
 
       {errorMessage ? (
-        <div className="border-b border-[#e7e2dd] bg-[#fcfbf9] px-6 py-4 sm:px-8">
+        <div className="border-b border-[var(--color-border-light)] bg-[var(--color-surface-soft)] px-6 py-4 sm:px-8">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-[#7f4a50]">
+            <p className="text-sm text-[var(--color-error)]">
               {errorMessage}
             </p>
 
@@ -435,16 +435,16 @@ export function SavedAddresses() {
                 items-center
                 justify-center
                 border
-                border-[#d8d1ca]
+                border-[var(--color-border)]
                 bg-white
                 px-4
                 text-[10px]
                 font-semibold
                 uppercase
                 tracking-[0.14em]
-                text-[#171717]
+                text-[var(--color-text)]
                 transition-colors
-                hover:border-[#171717]
+                hover:border-[var(--color-text)]
               "
             >
               Try Again
@@ -459,19 +459,19 @@ export function SavedAddresses() {
 
       {addresses.length === 0 ? (
         <div className="px-6 py-20 text-center sm:px-8">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center border border-[#e7e2dd] bg-[#fcfbf9]">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center border border-[var(--color-border-light)] bg-[var(--color-surface-soft)]">
             <MapPin
               size={24}
               strokeWidth={1.5}
-              className="text-[#6f706f]"
+              className="text-[var(--color-text-secondary)]"
             />
           </div>
 
-          <h2 className="mt-6 font-[var(--font-display)] text-3xl text-[#171717]">
+          <h2 className="mt-6 font-[var(--font-display)] text-3xl text-[var(--color-text)]">
             No saved addresses
           </h2>
 
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-[#6f706f]">
+          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-[var(--color-text-secondary)]">
             Add your preferred delivery address to make checkout
             faster and easier.
           </p>
@@ -486,8 +486,8 @@ export function SavedAddresses() {
               justify-center
               gap-2
               border
-              border-[#171717]
-              bg-[#171717]
+              border-[var(--color-text)]
+              bg-[var(--color-text)]
               px-6
               text-[11px]
               font-semibold
@@ -496,7 +496,7 @@ export function SavedAddresses() {
               text-white
               transition-colors
               duration-200
-              hover:bg-[#292c2c]
+              hover:bg-[var(--color-charcoal-soft)]
             "
           >
             <Plus
@@ -531,24 +531,24 @@ export function SavedAddresses() {
                   className="
                     group
                     border
-                    border-[#e7e2dd]
-                    bg-[#fcfbf9]
+                    border-[var(--color-border-light)]
+                    bg-[var(--color-surface-soft)]
                     transition-colors
                     duration-200
-                    hover:border-[#d8d1ca]
+                    hover:border-[var(--color-border)]
                   "
                 >
                   {/* ADDRESS HEADER */}
 
-                  <div className="flex items-start justify-between gap-5 border-b border-[#e7e2dd] px-5 py-5">
+                  <div className="flex items-start justify-between gap-5 border-b border-[var(--color-border-light)] px-5 py-5">
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="text-sm font-semibold text-[#171717]">
+                        <h2 className="text-sm font-semibold text-[var(--color-text)]">
                           {address.name}
                         </h2>
 
                         {address.isDefault ? (
-                          <span className="inline-flex items-center gap-1 border border-[#efa7ae]/50 bg-[#f9e4e6] px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#171717]">
+                          <span className="inline-flex items-center gap-1 border border-[color:var(--color-accent-soft)] bg-[var(--color-rose-light)] px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text)]">
                             <Star
                               size={10}
                               fill="currentColor"
@@ -560,13 +560,13 @@ export function SavedAddresses() {
                         ) : null}
                       </div>
 
-                      <p className="mt-1 text-xs text-[#6f706f]">
+                      <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
                         +91{" "}
                         {address.phone}
                       </p>
                     </div>
 
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-[#e7e2dd] bg-white text-[#6f706f]">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-[var(--color-border-light)] bg-white text-[var(--color-text-secondary)]">
                       <MapPin
                         size={15}
                         strokeWidth={1.6}
@@ -577,7 +577,7 @@ export function SavedAddresses() {
                   {/* ADDRESS DETAILS */}
 
                   <div className="px-5 py-5">
-                    <address className="not-italic text-sm leading-6 text-[#4d4f4f]">
+                    <address className="not-italic text-sm leading-6 text-[var(--color-text-secondary)]">
                       <span className="block">
                         {
                           address.addressLine
@@ -594,14 +594,14 @@ export function SavedAddresses() {
                         }
                       </span>
 
-                      <span className="block font-medium text-[#171717]">
+                      <span className="block font-medium text-[var(--color-text)]">
                         {
                           address.pincode
                         }
                       </span>
 
                       {address.landmark ? (
-                        <span className="mt-2 block text-xs text-[#6f706f]">
+                        <span className="mt-2 block text-xs text-[var(--color-text-secondary)]">
                           Landmark:{" "}
                           {
                             address.landmark
@@ -613,26 +613,26 @@ export function SavedAddresses() {
 
                   {/* ACTIONS */}
 
-                  <div className="grid border-t border-[#e7e2dd] sm:grid-cols-3">
+                  <div className="grid border-t border-[var(--color-border-light)] sm:grid-cols-3">
                     <Link
                       href={`/account/addresses/edit?id=${encodeURIComponent(
                         address.id,
                       )}`}
                       className="
                         inline-flex
-                        h-12
+                        h-11
                         items-center
                         justify-center
                         gap-2
                         border-b
-                        border-[#e7e2dd]
+                        border-[var(--color-border-light)]
                         text-[10px]
                         font-semibold
                         uppercase
                         tracking-[0.12em]
-                        text-[#171717]
+                        text-[var(--color-text)]
                         transition-colors
-                        hover:bg-[#f5f1ec]
+                        hover:bg-[var(--color-bg-subtle)]
                         sm:border-b-0
                         sm:border-r
                       "
@@ -661,20 +661,20 @@ export function SavedAddresses() {
                       }
                       className="
                         inline-flex
-                        h-12
+                        h-11
                         items-center
                         justify-center
                         gap-2
                         border-b
-                        border-[#e7e2dd]
+                        border-[var(--color-border-light)]
                         px-3
                         text-[10px]
                         font-semibold
                         uppercase
                         tracking-[0.12em]
-                        text-[#171717]
+                        text-[var(--color-text)]
                         transition-colors
-                        hover:bg-[#f5f1ec]
+                        hover:bg-[var(--color-bg-subtle)]
                         disabled:cursor-not-allowed
                         disabled:opacity-40
                         sm:border-b-0
@@ -682,7 +682,7 @@ export function SavedAddresses() {
                       "
                     >
                       {isSettingDefault ? (
-                        <span className="h-3.5 w-3.5 animate-spin rounded-full border border-[#171717] border-t-transparent" />
+                        <span className="h-3.5 w-3.5 animate-spin rounded-full border border-[var(--color-text)] border-t-transparent" />
                       ) : address.isDefault ? (
                         <Check
                           size={14}
@@ -712,7 +712,7 @@ export function SavedAddresses() {
                       }
                       className="
                         inline-flex
-                        h-12
+                        h-11
                         items-center
                         justify-center
                         gap-2
@@ -720,15 +720,15 @@ export function SavedAddresses() {
                         font-semibold
                         uppercase
                         tracking-[0.12em]
-                        text-[#7f4a50]
+                        text-[var(--color-error)]
                         transition-colors
-                        hover:bg-[#f9e4e6]
+                        hover:bg-[var(--color-rose-light)]
                         disabled:cursor-not-allowed
                         disabled:opacity-40
                       "
                     >
                       {isDeleting ? (
-                        <span className="h-3.5 w-3.5 animate-spin rounded-full border border-[#7f4a50] border-t-transparent" />
+                        <span className="h-3.5 w-3.5 animate-spin rounded-full border border-[var(--color-error)] border-t-transparent" />
                       ) : (
                         <Trash2
                           size={14}
@@ -751,7 +751,7 @@ export function SavedAddresses() {
       ===================================================== */}
 
       {addresses.length > 0 ? (
-        <div className="border-t border-[#e7e2dd] px-6 py-5 sm:px-8">
+        <div className="border-t border-[var(--color-border-light)] px-6 py-5 sm:px-8">
           <Link
             href="/account"
             className="
@@ -762,9 +762,9 @@ export function SavedAddresses() {
               font-semibold
               uppercase
               tracking-[0.14em]
-              text-[#6f706f]
+              text-[var(--color-text-secondary)]
               transition-colors
-              hover:text-[#171717]
+              hover:text-[var(--color-text)]
             "
           >
             Back to Account

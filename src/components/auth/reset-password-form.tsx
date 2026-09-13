@@ -8,6 +8,7 @@ import {
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+
 import {
   ArrowRight,
   Eye,
@@ -41,7 +42,17 @@ function PasswordField({
 
   return (
     <label className="block">
-      <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--color-secondary)]">
+      <span
+        className="
+          mb-2
+          block
+          text-[10px]
+          font-semibold
+          uppercase
+          tracking-[0.18em]
+          text-[var(--color-text-secondary)]
+        "
+      >
         {label}
       </span>
 
@@ -61,21 +72,21 @@ function PasswordField({
             )
           }
           className="
-            h-12
+            h-11
             w-full
             border
             border-[var(--color-border)]
-            bg-white
+            bg-[var(--color-surface)]
             px-4
-            pr-12
+            pr-11
             text-sm
-            text-[var(--color-charcoal)]
+            text-[var(--color-text)]
             outline-none
             transition-colors
-            duration-200
-            placeholder:text-[var(--color-muted)]
-            hover:border-[#d8d1ca]
-            focus:border-[var(--color-charcoal)]
+            duration-[var(--duration-base)]
+            placeholder:text-[var(--color-text-muted)]
+            hover:border-[var(--color-border-dark)]
+            focus:border-[var(--color-accent-dark)]
           "
         />
 
@@ -97,14 +108,14 @@ function PasswordField({
             right-0
             top-0
             flex
-            h-12
-            w-12
+            h-11
+            w-11
             items-center
             justify-center
-            text-[var(--color-secondary)]
+            text-[var(--color-text-secondary)]
             transition-colors
-            duration-200
-            hover:text-[var(--color-charcoal)]
+            duration-[var(--duration-fast)]
+            hover:text-[var(--color-text)]
           "
         >
           {visible ? (
@@ -169,11 +180,14 @@ function PasswordRules({
       {rules.map((rule) => (
         <p
           key={rule.label}
-          className={`text-[11px] ${
-            rule.valid
-              ? "text-[var(--color-charcoal)]"
-              : "text-[var(--color-muted)]"
-          }`}
+          className={`
+            text-[11px]
+            ${
+              rule.valid
+                ? "text-[var(--color-success)]"
+                : "text-[var(--color-text-muted)]"
+            }
+          `}
         >
           <span className="mr-1.5">
             {rule.valid
@@ -367,7 +381,8 @@ export function ResetPasswordForm() {
       }, 900);
     } catch {
       /*
-       * Auth store already contains the API error.
+       * Auth store already contains
+       * the API error.
        */
     }
   };
@@ -384,14 +399,24 @@ export function ResetPasswordForm() {
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="space-y-[13px]"
+      className="space-y-4"
     >
       {/* ===================================================
           EMAIL
       =================================================== */}
 
       <label className="block">
-        <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--color-secondary)]">
+        <span
+          className="
+            mb-2
+            block
+            text-[10px]
+            font-semibold
+            uppercase
+            tracking-[0.18em]
+            text-[var(--color-text-secondary)]
+          "
+        >
           Email address
         </span>
 
@@ -409,20 +434,20 @@ export function ResetPasswordForm() {
             clearError();
           }}
           className="
-            h-12
+            h-11
             w-full
             border
             border-[var(--color-border)]
-            bg-white
+            bg-[var(--color-surface)]
             px-4
             text-sm
-            text-[var(--color-charcoal)]
+            text-[var(--color-text)]
             outline-none
             transition-colors
-            duration-200
-            placeholder:text-[var(--color-muted)]
-            hover:border-[#d8d1ca]
-            focus:border-[var(--color-charcoal)]
+            duration-[var(--duration-base)]
+            placeholder:text-[var(--color-text-muted)]
+            hover:border-[var(--color-border-dark)]
+            focus:border-[var(--color-accent-dark)]
           "
         />
       </label>
@@ -432,7 +457,17 @@ export function ResetPasswordForm() {
       =================================================== */}
 
       <label className="block">
-        <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--color-secondary)]">
+        <span
+          className="
+            mb-2
+            block
+            text-[10px]
+            font-semibold
+            uppercase
+            tracking-[0.18em]
+            text-[var(--color-text-secondary)]
+          "
+        >
           Reset code
         </span>
 
@@ -461,23 +496,24 @@ export function ResetPasswordForm() {
             clearError();
           }}
           className="
-            h-14
+            h-12
             w-full
             border
             border-[var(--color-border)]
-            bg-white
+            bg-[var(--color-surface)]
             px-4
             text-center
             font-mono
-            text-xl
-            tracking-[0.45em]
-            text-[var(--color-charcoal)]
+            text-lg
+            tracking-[0.4em]
+            text-[var(--color-text)]
             outline-none
             transition-colors
-            duration-200
-            placeholder:text-[var(--color-muted)]
+            duration-[var(--duration-base)]
+            placeholder:text-[var(--color-text-muted)]
             placeholder:tracking-[0.3em]
-            focus:border-[var(--color-charcoal)]
+            hover:border-[var(--color-border-dark)]
+            focus:border-[var(--color-accent-dark)]
           "
         />
       </label>
@@ -533,13 +569,13 @@ export function ResetPasswordForm() {
           role="alert"
           className="
             border
-            border-[var(--color-rose-dark)]
-            bg-[var(--color-rose-light)]
+            border-[var(--color-error)]
+            bg-[var(--color-surface-soft)]
             px-4
             py-3
-            text-sm
+            text-[12px]
             leading-5
-            text-[var(--color-charcoal)]
+            text-[var(--color-error)]
           "
         >
           {errorMessage}
@@ -555,13 +591,13 @@ export function ResetPasswordForm() {
           role="status"
           className="
             border
-            border-[var(--color-border)]
-            bg-[var(--color-cream)]
+            border-[var(--color-success)]
+            bg-[var(--color-surface-soft)]
             px-4
             py-3
-            text-sm
+            text-[12px]
             leading-5
-            text-[var(--color-charcoal)]
+            text-[var(--color-success)]
           "
         >
           {successMessage}
@@ -579,22 +615,26 @@ export function ResetPasswordForm() {
           otp.length !== 6
         }
         className="
+          group
           flex
-          h-12
+          h-11
           w-full
           items-center
           justify-center
           gap-2
-          bg-[var(--color-charcoal)]
+          border
+          border-[var(--color-text)]
+          bg-[var(--color-text)]
           px-5
           text-[10px]
-          font-medium
+          font-semibold
           uppercase
           tracking-[0.2em]
-          text-white
-          transition-colors
-          duration-200
-          hover:bg-black
+          text-[var(--color-text-inverse)]
+          transition-all
+          duration-[var(--duration-base)]
+          hover:border-[var(--color-accent-dark)]
+          hover:bg-[var(--color-accent-dark)]
           disabled:cursor-not-allowed
           disabled:opacity-60
         "
@@ -603,6 +643,7 @@ export function ResetPasswordForm() {
           <>
             <Loader2
               size={15}
+              strokeWidth={1.7}
               className="animate-spin"
             />
 
@@ -615,6 +656,11 @@ export function ResetPasswordForm() {
             <ArrowRight
               size={15}
               strokeWidth={1.7}
+              className="
+                transition-transform
+                duration-[var(--duration-base)]
+                group-hover:translate-x-0.5
+              "
             />
           </>
         )}
@@ -624,12 +670,28 @@ export function ResetPasswordForm() {
           BACK TO LOGIN
       =================================================== */}
 
-      <div className="mt-2 border-t border-[var(--color-border)] pt-5 text-center">
-        <p className="text-sm text-[var(--color-secondary)]">
+      <div
+        className="
+          mt-3
+          border-t
+          border-[var(--color-border-light)]
+          pt-5
+          text-center
+        "
+      >
+        <p className="text-sm text-[var(--color-text-secondary)]">
           Remember your password?{" "}
           <Link
             href="/login"
-            className="font-medium text-[var(--color-charcoal)] underline underline-offset-4 transition-opacity hover:opacity-60"
+            className="
+              font-semibold
+              text-[var(--color-text)]
+              underline
+              underline-offset-4
+              transition-opacity
+              duration-[var(--duration-fast)]
+              hover:opacity-60
+            "
           >
             Sign in
           </Link>

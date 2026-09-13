@@ -1,18 +1,10 @@
 "use client";
 
-import type {
-  ReactNode,
-} from "react";
-
+import type { ReactNode } from "react";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
-import {
-  ArrowLeft,
-} from "lucide-react";
-
-import {
-  BrandLogo,
-} from "@/components/layout/brand-logo";
+import { BrandLogo } from "@/components/layout/brand-logo";
 
 /* =========================================================
    TYPES
@@ -20,15 +12,10 @@ import {
 
 type AuthShellProps = {
   children: ReactNode;
-
   title: string;
-
   subtitle?: string;
-
   backHref?: string;
-
   backLabel?: string;
-
   footer?: ReactNode;
 };
 
@@ -45,48 +32,62 @@ export function AuthShell({
   footer,
 }: AuthShellProps) {
   return (
-    <main className="min-h-screen bg-[var(--color-ivory)] text-[var(--color-charcoal)]">
+    <main className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
       <div className="grid min-h-screen lg:grid-cols-[minmax(0,1.05fr)_minmax(460px,0.95fr)]">
         {/* =====================================================
             BRAND SIDE
         ===================================================== */}
 
-        <section className="relative hidden overflow-hidden bg-[var(--color-charcoal)] lg:flex">
-          <div className="absolute inset-0 bg-[linear-gradient(135deg,#171717_0%,#292c2c_100%)]" />
+        <section className="relative hidden min-h-screen overflow-hidden bg-[var(--color-text)] lg:flex">
+          {/* Editorial background */}
+          <div className="absolute inset-0 bg-[var(--color-text)]" />
+
+          {/* Subtle texture / framing */}
+          <div className="absolute inset-8 border border-white/10 xl:inset-10" />
 
           <div className="relative z-10 flex min-h-screen w-full flex-col justify-between px-12 py-12 xl:px-16 xl:py-14">
-            {/* TOP */}
+            {/* =================================================
+                TOP
+            ================================================= */}
 
-            <div className="w-fit rounded-sm bg-[var(--color-ivory)] px-5 py-3">
+            <div className="w-fit border border-white/10 bg-[var(--color-surface)] px-5 py-3">
               <BrandLogo />
             </div>
 
-            {/* CENTER */}
+            {/* =================================================
+                CENTER
+            ================================================= */}
 
             <div className="max-w-xl py-16">
-              <p className="mb-5 text-[11px] font-medium uppercase tracking-[0.28em] text-[var(--color-rose)]">
+              <p className="eyebrow mb-5 text-[var(--color-accent-soft)]">
                 AAYESHA FASHION
               </p>
 
-              <h2 className="font-display text-5xl leading-[0.95] text-[var(--color-ivory)] xl:text-6xl">
+              <h2 className="font-display text-5xl font-normal leading-[0.9] tracking-tight text-white xl:text-7xl">
                 Elegance,
                 <br />
                 made personal.
               </h2>
 
-              <p className="mt-7 max-w-md text-sm leading-7 text-white/65">
-                Discover timeless Indian fashion
-                crafted for confidence, celebration,
-                and everyday beauty.
+              <div className="mt-7 h-px w-16 bg-[var(--color-accent)]" />
+
+              <p className="mt-7 max-w-md text-sm leading-7 text-white/60">
+                Discover timeless Indian fashion crafted for
+                confidence, celebration, and everyday beauty.
               </p>
             </div>
 
-            {/* BOTTOM */}
+            {/* =================================================
+                BOTTOM
+            ================================================= */}
 
-            <p className="text-xs tracking-wide text-white/40">
-              © {new Date().getFullYear()} Aayesha
-              Fashion
-            </p>
+            <div className="flex items-center justify-between gap-6">
+              <p className="text-[10px] uppercase tracking-[0.16em] text-white/35">
+                © {new Date().getFullYear()} Aayesha Fashion
+              </p>
+
+              <span className="hidden h-px flex-1 bg-white/10 sm:block" />
+            </div>
           </div>
         </section>
 
@@ -94,55 +95,89 @@ export function AuthShell({
             FORM SIDE
         ===================================================== */}
 
-        <section className="flex min-h-screen flex-col">
-          {/* HEADER */}
+        <section className="flex min-h-screen flex-col bg-[var(--color-bg)]">
+          {/* =================================================
+              HEADER
+          ================================================= */}
 
-          <div className="flex items-center justify-between px-5 py-5 sm:px-8 sm:py-7 lg:px-12">
+          <header className="flex items-center justify-between border-b border-[var(--color-border-light)] px-5 py-5 sm:px-8 sm:py-6 lg:border-b-0 lg:px-12 lg:py-8">
             <Link
               href={backHref}
-              className="inline-flex min-h-10 items-center gap-2 text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--color-secondary)] transition-colors duration-200 hover:text-[var(--color-charcoal)]"
+              className="
+                group
+                inline-flex
+                min-h-10
+                items-center
+                gap-2
+                text-[10px]
+                font-semibold
+                uppercase
+                tracking-[0.16em]
+                text-[var(--color-text-secondary)]
+                transition-colors
+                duration-[var(--duration-base)]
+                hover:text-[var(--color-text)]
+              "
             >
               <ArrowLeft
                 size={15}
-                strokeWidth={1.7}
+                strokeWidth={1.6}
+                className="
+                  transition-transform
+                  duration-[var(--duration-base)]
+                  group-hover:-translate-x-0.5
+                "
               />
 
               {backLabel}
             </Link>
 
             {/* Mobile logo */}
-
             <div className="lg:hidden">
               <BrandLogo />
             </div>
-          </div>
+          </header>
 
-          {/* CONTENT */}
+          {/* =================================================
+              CONTENT
+          ================================================= */}
 
-          <div className="mx-auto flex w-full max-w-[520px] flex-1 items-center px-5 pb-10 pt-3 sm:px-8 lg:px-12 lg:py-10">
+          <div className="mx-auto flex w-full max-w-[520px] flex-1 items-center px-5 pb-10 pt-8 sm:px-8 lg:px-12 lg:py-12">
             <div className="w-full">
-              {/* HEADING */}
+              {/* =================================================
+                  HEADING
+              ================================================= */}
 
-              <div className="mb-8">
-                <h1 className="font-display text-[38px] leading-[0.98] text-[var(--color-charcoal)] sm:text-[46px]">
+              <div className="mb-9">
+                <p className="eyebrow mb-4 text-[var(--color-accent-dark)]">
+                  AAYESHA FASHION
+                </p>
+
+                <h1 className="font-display text-[40px] font-normal leading-[0.94] tracking-tight text-[var(--color-text)] sm:text-[50px]">
                   {title}
                 </h1>
 
                 {subtitle ? (
-                  <p className="mt-4 max-w-md text-[13px] leading-6 text-[var(--color-secondary)] sm:text-sm">
+                  <p className="mt-4 max-w-md text-[13px] leading-6 text-[var(--color-text-secondary)] sm:text-sm">
                     {subtitle}
                   </p>
                 ) : null}
               </div>
 
-              {/* FORM */}
+              {/* =================================================
+                  FORM
+              ================================================= */}
 
-              {children}
+              <div className="w-full">
+                {children}
+              </div>
 
-              {/* FOOTER */}
+              {/* =================================================
+                  FOOTER
+              ================================================= */}
 
               {footer ? (
-                <div className="mt-8">
+                <div className="mt-8 border-t border-[var(--color-border-light)] pt-7">
                   {footer}
                 </div>
               ) : null}
@@ -154,6 +189,4 @@ export function AuthShell({
   );
 }
 
-export type {
-  AuthShellProps,
-};
+export type { AuthShellProps };

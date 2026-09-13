@@ -608,26 +608,26 @@ export function ProfileDetails() {
 
   if (!isAuthenticated) {
     return (
-      <section className="min-h-[70vh] bg-[var(--color-ivory)]">
+      <section className="min-h-[70vh] bg-[var(--color-bg)]">
         <div className="mx-auto flex min-h-[70vh] max-w-[720px] items-center justify-center px-5 py-16 text-center">
           <div>
-            <div className="mx-auto flex h-14 w-14 items-center justify-center border border-[var(--color-border)] bg-white">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center border border-[var(--color-border)] bg-[var(--color-surface)]">
               <UserRound
                 size={21}
                 strokeWidth={1.4}
-                className="text-[var(--color-secondary)]"
+                className="text-[var(--color-text-secondary)]"
               />
             </div>
 
-            <p className="mt-6 text-[9px] font-semibold uppercase tracking-[0.24em] text-[var(--color-rose-dark)]">
+            <p className="mt-6 text-[9px] font-semibold uppercase tracking-[0.24em] text-[var(--color-accent-dark)]">
               My Account
             </p>
 
-            <h1 className="mt-3 font-[var(--font-display)] text-[38px] leading-none tracking-[-0.025em] text-[var(--color-ink)]">
+            <h1 className="mt-3 font-[var(--font-display)] text-[38px] leading-none tracking-[-0.025em] text-[var(--color-text)]">
               Sign in to view your account
             </h1>
 
-            <p className="mx-auto mt-4 max-w-md text-sm leading-7 text-[var(--color-secondary)]">
+            <p className="mx-auto mt-4 max-w-md text-sm leading-7 text-[var(--color-text-secondary)]">
               Please sign in to access your profile,
               preferences and account settings.
             </p>
@@ -641,8 +641,8 @@ export function ProfileDetails() {
                   items-center
                   justify-center
                   border
-                  border-[var(--color-ink)]
-                  bg-[var(--color-ink)]
+                  border-[var(--color-text)]
+                  bg-[var(--color-text)]
                   px-6
                   text-[10px]
                   font-semibold
@@ -650,7 +650,7 @@ export function ProfileDetails() {
                   tracking-[0.16em]
                   text-white
                   transition-colors
-                  hover:bg-[var(--color-soft-charcoal)]
+                  hover:bg-[var(--color-text-secondary)]
                 "
               >
                 Sign In
@@ -666,15 +666,15 @@ export function ProfileDetails() {
                   gap-2
                   border
                   border-[var(--color-border)]
-                  bg-white
+                  bg-[var(--color-surface)]
                   px-6
                   text-[10px]
                   font-semibold
                   uppercase
                   tracking-[0.16em]
-                  text-[var(--color-ink)]
+                  text-[var(--color-text)]
                   transition-colors
-                  hover:bg-[var(--color-cream)]
+                  hover:bg-[var(--color-surface-soft)]
                 "
               >
                 <Home size={14} />
@@ -694,9 +694,9 @@ export function ProfileDetails() {
 
   if (isLoading) {
     return (
-      <section className="min-h-screen bg-[var(--color-ivory)]">
+      <section className="min-h-screen bg-[var(--color-bg)]">
         <div className="mx-auto flex min-h-[70vh] max-w-[1280px] items-center justify-center px-5">
-          <div className="flex items-center gap-3 text-sm text-[var(--color-secondary)]">
+          <div className="flex items-center gap-3 text-sm text-[var(--color-text-secondary)]">
             <Loader2
               size={18}
               className="animate-spin"
@@ -717,26 +717,26 @@ export function ProfileDetails() {
 
   if (!profile || !form) {
     return (
-      <section className="min-h-[70vh] bg-[var(--color-ivory)]">
+      <section className="min-h-[70vh] bg-[var(--color-bg)]">
         <div className="mx-auto flex min-h-[70vh] max-w-[720px] items-center justify-center px-5 text-center">
           <div>
-            <div className="mx-auto flex h-14 w-14 items-center justify-center border border-[var(--color-border)] bg-white">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center border border-[var(--color-border)] bg-[var(--color-surface)]">
               <UserRound
                 size={21}
                 strokeWidth={1.4}
-                className="text-[var(--color-secondary)]"
+                className="text-[var(--color-text-secondary)]"
               />
             </div>
 
-            <p className="mt-6 text-[9px] font-semibold uppercase tracking-[0.24em] text-[var(--color-rose-dark)]">
+            <p className="mt-6 text-[9px] font-semibold uppercase tracking-[0.24em] text-[var(--color-accent-dark)]">
               My Account
             </p>
 
-            <h1 className="mt-3 font-[var(--font-display)] text-[36px] leading-none text-[var(--color-ink)]">
+            <h1 className="mt-3 font-[var(--font-display)] text-[36px] leading-none text-[var(--color-text)]">
               Profile unavailable
             </h1>
 
-            <p className="mt-4 text-sm leading-7 text-[var(--color-secondary)]">
+            <p className="mt-4 text-sm leading-7 text-[var(--color-text-secondary)]">
               {errorMessage ||
                 "We could not load your account details."}
             </p>
@@ -753,8 +753,8 @@ export function ProfileDetails() {
                   items-center
                   justify-center
                   border
-                  border-[var(--color-ink)]
-                  bg-[var(--color-ink)]
+                  border-[var(--color-text)]
+                  bg-[var(--color-text)]
                   px-6
                   text-[10px]
                   font-semibold
@@ -776,15 +776,15 @@ export function ProfileDetails() {
                   gap-2
                   border
                   border-[var(--color-border)]
-                  bg-white
+                  bg-[var(--color-surface)]
                   px-6
                   text-[10px]
                   font-semibold
                   uppercase
                   tracking-[0.15em]
-                  text-[var(--color-ink)]
+                  text-[var(--color-text)]
                   transition-colors
-                  hover:bg-[var(--color-cream)]
+                  hover:bg-[var(--color-surface-soft)]
                 "
               >
                 <Home size={14} />
@@ -804,7 +804,7 @@ export function ProfileDetails() {
 
   return (
     <>
-      <section className="min-h-screen bg-[var(--color-ivory)]">
+      <section className="min-h-screen bg-[var(--color-bg)]">
         <div className="mx-auto w-full max-w-[1280px] px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
           {/* =================================================
               TOP NAVIGATION
@@ -822,9 +822,9 @@ export function ProfileDetails() {
                 font-semibold
                 uppercase
                 tracking-[0.18em]
-                text-[var(--color-secondary)]
+                text-[var(--color-text-secondary)]
                 transition-colors
-                hover:text-[var(--color-charcoal)]
+                hover:text-[var(--color-text)]
               "
             >
               <Home
@@ -843,7 +843,7 @@ export function ProfileDetails() {
                 font-semibold
                 uppercase
                 tracking-[0.18em]
-                text-[var(--color-rose-dark)]
+                text-[var(--color-accent-dark)]
                 sm:inline-flex
               "
             >
@@ -856,17 +856,17 @@ export function ProfileDetails() {
           ================================================== */}
 
           <div className="border-b border-[var(--color-border)] pb-8">
-            <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-[var(--color-rose-dark)]">
+            <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-[var(--color-accent-dark)]">
               My Account
             </p>
 
             <div className="mt-3 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <h1 className="font-[var(--font-display)] text-[38px] leading-none tracking-[-0.025em] text-[var(--color-ink)] sm:text-[46px]">
+                <h1 className="font-[var(--font-display)] text-[38px] leading-none tracking-[-0.025em] text-[var(--color-text)] sm:text-[46px]">
                   Profile Details
                 </h1>
 
-                <p className="mt-3 max-w-xl text-sm leading-7 text-[var(--color-secondary)]">
+                <p className="mt-3 max-w-xl text-sm leading-7 text-[var(--color-text-secondary)]">
                   Manage your personal details,
                   style preferences and communication
                   settings from one place.
@@ -884,8 +884,8 @@ export function ProfileDetails() {
                       justify-center
                       gap-2
                       border
-                      border-[var(--color-ink)]
-                      bg-[var(--color-ink)]
+                      border-[var(--color-text)]
+                      bg-[var(--color-text)]
                       px-5
                       text-[10px]
                       font-semibold
@@ -894,7 +894,7 @@ export function ProfileDetails() {
                       text-white
                       transition-colors
                       duration-200
-                      hover:bg-[var(--color-soft-charcoal)]
+                      hover:bg-[var(--color-text-secondary)]
                     "
                   >
                     <Edit3
@@ -918,15 +918,15 @@ export function ProfileDetails() {
                         gap-2
                         border
                         border-[var(--color-border)]
-                        bg-white
+                        bg-[var(--color-surface)]
                         px-5
                         text-xs
                         font-semibold
                         uppercase
                         tracking-[0.12em]
-                        text-[var(--color-ink)]
+                        text-[var(--color-text)]
                         transition
-                        hover:border-[var(--color-ink)]
+                        hover:border-[var(--color-text)]
                         disabled:cursor-not-allowed
                         disabled:opacity-50
                       "
@@ -949,8 +949,8 @@ export function ProfileDetails() {
                         justify-center
                         gap-2
                         border
-                        border-[var(--color-ink)]
-                        bg-[var(--color-ink)]
+                        border-[var(--color-text)]
+                        bg-[var(--color-text)]
                         px-5
                         text-xs
                         font-semibold
@@ -958,7 +958,7 @@ export function ProfileDetails() {
                         tracking-[0.12em]
                         text-white
                         transition
-                        hover:bg-[var(--color-soft-charcoal)]
+                        hover:bg-[var(--color-text-secondary)]
                         disabled:cursor-not-allowed
                         disabled:opacity-60
                       "
@@ -1006,10 +1006,10 @@ export function ProfileDetails() {
           )}
 
           {showSuccess && (
-            <div className="mt-6 flex items-center gap-2 border border-[var(--color-rose)] bg-[var(--color-rose-light)] px-5 py-4 text-sm text-[var(--color-ink)]">
+            <div className="mt-6 flex items-center gap-2 border border-[var(--color-accent)] bg-[var(--color-accent-light)] px-5 py-4 text-sm text-[var(--color-text)]">
               <Check
                 size={17}
-                className="text-[var(--color-rose-dark)]"
+                className="text-[var(--color-accent-dark)]"
               />
 
               Your profile has been updated
@@ -1026,10 +1026,10 @@ export function ProfileDetails() {
                 ACCOUNT SUMMARY
             ================================================== */}
 
-            <aside className="h-fit border border-[var(--color-border)] bg-white">
+            <aside className="h-fit border border-[var(--color-border)] bg-[var(--color-surface)]">
               <div className="p-7">
                 <div className="flex items-center gap-5">
-                  <div className="grid h-[74px] w-[74px] shrink-0 place-items-center overflow-hidden rounded-full border border-[var(--color-rose)] bg-[var(--color-rose-light)] font-[var(--font-display)] text-2xl text-[var(--color-ink)]">
+                  <div className="grid h-[74px] w-[74px] shrink-0 place-items-center overflow-hidden border border-[var(--color-accent)] bg-[var(--color-accent-light)] font-[var(--font-display)] text-2xl text-[var(--color-text)]">
                     {form.avatarUrl ? (
                       <img
                         src={form.avatarUrl}
@@ -1045,12 +1045,12 @@ export function ProfileDetails() {
                   </div>
 
                   <div className="min-w-0">
-                    <h2 className="truncate font-[var(--font-display)] text-[27px] leading-tight text-[var(--color-ink)]">
+                    <h2 className="truncate font-[var(--font-display)] text-[27px] leading-tight text-[var(--color-text)]">
                       {profile.user.name ||
                         "Your Account"}
                     </h2>
 
-                    <p className="mt-1 truncate text-sm text-[var(--color-secondary)]">
+                    <p className="mt-1 truncate text-sm text-[var(--color-text-secondary)]">
                       {profile.user.email}
                     </p>
                   </div>
@@ -1061,15 +1061,15 @@ export function ProfileDetails() {
                     <Mail
                       size={17}
                       strokeWidth={1.7}
-                      className="mt-0.5 text-[var(--color-secondary)]"
+                      className="mt-0.5 text-[var(--color-text-secondary)]"
                     />
 
                     <div className="min-w-0">
-                      <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-[var(--color-muted)]">
+                      <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-[var(--color-text-muted)]">
                         Email
                       </p>
 
-                      <p className="mt-1 break-all text-sm text-[var(--color-ink)]">
+                      <p className="mt-1 break-all text-sm text-[var(--color-text)]">
                         {profile.user.email}
                       </p>
                     </div>
@@ -1079,15 +1079,15 @@ export function ProfileDetails() {
                     <Phone
                       size={17}
                       strokeWidth={1.7}
-                      className="mt-0.5 text-[var(--color-secondary)]"
+                      className="mt-0.5 text-[var(--color-text-secondary)]"
                     />
 
                     <div className="min-w-0">
-                      <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-[var(--color-muted)]">
+                      <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-[var(--color-text-muted)]">
                         Phone
                       </p>
 
-                      <p className="mt-1 text-sm text-[var(--color-ink)]">
+                      <p className="mt-1 text-sm text-[var(--color-text)]">
                         {profile.user.phone ||
                           profile.customer.phone ||
                           "Not added"}
@@ -1095,7 +1095,7 @@ export function ProfileDetails() {
                     </div>
                   </div>
 
-                  <div className="mt-5 flex items-center gap-2 text-[var(--color-rose-dark)]">
+                  <div className="mt-5 flex items-center gap-2 text-[var(--color-accent-dark)]">
                     <BadgeCheck
                       size={17}
                       strokeWidth={1.8}
@@ -1114,7 +1114,7 @@ export function ProfileDetails() {
                   ACCOUNT QUICK ACTIONS
               ================================================== */}
 
-              <div className="border-t border-[var(--color-border)] bg-[var(--color-cream)] p-3">
+              <div className="border-t border-[var(--color-border)] bg-[var(--color-surface-soft)] p-3">
                 <Link
                   href="/account/orders"
                   className="
@@ -1125,24 +1125,24 @@ export function ProfileDetails() {
                     py-3
                     text-left
                     transition-colors
-                    hover:bg-white
+                    hover:bg-[var(--color-surface)]
                   "
                 >
                   <ShoppingBagIcon />
 
                   <span className="flex-1">
-                    <span className="block text-xs font-semibold text-[var(--color-ink)]">
+                    <span className="block text-xs font-semibold text-[var(--color-text)]">
                       Your Orders
                     </span>
 
-                    <span className="mt-0.5 block text-[10px] text-[var(--color-muted)]">
+                    <span className="mt-0.5 block text-[10px] text-[var(--color-text-muted)]">
                       View and track your orders
                     </span>
                   </span>
 
                   <ChevronRight
                     size={14}
-                    className="text-[var(--color-secondary)]"
+                    className="text-[var(--color-text-secondary)]"
                   />
                 </Link>
 
@@ -1156,28 +1156,28 @@ export function ProfileDetails() {
                     py-3
                     text-left
                     transition-colors
-                    hover:bg-white
+                    hover:bg-[var(--color-surface)]
                   "
                 >
                   <MapPin
                     size={15}
                     strokeWidth={1.6}
-                    className="text-[var(--color-secondary)]"
+                    className="text-[var(--color-text-secondary)]"
                   />
 
                   <span className="flex-1">
-                    <span className="block text-xs font-semibold text-[var(--color-ink)]">
+                    <span className="block text-xs font-semibold text-[var(--color-text)]">
                       Saved Addresses
                     </span>
 
-                    <span className="mt-0.5 block text-[10px] text-[var(--color-muted)]">
+                    <span className="mt-0.5 block text-[10px] text-[var(--color-text-muted)]">
                       Manage delivery addresses
                     </span>
                   </span>
 
                   <ChevronRight
                     size={14}
-                    className="text-[var(--color-secondary)]"
+                    className="text-[var(--color-text-secondary)]"
                   />
                 </Link>
               </div>
@@ -1192,14 +1192,14 @@ export function ProfileDetails() {
                   PERSONAL INFORMATION
               ================================================== */}
 
-              <section className="border border-[var(--color-border)] bg-white">
+              <section className="border border-[var(--color-border)] bg-[var(--color-surface)]">
                 <div className="flex items-center justify-between border-b border-[var(--color-border)] px-6 py-5 sm:px-7">
                   <div>
-                    <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--color-rose-dark)]">
+                    <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--color-accent-dark)]">
                       Account
                     </p>
 
-                    <h2 className="mt-1 font-[var(--font-display)] text-[28px] text-[var(--color-ink)]">
+                    <h2 className="mt-1 font-[var(--font-display)] text-[28px] text-[var(--color-text)]">
                       Personal Information
                     </h2>
                   </div>
@@ -1207,7 +1207,7 @@ export function ProfileDetails() {
                   <UserRound
                     size={20}
                     strokeWidth={1.6}
-                    className="text-[var(--color-secondary)]"
+                    className="text-[var(--color-text-secondary)]"
                   />
                 </div>
 
@@ -1215,7 +1215,7 @@ export function ProfileDetails() {
                   {/* NAME */}
 
                   <div>
-                    <label className="mb-2.5 block text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--color-secondary)]">
+                    <label className="mb-2.5 block text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
                       Full Name
                     </label>
 
@@ -1230,20 +1230,20 @@ export function ProfileDetails() {
                         }}
                         autoComplete="name"
                         className="
-                          h-12
+                          h-11
                           w-full
                           border-b
                           border-[var(--color-border)]
                           bg-transparent
                           text-sm
-                          text-[var(--color-ink)]
+                          text-[var(--color-text)]
                           outline-none
                           transition
-                          focus:border-[var(--color-rose-dark)]
+                          focus:border-[var(--color-accent-dark)]
                         "
                       />
                     ) : (
-                      <div className="flex min-h-12 items-center border-b border-[var(--color-border)] text-sm text-[var(--color-ink)]">
+                      <div className="flex min-h-11 items-center border-b border-[var(--color-border)] text-sm text-[var(--color-text)]">
                         {profile.user.name ||
                           "Not added"}
                       </div>
@@ -1253,23 +1253,23 @@ export function ProfileDetails() {
                   {/* EMAIL */}
 
                   <div>
-                    <label className="mb-2.5 block text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--color-secondary)]">
+                    <label className="mb-2.5 block text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
                       Email Address
                     </label>
 
-                    <div className="flex min-h-12 items-center justify-between gap-4 border-b border-[var(--color-border)] text-sm text-[var(--color-ink)]">
+                    <div className="flex min-h-11 items-center justify-between gap-4 border-b border-[var(--color-border)] text-sm text-[var(--color-text)]">
                       <span className="break-all">
                         {profile.user.email}
                       </span>
 
-                      <span className="shrink-0 text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--color-muted)]">
+                      <span className="shrink-0 text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--color-text-muted)]">
                         {profile.user.emailVerified
                           ? "Verified"
                           : "Unverified"}
                       </span>
                     </div>
 
-                    <p className="mt-2 text-[11px] leading-5 text-[var(--color-muted)]">
+                    <p className="mt-2 text-[11px] leading-5 text-[var(--color-text-muted)]">
                       Email address is managed
                       separately from profile editing.
                     </p>
@@ -1278,7 +1278,7 @@ export function ProfileDetails() {
                   {/* PHONE */}
 
                   <div>
-                    <label className="mb-2.5 block text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--color-secondary)]">
+                    <label className="mb-2.5 block text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
                       Phone Number
                     </label>
 
@@ -1294,20 +1294,20 @@ export function ProfileDetails() {
                         inputMode="tel"
                         autoComplete="tel"
                         className="
-                          h-12
+                          h-11
                           w-full
                           border-b
                           border-[var(--color-border)]
                           bg-transparent
                           text-sm
-                          text-[var(--color-ink)]
+                          text-[var(--color-text)]
                           outline-none
                           transition
-                          focus:border-[var(--color-rose-dark)]
+                          focus:border-[var(--color-accent-dark)]
                         "
                       />
                     ) : (
-                      <div className="flex min-h-12 items-center border-b border-[var(--color-border)] text-sm text-[var(--color-ink)]">
+                      <div className="flex min-h-11 items-center border-b border-[var(--color-border)] text-sm text-[var(--color-text)]">
                         {profile.user.phone ||
                           profile.customer.phone ||
                           "Not added"}
@@ -1318,7 +1318,7 @@ export function ProfileDetails() {
                   {/* GENDER */}
 
                   <div>
-                    <label className="mb-2.5 block text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--color-secondary)]">
+                    <label className="mb-2.5 block text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
                       Gender
                     </label>
 
@@ -1341,7 +1341,7 @@ export function ProfileDetails() {
                             );
                           }}
                           className="
-                            h-12
+                            h-11
                             w-full
                             appearance-none
                             border-b
@@ -1349,9 +1349,9 @@ export function ProfileDetails() {
                             bg-transparent
                             pr-8
                             text-sm
-                            text-[var(--color-ink)]
+                            text-[var(--color-text)]
                             outline-none
-                            focus:border-[var(--color-rose-dark)]
+                            focus:border-[var(--color-accent-dark)]
                           "
                         >
                           <option value="">
@@ -1379,12 +1379,12 @@ export function ProfileDetails() {
                             right-0
                             top-1/2
                             -translate-y-1/2
-                            text-[var(--color-secondary)]
+                            text-[var(--color-text-secondary)]
                           "
                         />
                       </div>
                     ) : (
-                      <div className="flex min-h-12 items-center border-b border-[var(--color-border)] text-sm capitalize text-[var(--color-ink)]">
+                      <div className="flex min-h-11 items-center border-b border-[var(--color-border)] text-sm capitalize text-[var(--color-text)]">
                         {profile.customer.gender ||
                           "Not added"}
                       </div>
@@ -1394,7 +1394,7 @@ export function ProfileDetails() {
                   {/* DOB */}
 
                   <div>
-                    <label className="mb-2.5 block text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--color-secondary)]">
+                    <label className="mb-2.5 block text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
                       Date of Birth
                     </label>
 
@@ -1412,15 +1412,15 @@ export function ProfileDetails() {
                             );
                           }}
                           className="
-                            h-12
+                            h-11
                             w-full
                             border-b
                             border-[var(--color-border)]
                             bg-transparent
                             text-sm
-                            text-[var(--color-ink)]
+                            text-[var(--color-text)]
                             outline-none
-                            focus:border-[var(--color-rose-dark)]
+                            focus:border-[var(--color-accent-dark)]
                           "
                         />
 
@@ -1432,12 +1432,12 @@ export function ProfileDetails() {
                             right-0
                             top-1/2
                             -translate-y-1/2
-                            text-[var(--color-secondary)]
+                            text-[var(--color-text-secondary)]
                           "
                         />
                       </div>
                     ) : (
-                      <div className="flex min-h-12 items-center justify-between border-b border-[var(--color-border)] text-sm text-[var(--color-ink)]">
+                      <div className="flex min-h-11 items-center justify-between border-b border-[var(--color-border)] text-sm text-[var(--color-text)]">
                         <span>
                           {formatDate(
                             profile.customer
@@ -1448,7 +1448,7 @@ export function ProfileDetails() {
                         <CalendarDays
                           size={16}
                           strokeWidth={1.7}
-                          className="text-[var(--color-secondary)]"
+                          className="text-[var(--color-text-secondary)]"
                         />
                       </div>
                     )}
@@ -1457,13 +1457,13 @@ export function ProfileDetails() {
                   {/* STATUS */}
 
                   <div>
-                    <label className="mb-2.5 block text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--color-secondary)]">
+                    <label className="mb-2.5 block text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
                       Account Status
                     </label>
 
-                    <div className="flex min-h-12 items-center border-b border-[var(--color-border)]">
-                      <span className="inline-flex items-center gap-2 text-sm capitalize text-[var(--color-ink)]">
-                        <span className="h-2 w-2 rounded-full bg-[var(--color-rose-dark)]" />
+                    <div className="flex min-h-11 items-center border-b border-[var(--color-border)]">
+                      <span className="inline-flex items-center gap-2 text-sm capitalize text-[var(--color-text)]">
+                        <span className="h-2 w-2 rounded-full bg-[var(--color-accent-dark)]" />
 
                         {profile.user.status}
                       </span>
@@ -1476,17 +1476,17 @@ export function ProfileDetails() {
                   STYLE PREFERENCES
               ================================================== */}
 
-              <section className="border border-[var(--color-border)] bg-white">
+              <section className="border border-[var(--color-border)] bg-[var(--color-surface)]">
                 <div className="border-b border-[var(--color-border)] px-6 py-5 sm:px-7">
-                  <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--color-rose-dark)]">
+                  <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--color-accent-dark)]">
                     Personalisation
                   </p>
 
-                  <h2 className="mt-1 font-[var(--font-display)] text-[28px] text-[var(--color-ink)]">
+                  <h2 className="mt-1 font-[var(--font-display)] text-[28px] text-[var(--color-text)]">
                     Style Preferences
                   </h2>
 
-                  <p className="mt-2 max-w-xl text-sm leading-6 text-[var(--color-secondary)]">
+                  <p className="mt-2 max-w-xl text-sm leading-6 text-[var(--color-text-secondary)]">
                     Choose your preferred sizes and
                     colours. These preferences are
                     saved to your account.
@@ -1501,10 +1501,10 @@ export function ProfileDetails() {
                       <Ruler
                         size={16}
                         strokeWidth={1.7}
-                        className="text-[var(--color-secondary)]"
+                        className="text-[var(--color-text-secondary)]"
                       />
 
-                      <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-[var(--color-secondary)]">
+                      <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-[var(--color-text-secondary)]">
                         Preferred Sizes
                       </p>
                     </div>
@@ -1536,12 +1536,12 @@ export function ProfileDetails() {
                                 transition
                                 ${
                                   selected
-                                    ? "border-[var(--color-ink)] bg-[var(--color-ink)] text-white"
-                                    : "border-[var(--color-border)] bg-white text-[var(--color-ink)]"
+                                    ? "border-[var(--color-text)] bg-[var(--color-text)] text-white"
+                                    : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)]"
                                 }
                                 ${
                                   isEditing
-                                    ? "hover:border-[var(--color-rose-dark)]"
+                                    ? "hover:border-[var(--color-accent-dark)]"
                                     : "cursor-default"
                                 }
                               `}
@@ -1557,7 +1557,7 @@ export function ProfileDetails() {
                   {/* COLOURS */}
 
                   <div className="mt-8 border-t border-[var(--color-border)] pt-7">
-                    <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-[var(--color-secondary)]">
+                    <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-[var(--color-text-secondary)]">
                       Preferred Colours
                     </p>
 
@@ -1585,12 +1585,12 @@ export function ProfileDetails() {
                                 transition
                                 ${
                                   selected
-                                    ? "border-[var(--color-ink)] bg-[var(--color-ink)] text-white"
-                                    : "border-[var(--color-border)] bg-white text-[var(--color-ink)]"
+                                    ? "border-[var(--color-text)] bg-[var(--color-text)] text-white"
+                                    : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)]"
                                 }
                                 ${
                                   isEditing
-                                    ? "hover:border-[var(--color-rose-dark)]"
+                                    ? "hover:border-[var(--color-accent-dark)]"
                                     : "cursor-default"
                                 }
                               `}
@@ -1609,17 +1609,17 @@ export function ProfileDetails() {
                   COMMUNICATION
               ================================================== */}
 
-              <section className="border border-[var(--color-border)] bg-white">
+              <section className="border border-[var(--color-border)] bg-[var(--color-surface)]">
                 <div className="border-b border-[var(--color-border)] px-6 py-5 sm:px-7">
-                  <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--color-rose-dark)]">
+                  <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--color-accent-dark)]">
                     Communication
                   </p>
 
-                  <h2 className="mt-1 font-[var(--font-display)] text-[28px] text-[var(--color-ink)]">
+                  <h2 className="mt-1 font-[var(--font-display)] text-[28px] text-[var(--color-text)]">
                     Communication Preferences
                   </h2>
 
-                  <p className="mt-2 max-w-xl text-sm leading-6 text-[var(--color-secondary)]">
+                  <p className="mt-2 max-w-xl text-sm leading-6 text-[var(--color-text-secondary)]">
                     Control which brand communications
                     you would like to receive.
                   </p>
@@ -1649,22 +1649,22 @@ export function ProfileDetails() {
                       transition
                       ${
                         form.marketingEmails
-                          ? "border-[var(--color-rose-dark)] bg-[var(--color-rose-light)]"
-                          : "border-[var(--color-border)] bg-white"
+                          ? "border-[var(--color-accent-dark)] bg-[var(--color-accent-light)]"
+                          : "border-[var(--color-border)] bg-[var(--color-surface)]"
                       }
                       ${
                         isEditing
-                          ? "cursor-pointer hover:border-[var(--color-rose-dark)]"
+                          ? "cursor-pointer hover:border-[var(--color-accent-dark)]"
                           : "cursor-default"
                       }
                     `}
                   >
                     <div className="pr-4">
-                      <p className="text-sm font-medium text-[var(--color-ink)]">
+                      <p className="text-sm font-medium text-[var(--color-text)]">
                         Email Updates
                       </p>
 
-                      <p className="mt-1 text-xs leading-5 text-[var(--color-secondary)]">
+                      <p className="mt-1 text-xs leading-5 text-[var(--color-text-secondary)]">
                         Collection launches, offers and
                         account updates.
                       </p>
@@ -1682,7 +1682,7 @@ export function ProfileDetails() {
                         transition
                         ${
                           form.marketingEmails
-                            ? "bg-[var(--color-ink)]"
+                            ? "bg-[var(--color-text)]"
                             : "bg-[var(--color-border)]"
                         }
                       `}
@@ -1692,7 +1692,7 @@ export function ProfileDetails() {
                           h-4
                           w-4
                           rounded-full
-                          bg-white
+                          bg-[var(--color-surface)]
                           transition-transform
                           ${
                             form.marketingEmails
@@ -1727,22 +1727,22 @@ export function ProfileDetails() {
                       transition
                       ${
                         form.marketingWhatsapp
-                          ? "border-[var(--color-rose-dark)] bg-[var(--color-rose-light)]"
-                          : "border-[var(--color-border)] bg-white"
+                          ? "border-[var(--color-accent-dark)] bg-[var(--color-accent-light)]"
+                          : "border-[var(--color-border)] bg-[var(--color-surface)]"
                       }
                       ${
                         isEditing
-                          ? "cursor-pointer hover:border-[var(--color-rose-dark)]"
+                          ? "cursor-pointer hover:border-[var(--color-accent-dark)]"
                           : "cursor-default"
                       }
                     `}
                   >
                     <div className="pr-4">
-                      <p className="text-sm font-medium text-[var(--color-ink)]">
+                      <p className="text-sm font-medium text-[var(--color-text)]">
                         WhatsApp Updates
                       </p>
 
-                      <p className="mt-1 text-xs leading-5 text-[var(--color-secondary)]">
+                      <p className="mt-1 text-xs leading-5 text-[var(--color-text-secondary)]">
                         Selected brand communication and
                         important updates.
                       </p>
@@ -1760,7 +1760,7 @@ export function ProfileDetails() {
                         transition
                         ${
                           form.marketingWhatsapp
-                            ? "bg-[var(--color-ink)]"
+                            ? "bg-[var(--color-text)]"
                             : "bg-[var(--color-border)]"
                         }
                       `}
@@ -1770,7 +1770,7 @@ export function ProfileDetails() {
                           h-4
                           w-4
                           rounded-full
-                          bg-white
+                          bg-[var(--color-surface)]
                           transition-transform
                           ${
                             form.marketingWhatsapp
@@ -1788,17 +1788,17 @@ export function ProfileDetails() {
                   ACCOUNT SECURITY / DANGER ZONE
               ================================================== */}
 
-              <section className="border border-[var(--color-border)] bg-white">
+              <section className="border border-[var(--color-border)] bg-[var(--color-surface)]">
                 <div className="border-b border-[var(--color-border)] px-6 py-5 sm:px-7">
-                  <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--color-rose-dark)]">
+                  <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--color-accent-dark)]">
                     Account Management
                   </p>
 
-                  <h2 className="mt-1 font-[var(--font-display)] text-[28px] text-[var(--color-ink)]">
+                  <h2 className="mt-1 font-[var(--font-display)] text-[28px] text-[var(--color-text)]">
                     Account Actions
                   </h2>
 
-                  <p className="mt-2 max-w-xl text-sm leading-6 text-[var(--color-secondary)]">
+                  <p className="mt-2 max-w-xl text-sm leading-6 text-[var(--color-text-secondary)]">
                     Manage your active session or permanently
                     remove your Aayesha Fashion account.
                   </p>
@@ -1823,14 +1823,14 @@ export function ProfileDetails() {
                       gap-4
                       border
                       border-[var(--color-border)]
-                      bg-[var(--color-ivory)]
+                      bg-[var(--color-bg)]
                       px-5
                       py-4
                       text-left
                       transition-colors
                       duration-300
-                      hover:border-[var(--color-charcoal)]
-                      hover:bg-[var(--color-cream)]
+                      hover:border-[var(--color-text)]
+                      hover:bg-[var(--color-surface-soft)]
                       disabled:cursor-not-allowed
                       disabled:opacity-60
                     "
@@ -1845,11 +1845,11 @@ export function ProfileDetails() {
                         justify-center
                         border
                         border-[var(--color-border)]
-                        bg-white
-                        text-[var(--color-secondary)]
+                        bg-[var(--color-surface)]
+                        text-[var(--color-text-secondary)]
                         transition-colors
-                        group-hover:border-[var(--color-charcoal)]
-                        group-hover:text-[var(--color-charcoal)]
+                        group-hover:border-[var(--color-text)]
+                        group-hover:text-[var(--color-text)]
                       "
                     >
                       {isProcessingAccountAction &&
@@ -1868,14 +1868,14 @@ export function ProfileDetails() {
                     </span>
 
                     <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-semibold text-[var(--color-ink)]">
+                      <span className="block text-sm font-semibold text-[var(--color-text)]">
                         {isProcessingAccountAction &&
                         confirmType === "logout"
                           ? "Signing Out..."
                           : "Sign Out"}
                       </span>
 
-                      <span className="mt-1 block text-[10px] leading-5 text-[var(--color-muted)]">
+                      <span className="mt-1 block text-[10px] leading-5 text-[var(--color-text-muted)]">
                         Sign out from this device and return
                         to the home page.
                       </span>
@@ -1884,7 +1884,7 @@ export function ProfileDetails() {
                     <ChevronRight
                       size={15}
                       strokeWidth={1.4}
-                      className="shrink-0 text-[var(--color-secondary)]"
+                      className="shrink-0 text-[var(--color-text-secondary)]"
                     />
                   </button>
 
@@ -1913,7 +1913,7 @@ export function ProfileDetails() {
                       transition-colors
                       duration-300
                       hover:border-[#c98f95]
-                      hover:bg-[var(--color-rose-light)]
+                      hover:bg-[var(--color-accent-light)]
                       disabled:cursor-not-allowed
                       disabled:opacity-60
                     "
@@ -1928,7 +1928,7 @@ export function ProfileDetails() {
                         justify-center
                         border
                         border-[#ead4d6]
-                        bg-white
+                        bg-[var(--color-surface)]
                         text-[#7f4a50]
                       "
                     >
@@ -1955,7 +1955,7 @@ export function ProfileDetails() {
                           : "Delete Account"}
                       </span>
 
-                      <span className="mt-1 block text-[10px] leading-5 text-[var(--color-muted)]">
+                      <span className="mt-1 block text-[10px] leading-5 text-[var(--color-text-muted)]">
                         Permanently remove your account and
                         associated customer profile.
                       </span>
@@ -1977,11 +1977,11 @@ export function ProfileDetails() {
               <div className="border-t border-[var(--color-border)] pt-7">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <p className="text-xs font-medium text-[var(--color-ink)]">
+                    <p className="text-xs font-medium text-[var(--color-text)]">
                       Aayesha Fashion Account
                     </p>
 
-                    <p className="mt-1 text-[10px] leading-5 text-[var(--color-muted)]">
+                    <p className="mt-1 text-[10px] leading-5 text-[var(--color-text-muted)]">
                       Keep your information current for a
                       smoother shopping experience.
                     </p>
@@ -1998,15 +1998,15 @@ export function ProfileDetails() {
                         gap-2
                         border
                         border-[var(--color-border)]
-                        bg-white
+                        bg-[var(--color-surface)]
                         px-5
                         text-[10px]
                         font-semibold
                         uppercase
                         tracking-[0.15em]
-                        text-[var(--color-ink)]
+                        text-[var(--color-text)]
                         transition-colors
-                        hover:bg-[var(--color-cream)]
+                        hover:bg-[var(--color-surface-soft)]
                       "
                     >
                       <Home size={14} />
@@ -2024,8 +2024,8 @@ export function ProfileDetails() {
                           justify-center
                           gap-2
                           border
-                          border-[var(--color-ink)]
-                          bg-[var(--color-ink)]
+                          border-[var(--color-text)]
+                          bg-[var(--color-text)]
                           px-6
                           text-[10px]
                           font-semibold
@@ -2033,7 +2033,7 @@ export function ProfileDetails() {
                           tracking-[0.15em]
                           text-white
                           transition-colors
-                          hover:bg-[var(--color-soft-charcoal)]
+                          hover:bg-[var(--color-text-secondary)]
                         "
                       >
                         <Edit3 size={14} />
@@ -2054,8 +2054,8 @@ export function ProfileDetails() {
                           justify-center
                           gap-2
                           border
-                          border-[var(--color-ink)]
-                          bg-[var(--color-ink)]
+                          border-[var(--color-text)]
+                          bg-[var(--color-text)]
                           px-6
                           text-[10px]
                           font-semibold
@@ -2063,7 +2063,7 @@ export function ProfileDetails() {
                           tracking-[0.15em]
                           text-white
                           transition
-                          hover:bg-[var(--color-soft-charcoal)]
+                          hover:bg-[var(--color-text-secondary)]
                           disabled:cursor-not-allowed
                           disabled:opacity-60
                         "
@@ -2142,8 +2142,8 @@ function ShoppingBagIcon() {
         justify-center
         border
         border-[var(--color-border)]
-        bg-white
-        text-[var(--color-secondary)]
+        bg-[var(--color-surface)]
+        text-[var(--color-text-secondary)]
       "
     >
       <svg

@@ -5,9 +5,14 @@ import {
   useState,
 } from "react";
 
-import { Eye, EyeOff } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+} from "lucide-react";
 
-import { useAuthStore } from "@/store/auth-store";
+import {
+  useAuthStore,
+} from "@/store/auth-store";
 
 /* =========================================================
    INPUT FIELD
@@ -32,7 +37,17 @@ function InputField({
 }: InputFieldProps) {
   return (
     <div>
-      <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-secondary)]">
+      <label
+        className="
+          mb-2
+          block
+          text-[10px]
+          font-semibold
+          uppercase
+          tracking-[0.18em]
+          text-[var(--color-text-secondary)]
+        "
+      >
         {label}
       </label>
 
@@ -44,7 +59,22 @@ function InputField({
         onChange={(event) =>
           onChange(event.target.value)
         }
-        className="h-12 w-full rounded-none border border-[var(--color-border)] bg-white px-4 text-[13px] text-[var(--color-charcoal)] outline-none transition placeholder:text-[#aaa] focus:border-[var(--color-charcoal)]"
+        className="
+          h-11
+          w-full
+          border
+          border-[var(--color-border)]
+          bg-[var(--color-surface)]
+          px-4
+          text-[13px]
+          text-[var(--color-text)]
+          outline-none
+          transition-colors
+          duration-[var(--duration-base)]
+          placeholder:text-[var(--color-text-muted)]
+          hover:border-[var(--color-border-dark)]
+          focus:border-[var(--color-accent-dark)]
+        "
       />
     </div>
   );
@@ -74,7 +104,17 @@ function PasswordField({
 
   return (
     <div>
-      <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-secondary)]">
+      <label
+        className="
+          mb-2
+          block
+          text-[10px]
+          font-semibold
+          uppercase
+          tracking-[0.18em]
+          text-[var(--color-text-secondary)]
+        "
+      >
         {label}
       </label>
 
@@ -91,7 +131,23 @@ function PasswordField({
           onChange={(event) =>
             onChange(event.target.value)
           }
-          className="h-12 w-full rounded-none border border-[var(--color-border)] bg-white px-4 pr-12 text-[13px] text-[var(--color-charcoal)] outline-none transition placeholder:text-[#aaa] focus:border-[var(--color-charcoal)]"
+          className="
+            h-11
+            w-full
+            border
+            border-[var(--color-border)]
+            bg-[var(--color-surface)]
+            px-4
+            pr-11
+            text-[13px]
+            text-[var(--color-text)]
+            outline-none
+            transition-colors
+            duration-[var(--duration-base)]
+            placeholder:text-[var(--color-text-muted)]
+            hover:border-[var(--color-border-dark)]
+            focus:border-[var(--color-accent-dark)]
+          "
         />
 
         <button
@@ -106,7 +162,20 @@ function PasswordField({
               (current) => !current,
             )
           }
-          className="absolute right-0 top-0 flex h-12 w-12 items-center justify-center text-[var(--color-secondary)] transition hover:text-[var(--color-charcoal)]"
+          className="
+            absolute
+            right-0
+            top-0
+            flex
+            h-11
+            w-11
+            items-center
+            justify-center
+            text-[var(--color-text-secondary)]
+            transition-colors
+            duration-[var(--duration-fast)]
+            hover:text-[var(--color-text)]
+          "
         >
           {showPassword ? (
             <EyeOff
@@ -143,15 +212,11 @@ function PasswordRules({
     },
     {
       label: "One uppercase letter",
-      valid: /[A-Z]/.test(
-        password,
-      ),
+      valid: /[A-Z]/.test(password),
     },
     {
       label: "One lowercase letter",
-      valid: /[a-z]/.test(
-        password,
-      ),
+      valid: /[a-z]/.test(password),
     },
     {
       label: "One number",
@@ -170,18 +235,30 @@ function PasswordRules({
       {rules.map((rule) => (
         <div
           key={rule.label}
-          className={`flex items-center gap-2 text-[10px] ${
-            rule.valid
-              ? "text-[var(--color-charcoal)]"
-              : "text-[var(--color-muted)]"
-          }`}
+          className={`
+            flex
+            items-center
+            gap-2
+            text-[10px]
+            ${
+              rule.valid
+                ? "text-[var(--color-success)]"
+                : "text-[var(--color-text-muted)]"
+            }
+          `}
         >
           <span
-            className={`h-1.5 w-1.5 rounded-full ${
-              rule.valid
-                ? "bg-[var(--color-charcoal)]"
-                : "bg-[#d6d1cc]"
-            }`}
+            className={`
+              h-1.5
+              w-1.5
+              shrink-0
+              rounded-full
+              ${
+                rule.valid
+                  ? "bg-[var(--color-success)]"
+                  : "bg-[var(--color-border-dark)]"
+              }
+            `}
           />
 
           <span>
@@ -359,7 +436,8 @@ export function RegisterForm() {
         )}`;
     } catch {
       /*
-       * Auth store already stores the API error.
+       * Auth store already stores
+       * the API error.
        */
     }
   };
@@ -372,7 +450,7 @@ export function RegisterForm() {
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="space-y-[13px]"
+      className="space-y-4"
     >
       {/* ===================================================
           NAME
@@ -389,6 +467,8 @@ export function RegisterForm() {
           if (localError) {
             setLocalError("");
           }
+
+          clearError();
         }}
       />
 
@@ -408,6 +488,8 @@ export function RegisterForm() {
           if (localError) {
             setLocalError("");
           }
+
+          clearError();
         }}
       />
 
@@ -427,6 +509,8 @@ export function RegisterForm() {
           if (localError) {
             setLocalError("");
           }
+
+          clearError();
         }}
       />
 
@@ -446,6 +530,8 @@ export function RegisterForm() {
             if (localError) {
               setLocalError("");
             }
+
+            clearError();
           }}
         />
 
@@ -464,13 +550,13 @@ export function RegisterForm() {
         placeholder="Re-enter your password"
         autoComplete="new-password"
         onChange={(value) => {
-          setConfirmPassword(
-            value,
-          );
+          setConfirmPassword(value);
 
           if (localError) {
             setLocalError("");
           }
+
+          clearError();
         }}
       />
 
@@ -481,7 +567,16 @@ export function RegisterForm() {
       {errorMessage ? (
         <div
           role="alert"
-          className="border border-[var(--color-rose-dark)] bg-[var(--color-rose-light)] px-4 py-3 text-sm leading-5 text-[var(--color-charcoal)]"
+          className="
+            border
+            border-[var(--color-error)]
+            bg-[var(--color-surface-soft)]
+            px-4
+            py-3
+            text-[12px]
+            leading-5
+            text-[var(--color-error)]
+          "
         >
           {errorMessage}
         </div>
@@ -491,7 +586,13 @@ export function RegisterForm() {
           TERMS
       =================================================== */}
 
-      <p className="text-[11px] leading-5 text-[var(--color-secondary)]">
+      <p
+        className="
+          text-[11px]
+          leading-5
+          text-[var(--color-text-secondary)]
+        "
+      >
         By creating an account, you
         agree to our terms and
         acknowledge our privacy
@@ -505,7 +606,25 @@ export function RegisterForm() {
       <button
         type="submit"
         disabled={isLoading}
-        className="h-12 w-full bg-[var(--color-charcoal)] px-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-[var(--color-ink)] disabled:cursor-not-allowed disabled:opacity-60"
+        className="
+          h-11
+          w-full
+          border
+          border-[var(--color-text)]
+          bg-[var(--color-text)]
+          px-6
+          text-[10px]
+          font-semibold
+          uppercase
+          tracking-[0.2em]
+          text-[var(--color-text-inverse)]
+          transition-all
+          duration-[var(--duration-base)]
+          hover:border-[var(--color-accent-dark)]
+          hover:bg-[var(--color-accent-dark)]
+          disabled:cursor-not-allowed
+          disabled:opacity-60
+        "
       >
         {isLoading
           ? "Creating account..."

@@ -5,7 +5,6 @@ import {
   CalendarDays,
   Check,
   ChevronDown,
-  Edit3,
   Loader2,
   Mail,
   Phone,
@@ -43,6 +42,10 @@ type FormState = {
   gender: CustomerGender;
 };
 
+/* =========================================================
+   HELPERS
+========================================================= */
+
 function createInitialForm(
   profile: CustomerProfile,
 ): FormState {
@@ -77,18 +80,14 @@ function createInitialForm(
   };
 }
 
-function getInitials(
-  name: string,
-) {
-  const trimmed =
-    name.trim();
+function getInitials(name: string) {
+  const trimmed = name.trim();
 
   if (!trimmed) {
     return "AF";
   }
 
-  const parts =
-    trimmed.split(/\s+/);
+  const parts = trimmed.split(/\s+/);
 
   if (parts.length === 1) {
     return parts[0]
@@ -101,28 +100,24 @@ function getInitials(
   }`.toUpperCase();
 }
 
-export function EditAccountForm() {
-  const accessToken =
-    useAuthStore(
-      (state) =>
-        state.accessToken,
-    );
+/* =========================================================
+   COMPONENT
+========================================================= */
 
-  const isAuthenticated =
-    useAuthStore(
-      (state) =>
-        state.isAuthenticated,
-    );
+export function EditAccountForm() {
+  const accessToken = useAuthStore(
+    (state) => state.accessToken,
+  );
+
+  const isAuthenticated = useAuthStore(
+    (state) => state.isAuthenticated,
+  );
 
   const [profile, setProfile] =
-    useState<CustomerProfile | null>(
-      null,
-    );
+    useState<CustomerProfile | null>(null);
 
   const [form, setForm] =
-    useState<FormState | null>(
-      null,
-    );
+    useState<FormState | null>(null);
 
   const [isLoading, setIsLoading] =
     useState(true);
@@ -143,42 +138,39 @@ export function EditAccountForm() {
      LOAD PROFILE
   ========================================================= */
 
-  const loadProfile =
-    useCallback(
-      async () => {
-        if (!accessToken) {
-          setIsLoading(false);
-          return;
-        }
+  const loadProfile = useCallback(
+    async () => {
+      if (!accessToken) {
+        setIsLoading(false);
+        return;
+      }
 
-        setIsLoading(true);
-        setErrorMessage("");
+      setIsLoading(true);
+      setErrorMessage("");
 
-        try {
-          const response =
-            await getCustomerProfile(
-              accessToken,
-            );
-
-          setProfile(response);
-
-          setForm(
-            createInitialForm(
-              response,
-            ),
+      try {
+        const response =
+          await getCustomerProfile(
+            accessToken,
           );
-        } catch (error) {
-          setErrorMessage(
-            error instanceof Error
-              ? error.message
-              : "Unable to load your account details.",
-          );
-        } finally {
-          setIsLoading(false);
-        }
-      },
-      [accessToken],
-    );
+
+        setProfile(response);
+
+        setForm(
+          createInitialForm(response),
+        );
+      } catch (error) {
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "Unable to load your account details.",
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [accessToken],
+  );
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -225,18 +217,12 @@ export function EditAccountForm() {
   ) => {
     event.preventDefault();
 
-    if (
-      !accessToken ||
-      !form
-    ) {
+    if (!accessToken || !form) {
       return;
     }
 
-    const name =
-      form.name.trim();
-
-    const phone =
-      form.phone.trim();
+    const name = form.name.trim();
+    const phone = form.phone.trim();
 
     setErrorMessage("");
 
@@ -277,8 +263,7 @@ export function EditAccountForm() {
               ).toISOString()
             : null,
 
-        gender:
-          form.gender,
+        gender: form.gender,
       };
 
     try {
@@ -291,9 +276,7 @@ export function EditAccountForm() {
       setProfile(response);
 
       setForm(
-        createInitialForm(
-          response,
-        ),
+        createInitialForm(response),
       );
 
       setGenderOpen(false);
@@ -325,21 +308,25 @@ export function EditAccountForm() {
 
   if (!isAuthenticated) {
     return (
-      <section className="min-h-[60vh] bg-[var(--color-ivory)]">
+      <section className="min-h-[60vh] bg-[var(--color-bg)]">
         <div className="mx-auto flex min-h-[60vh] max-w-[720px] items-center justify-center px-5 text-center">
           <div>
-            <h1 className="font-display text-[38px] text-[var(--color-ink)]">
+            <p className="eyebrow text-[var(--color-text-muted)]">
+              Account
+            </p>
+
+            <h1 className="mt-3 font-display text-4xl leading-none text-[var(--color-text)] sm:text-5xl">
               Sign in to edit your account
             </h1>
 
-            <p className="mt-4 text-sm leading-6 text-[var(--color-secondary)]">
+            <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-[var(--color-text-secondary)]">
               Please sign in before changing your
               account details.
             </p>
 
             <Link
               href="/login?callbackUrl=/account/edit"
-              className="mt-6 inline-flex h-11 items-center justify-center border border-[#171717] bg-[#171717] px-6 text-xs font-semibold uppercase tracking-[0.12em] text-white transition-colors duration-200 hover:bg-[#292c2c]"
+              className="mt-7 inline-flex h-11 items-center justify-center border border-[var(--color-text)] bg-[var(--color-text)] px-7 text-[var(--text-label)] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text-inverse)] transition-all duration-[var(--duration-base)] hover:bg-[var(--color-accent-dark)]"
             >
               Sign In
             </Link>
@@ -355,11 +342,12 @@ export function EditAccountForm() {
 
   if (isLoading) {
     return (
-      <section className="min-h-[70vh] bg-[var(--color-ivory)]">
-        <div className="flex min-h-[70vh] items-center justify-center">
-          <div className="flex items-center gap-3 text-sm text-[var(--color-secondary)]">
+      <section className="min-h-[70vh] bg-[var(--color-bg)]">
+        <div className="mx-auto flex min-h-[70vh] max-w-[720px] items-center justify-center px-5">
+          <div className="flex items-center gap-3 text-sm text-[var(--color-text-secondary)]">
             <Loader2
               size={18}
+              strokeWidth={1.7}
               className="animate-spin"
             />
 
@@ -376,14 +364,18 @@ export function EditAccountForm() {
 
   if (!profile || !form) {
     return (
-      <section className="min-h-[60vh] bg-[var(--color-ivory)]">
+      <section className="min-h-[60vh] bg-[var(--color-bg)]">
         <div className="mx-auto flex min-h-[60vh] max-w-[720px] items-center justify-center px-5 text-center">
           <div>
-            <h1 className="font-display text-[36px] text-[var(--color-ink)]">
+            <p className="eyebrow text-[var(--color-text-muted)]">
+              Account
+            </p>
+
+            <h1 className="mt-3 font-display text-4xl leading-none text-[var(--color-text)]">
               Unable to load account
             </h1>
 
-            <p className="mt-3 text-sm leading-6 text-[var(--color-secondary)]">
+            <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-[var(--color-text-secondary)]">
               {errorMessage ||
                 "Something went wrong while loading your account."}
             </p>
@@ -393,7 +385,7 @@ export function EditAccountForm() {
               onClick={() => {
                 void loadProfile();
               }}
-              className="mt-6 inline-flex h-11 items-center justify-center border border-[#171717] bg-[#171717] px-6 text-[11px] font-semibold uppercase tracking-[0.14em] text-white transition-colors duration-200 hover:bg-[#292c2c]"
+              className="mt-7 inline-flex h-11 items-center justify-center border border-[var(--color-text)] bg-[var(--color-text)] px-7 text-[var(--text-label)] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text-inverse)] transition-all duration-[var(--duration-base)] hover:bg-[var(--color-accent-dark)]"
             >
               Try Again
             </button>
@@ -403,25 +395,24 @@ export function EditAccountForm() {
     );
   }
 
-  const initials =
-    getInitials(
-      profile.user.name,
-    );
+  const initials = getInitials(
+    profile.user.name,
+  );
 
   return (
-    <section className="min-h-screen bg-[var(--color-ivory)]">
-      <div className="mx-auto w-full max-w-[1000px] px-5 py-10 sm:px-8 lg:py-14">
+    <section className="min-h-screen bg-[var(--color-bg)]">
+      <div className="mx-auto w-full max-w-[1080px] px-5 py-10 sm:px-8 lg:py-14">
         {/* =====================================================
             BACK
         ====================================================== */}
 
         <Link
           href="/account"
-          className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.12em] text-[var(--color-secondary)] transition hover:text-[var(--color-ink)]"
+          className="inline-flex items-center gap-2 text-[var(--text-label)] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text)]"
         >
           <ArrowLeft
-            size={15}
-            strokeWidth={1.8}
+            size={14}
+            strokeWidth={1.7}
           />
 
           Back to Account
@@ -432,21 +423,19 @@ export function EditAccountForm() {
         ====================================================== */}
 
         <div className="mt-7 border-b border-[var(--color-border)] pb-8">
-          <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-[var(--color-rose-dark)]">
+          <p className="eyebrow text-[var(--color-accent)]">
             Account Settings
           </p>
 
-          <div className="mt-3 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h1 className="font-display text-[40px] leading-none text-[var(--color-ink)] sm:text-[48px]">
-                Edit Account
-              </h1>
+          <div className="mt-3">
+            <h1 className="font-display text-[42px] leading-[0.95] text-[var(--color-text)] sm:text-[52px]">
+              Edit Account
+            </h1>
 
-              <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--color-secondary)]">
-                Update your personal information and
-                keep your account details current.
-              </p>
-            </div>
+            <p className="mt-4 max-w-xl text-sm leading-6 text-[var(--color-text-secondary)]">
+              Update your personal information and
+              keep your account details current.
+            </p>
           </div>
         </div>
 
@@ -457,7 +446,7 @@ export function EditAccountForm() {
         {errorMessage && (
           <div
             role="alert"
-            className="mt-6 border border-red-200 bg-red-50 px-5 py-4 text-sm leading-6 text-red-700"
+            className="mt-6 border border-[var(--color-error)] bg-[var(--color-surface-soft)] px-5 py-4 text-sm leading-6 text-[var(--color-error)]"
           >
             {errorMessage}
           </div>
@@ -471,14 +460,14 @@ export function EditAccountForm() {
           onSubmit={handleSubmit}
           className="mt-8"
         >
-          <div className="border border-[var(--color-border)] bg-white">
+          <div className="border border-[var(--color-border)] bg-[var(--color-surface)]">
             {/* =================================================
                 PROFILE HEADER
             ================================================== */}
 
-            <div className="border-b border-[var(--color-border)] px-6 py-6 sm:px-8">
+            <div className="border-b border-[var(--color-border)] px-6 py-7 sm:px-8">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-                <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-full border border-[var(--color-rose)] bg-[var(--color-rose-light)] font-display text-2xl text-[var(--color-ink)]">
+                <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden border border-[var(--color-border)] bg-[var(--color-bg-soft)] font-display text-2xl text-[var(--color-text)]">
                   {form.avatarUrl ? (
                     <img
                       src={form.avatarUrl}
@@ -494,15 +483,15 @@ export function EditAccountForm() {
                 </div>
 
                 <div>
-                  <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-[var(--color-muted)]">
+                  <p className="eyebrow text-[var(--color-text-muted)]">
                     Profile
                   </p>
 
-                  <h2 className="mt-1 font-display text-[28px] text-[var(--color-ink)]">
+                  <h2 className="mt-2 font-display text-3xl leading-none text-[var(--color-text)]">
                     {profile.user.name}
                   </h2>
 
-                  <p className="mt-1 text-sm text-[var(--color-secondary)]">
+                  <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
                     {profile.user.email}
                   </p>
                 </div>
@@ -515,24 +504,26 @@ export function EditAccountForm() {
 
             <div className="p-6 sm:p-8">
               <div className="flex items-center gap-3 border-b border-[var(--color-border)] pb-5">
-                <UserRound
-                  size={19}
-                  strokeWidth={1.7}
-                  className="text-[var(--color-secondary)]"
-                />
+                <div className="flex h-9 w-9 items-center justify-center border border-[var(--color-border-light)] bg-[var(--color-surface-soft)]">
+                  <UserRound
+                    size={17}
+                    strokeWidth={1.6}
+                    className="text-[var(--color-accent)]"
+                  />
+                </div>
 
                 <div>
-                  <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--color-rose-dark)]">
+                  <p className="eyebrow text-[var(--color-text-muted)]">
                     Personal Details
                   </p>
 
-                  <h2 className="mt-1 font-display text-[27px] text-[var(--color-ink)]">
+                  <h2 className="mt-1 font-display text-[27px] leading-none text-[var(--color-text)]">
                     Account Information
                   </h2>
                 </div>
               </div>
 
-              <div className="mt-7 grid gap-7 sm:grid-cols-2">
+              <div className="mt-8 grid gap-x-8 gap-y-7 sm:grid-cols-2">
                 {/* =================================================
                     FULL NAME
                 ================================================== */}
@@ -540,15 +531,16 @@ export function EditAccountForm() {
                 <div>
                   <label
                     htmlFor="account-name"
-                    className="mb-2.5 block text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--color-secondary)]"
+                    className="mb-2 block text-[var(--text-label)] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text-secondary)]"
                   >
                     Full Name
                   </label>
 
                   <div className="relative">
                     <UserRound
-                      size={16}
-                      className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 text-[var(--color-muted)]"
+                      size={15}
+                      strokeWidth={1.7}
+                      className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]"
                     />
 
                     <input
@@ -563,7 +555,7 @@ export function EditAccountForm() {
                         );
                       }}
                       autoComplete="name"
-                      className="h-12 w-full border-b border-[var(--color-border)] bg-transparent pl-7 pr-2 text-sm text-[var(--color-ink)] outline-none transition focus:border-[var(--color-rose-dark)]"
+                      className="h-11 w-full border-b border-[var(--color-border)] bg-transparent pl-7 pr-2 text-sm text-[var(--color-text)] outline-none transition-colors duration-[var(--duration-base)] placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-accent)]"
                     />
                   </div>
                 </div>
@@ -575,15 +567,16 @@ export function EditAccountForm() {
                 <div>
                   <label
                     htmlFor="account-email"
-                    className="mb-2.5 block text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--color-secondary)]"
+                    className="mb-2 block text-[var(--text-label)] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text-secondary)]"
                   >
                     Email Address
                   </label>
 
                   <div className="relative">
                     <Mail
-                      size={16}
-                      className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 text-[var(--color-muted)]"
+                      size={15}
+                      strokeWidth={1.7}
+                      className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]"
                     />
 
                     <input
@@ -593,11 +586,11 @@ export function EditAccountForm() {
                         profile.user.email
                       }
                       readOnly
-                      className="h-12 w-full cursor-not-allowed border-b border-[var(--color-border)] bg-transparent pl-7 pr-2 text-sm text-[var(--color-secondary)] outline-none"
+                      className="h-11 w-full cursor-not-allowed border-b border-[var(--color-border-light)] bg-transparent pl-7 pr-2 text-sm text-[var(--color-text-secondary)] outline-none"
                     />
                   </div>
 
-                  <p className="mt-2 text-[11px] leading-5 text-[var(--color-muted)]">
+                  <p className="mt-2 text-[11px] leading-5 text-[var(--color-text-muted)]">
                     Email changes require a separate
                     verification flow.
                   </p>
@@ -610,15 +603,16 @@ export function EditAccountForm() {
                 <div>
                   <label
                     htmlFor="account-phone"
-                    className="mb-2.5 block text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--color-secondary)]"
+                    className="mb-2 block text-[var(--text-label)] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text-secondary)]"
                   >
                     Phone Number
                   </label>
 
                   <div className="relative">
                     <Phone
-                      size={16}
-                      className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 text-[var(--color-muted)]"
+                      size={15}
+                      strokeWidth={1.7}
+                      className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]"
                     />
 
                     <input
@@ -635,7 +629,7 @@ export function EditAccountForm() {
                       inputMode="tel"
                       autoComplete="tel"
                       placeholder="+91 9876543210"
-                      className="h-12 w-full border-b border-[var(--color-border)] bg-transparent pl-7 pr-2 text-sm text-[var(--color-ink)] outline-none transition focus:border-[var(--color-rose-dark)]"
+                      className="h-11 w-full border-b border-[var(--color-border)] bg-transparent pl-7 pr-2 text-sm text-[var(--color-text)] outline-none transition-colors duration-[var(--duration-base)] placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-accent)]"
                     />
                   </div>
                 </div>
@@ -645,7 +639,7 @@ export function EditAccountForm() {
                 ================================================== */}
 
                 <div className="relative">
-                  <label className="mb-2.5 block text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--color-secondary)]">
+                  <label className="mb-2 block text-[var(--text-label)] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text-secondary)]">
                     Gender
                   </label>
 
@@ -659,17 +653,17 @@ export function EditAccountForm() {
 
                       setCalendarOpen(false);
                     }}
-                    className={`flex h-12 w-full items-center justify-between border-b bg-transparent text-left text-sm outline-none transition-colors duration-200 ${
+                    className={`flex h-11 w-full items-center justify-between border-b bg-transparent text-left text-sm outline-none transition-colors duration-[var(--duration-base)] ${
                       genderOpen
-                        ? "border-[var(--color-rose-dark)]"
-                        : "border-[var(--color-border)] hover:border-[var(--color-ink)]"
+                        ? "border-[var(--color-accent)]"
+                        : "border-[var(--color-border)] hover:border-[var(--color-text)]"
                     }`}
                   >
                     <span
                       className={
                         form.gender
-                          ? "text-[var(--color-ink)]"
-                          : "text-[var(--color-muted)]"
+                          ? "text-[var(--color-text)]"
+                          : "text-[var(--color-text-muted)]"
                       }
                     >
                       {form.gender ===
@@ -685,9 +679,9 @@ export function EditAccountForm() {
                     </span>
 
                     <ChevronDown
-                      size={16}
+                      size={15}
                       strokeWidth={1.7}
-                      className={`text-[var(--color-secondary)] transition-transform duration-200 ${
+                      className={`text-[var(--color-text-secondary)] transition-transform duration-200 ${
                         genderOpen
                           ? "rotate-180"
                           : ""
@@ -696,9 +690,9 @@ export function EditAccountForm() {
                   </button>
 
                   {genderOpen && (
-                    <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-40 overflow-hidden border border-[var(--color-border)] bg-white shadow-[0_18px_50px_rgba(23,23,23,0.12)]">
-                      <div className="border-b border-[var(--color-border)] bg-[var(--color-ivory)] px-4 py-3">
-                        <p className="text-[9px] font-medium uppercase tracking-[0.16em] text-[var(--color-muted)]">
+                    <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-[var(--z-dropdown)] overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-lg)]">
+                      <div className="border-b border-[var(--color-border-light)] bg-[var(--color-surface-soft)] px-4 py-3">
+                        <p className="text-[var(--text-label)] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text-muted)]">
                           Select preference
                         </p>
                       </div>
@@ -755,8 +749,8 @@ export function EditAccountForm() {
                                 }}
                                 className={`flex w-full items-center justify-between px-4 py-3 text-sm transition-colors duration-150 ${
                                   selected
-                                    ? "bg-[var(--color-rose-light)] text-[var(--color-ink)]"
-                                    : "text-[var(--color-ink)] hover:bg-[var(--color-ivory)]"
+                                    ? "bg-[var(--color-bg-soft)] text-[var(--color-text)]"
+                                    : "text-[var(--color-text)] hover:bg-[var(--color-surface-soft)]"
                                 }`}
                               >
                                 <span>
@@ -771,7 +765,7 @@ export function EditAccountForm() {
                                     strokeWidth={
                                       1.8
                                     }
-                                    className="text-[var(--color-rose-dark)]"
+                                    className="text-[var(--color-accent)]"
                                   />
                                 )}
                               </button>
@@ -788,7 +782,7 @@ export function EditAccountForm() {
                 ================================================== */}
 
                 <div className="relative">
-                  <label className="mb-2.5 block text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--color-secondary)]">
+                  <label className="mb-2 block text-[var(--text-label)] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text-secondary)]">
                     Date of Birth
                   </label>
 
@@ -802,17 +796,17 @@ export function EditAccountForm() {
 
                       setGenderOpen(false);
                     }}
-                    className={`flex h-12 w-full items-center justify-between border-b bg-transparent text-left outline-none transition-colors duration-200 ${
+                    className={`flex h-11 w-full items-center justify-between border-b bg-transparent text-left outline-none transition-colors duration-[var(--duration-base)] ${
                       calendarOpen
-                        ? "border-[var(--color-rose-dark)]"
-                        : "border-[var(--color-border)] hover:border-[var(--color-ink)]"
+                        ? "border-[var(--color-accent)]"
+                        : "border-[var(--color-border)] hover:border-[var(--color-text)]"
                     }`}
                   >
                     <span
                       className={
                         form.dateOfBirth
-                          ? "text-sm text-[var(--color-ink)]"
-                          : "text-sm text-[var(--color-muted)]"
+                          ? "text-sm text-[var(--color-text)]"
+                          : "text-sm text-[var(--color-text-muted)]"
                       }
                     >
                       {form.dateOfBirth
@@ -832,14 +826,14 @@ export function EditAccountForm() {
                     </span>
 
                     <CalendarDays
-                      size={17}
+                      size={16}
                       strokeWidth={1.7}
-                      className="text-[var(--color-secondary)]"
+                      className="text-[var(--color-text-secondary)]"
                     />
                   </button>
 
                   {calendarOpen && (
-                    <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-40 sm:left-auto sm:right-auto">
+                    <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-[var(--z-dropdown)] sm:left-auto sm:right-auto">
                       <CustomCalendar
                         value={
                           form.dateOfBirth
@@ -872,7 +866,7 @@ export function EditAccountForm() {
                 <div>
                   <label
                     htmlFor="account-avatar"
-                    className="mb-2.5 block text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--color-secondary)]"
+                    className="mb-2 block text-[var(--text-label)] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text-secondary)]"
                   >
                     Profile Image URL
                   </label>
@@ -891,10 +885,10 @@ export function EditAccountForm() {
                       );
                     }}
                     placeholder="https://..."
-                    className="h-12 w-full border-b border-[var(--color-border)] bg-transparent text-sm text-[var(--color-ink)] outline-none placeholder:text-[var(--color-muted)] focus:border-[var(--color-rose-dark)]"
+                    className="h-11 w-full border-b border-[var(--color-border)] bg-transparent text-sm text-[var(--color-text)] outline-none transition-colors duration-[var(--duration-base)] placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-accent)]"
                   />
 
-                  <p className="mt-2 text-[11px] leading-5 text-[var(--color-muted)]">
+                  <p className="mt-2 text-[11px] leading-5 text-[var(--color-text-muted)]">
                     Enter a publicly accessible image
                     URL.
                   </p>
@@ -908,7 +902,7 @@ export function EditAccountForm() {
               <div className="mt-10 flex flex-col gap-3 border-t border-[var(--color-border)] pt-7 sm:flex-row sm:justify-end">
                 <Link
                   href="/account"
-                  className="inline-flex h-11 items-center justify-center border border-[var(--color-border)] bg-white px-6 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--color-ink)] transition hover:border-[var(--color-ink)]"
+                  className="inline-flex h-11 items-center justify-center border border-[var(--color-border)] bg-[var(--color-surface)] px-7 text-[var(--text-label)] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text)] transition-all duration-[var(--duration-base)] hover:border-[var(--color-text)]"
                 >
                   Cancel
                 </Link>
@@ -916,15 +910,19 @@ export function EditAccountForm() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="inline-flex h-11 items-center justify-center gap-2 border border-[#171717] bg-[#171717] px-7 text-xs font-semibold uppercase tracking-[0.12em] text-white transition-colors duration-200 hover:bg-[#292c2c] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex h-11 items-center justify-center gap-2 border border-[var(--color-text)] bg-[var(--color-text)] px-7 text-[var(--text-label)] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text-inverse)] transition-all duration-[var(--duration-base)] hover:bg-[var(--color-accent-dark)] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSaving ? (
                     <Loader2
                       size={15}
+                      strokeWidth={1.8}
                       className="animate-spin"
                     />
                   ) : (
-                    <Save size={15} />
+                    <Save
+                      size={15}
+                      strokeWidth={1.8}
+                    />
                   )}
 
                   {isSaving
@@ -939,14 +937,14 @@ export function EditAccountForm() {
               NOTE
           ====================================================== */}
 
-          <div className="mt-5 flex gap-3 border-l-2 border-[var(--color-rose)] pl-4">
+          <div className="mt-5 flex gap-3 border-l-2 border-[var(--color-accent-soft)] pl-4">
             <Check
               size={16}
               strokeWidth={1.8}
-              className="mt-0.5 shrink-0 text-[var(--color-rose-dark)]"
+              className="mt-0.5 shrink-0 text-[var(--color-accent)]"
             />
 
-            <p className="text-xs leading-5 text-[var(--color-secondary)]">
+            <p className="text-xs leading-5 text-[var(--color-text-secondary)]">
               Your account information is securely
               saved to your Aayesha Fashion customer
               profile. Changes take effect after you

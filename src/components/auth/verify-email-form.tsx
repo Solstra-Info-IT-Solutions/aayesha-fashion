@@ -8,6 +8,7 @@ import {
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+
 import {
   ArrowRight,
   Loader2,
@@ -26,9 +27,7 @@ export function VerifyEmailForm() {
     useSearchParams();
 
   const emailFromUrl =
-    searchParams.get(
-      "email",
-    ) ?? "";
+    searchParams.get("email") ?? "";
 
   const verifyEmail =
     useAuthStore(
@@ -178,7 +177,8 @@ export function VerifyEmailForm() {
         "/login?verified=1";
     } catch {
       /*
-       * Auth store contains the API error.
+       * Auth store contains
+       * the API error.
        */
     }
   };
@@ -211,7 +211,6 @@ export function VerifyEmailForm() {
 
       setResendAvailable(false);
       setResendSeconds(60);
-
       setOtp("");
     } catch {
       /*
@@ -229,13 +228,21 @@ export function VerifyEmailForm() {
   ======================================================= */
 
   return (
-    <div className="space-y-[13px]">
+    <div className="space-y-4">
       {/* ===================================================
           INTRO
       =================================================== */}
 
-      <div className="mb-2 border-l-2 border-[var(--color-rose)] pl-4">
-        <p className="text-sm leading-6 text-[var(--color-secondary)]">
+      <div
+        className="
+          border-l-2
+          border-[var(--color-accent)]
+          bg-[var(--color-surface-soft)]
+          px-4
+          py-3
+        "
+      >
+        <p className="text-sm leading-6 text-[var(--color-text-secondary)]">
           Enter the 6-digit code sent to your
           email address to verify your Aayesha
           Fashion account.
@@ -249,14 +256,24 @@ export function VerifyEmailForm() {
       <form
         onSubmit={handleSubmit}
         noValidate
-        className="space-y-[13px]"
+        className="space-y-4"
       >
         {/* =================================================
             EMAIL
         ================================================= */}
 
         <label className="block">
-          <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--color-secondary)]">
+          <span
+            className="
+              mb-2
+              block
+              text-[10px]
+              font-semibold
+              uppercase
+              tracking-[0.18em]
+              text-[var(--color-text-secondary)]
+            "
+          >
             Email address
           </span>
 
@@ -274,20 +291,20 @@ export function VerifyEmailForm() {
               clearError();
             }}
             className="
-              h-12
+              h-11
               w-full
               border
               border-[var(--color-border)]
-              bg-white
+              bg-[var(--color-surface)]
               px-4
               text-sm
-              text-[var(--color-charcoal)]
+              text-[var(--color-text)]
               outline-none
               transition-colors
-              duration-200
-              placeholder:text-[var(--color-muted)]
-              hover:border-[#d8d1ca]
-              focus:border-[var(--color-charcoal)]
+              duration-[var(--duration-base)]
+              placeholder:text-[var(--color-text-muted)]
+              hover:border-[var(--color-border-dark)]
+              focus:border-[var(--color-accent-dark)]
             "
           />
         </label>
@@ -297,7 +314,17 @@ export function VerifyEmailForm() {
         ================================================= */}
 
         <label className="block">
-          <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--color-secondary)]">
+          <span
+            className="
+              mb-2
+              block
+              text-[10px]
+              font-semibold
+              uppercase
+              tracking-[0.18em]
+              text-[var(--color-text-secondary)]
+            "
+          >
             Verification code
           </span>
 
@@ -326,24 +353,24 @@ export function VerifyEmailForm() {
               clearError();
             }}
             className="
-              h-14
+              h-12
               w-full
               border
               border-[var(--color-border)]
-              bg-white
+              bg-[var(--color-surface)]
               px-4
               text-center
               font-mono
-              text-xl
-              tracking-[0.45em]
-              text-[var(--color-charcoal)]
+              text-lg
+              tracking-[0.4em]
+              text-[var(--color-text)]
               outline-none
               transition-colors
-              duration-200
-              placeholder:text-[var(--color-muted)]
+              duration-[var(--duration-base)]
+              placeholder:text-[var(--color-text-muted)]
               placeholder:tracking-[0.3em]
-              hover:border-[#d8d1ca]
-              focus:border-[var(--color-charcoal)]
+              hover:border-[var(--color-border-dark)]
+              focus:border-[var(--color-accent-dark)]
             "
           />
         </label>
@@ -357,13 +384,13 @@ export function VerifyEmailForm() {
             role="alert"
             className="
               border
-              border-[var(--color-rose-dark)]
-              bg-[var(--color-rose-light)]
+              border-[var(--color-error)]
+              bg-[var(--color-surface-soft)]
               px-4
               py-3
-              text-sm
+              text-[12px]
               leading-5
-              text-[var(--color-charcoal)]
+              text-[var(--color-error)]
             "
           >
             {errorMessage}
@@ -379,13 +406,13 @@ export function VerifyEmailForm() {
             role="status"
             className="
               border
-              border-[var(--color-border)]
-              bg-[var(--color-cream)]
+              border-[var(--color-success)]
+              bg-[var(--color-surface-soft)]
               px-4
               py-3
-              text-sm
+              text-[12px]
               leading-5
-              text-[var(--color-charcoal)]
+              text-[var(--color-success)]
             "
           >
             {successMessage}
@@ -403,22 +430,26 @@ export function VerifyEmailForm() {
             otp.length !== 6
           }
           className="
+            group
             flex
-            h-12
+            h-11
             w-full
             items-center
             justify-center
             gap-2
-            bg-[var(--color-charcoal)]
+            border
+            border-[var(--color-text)]
+            bg-[var(--color-text)]
             px-5
             text-[10px]
-            font-medium
+            font-semibold
             uppercase
             tracking-[0.2em]
-            text-white
-            transition-colors
-            duration-200
-            hover:bg-black
+            text-[var(--color-text-inverse)]
+            transition-all
+            duration-[var(--duration-base)]
+            hover:border-[var(--color-accent-dark)]
+            hover:bg-[var(--color-accent-dark)]
             disabled:cursor-not-allowed
             disabled:opacity-60
           "
@@ -427,6 +458,7 @@ export function VerifyEmailForm() {
             <>
               <Loader2
                 size={15}
+                strokeWidth={1.7}
                 className="animate-spin"
               />
 
@@ -439,6 +471,11 @@ export function VerifyEmailForm() {
               <ArrowRight
                 size={15}
                 strokeWidth={1.7}
+                className="
+                  transition-transform
+                  duration-[var(--duration-base)]
+                  group-hover:translate-x-0.5
+                "
               />
             </>
           )}
@@ -449,8 +486,16 @@ export function VerifyEmailForm() {
           RESEND
       =================================================== */}
 
-      <div className="mt-2 border-t border-[var(--color-border)] pt-5 text-center">
-        <p className="text-sm text-[var(--color-secondary)]">
+      <div
+        className="
+          mt-3
+          border-t
+          border-[var(--color-border-light)]
+          pt-5
+          text-center
+        "
+      >
+        <p className="text-sm text-[var(--color-text-secondary)]">
           Didn&apos;t receive the code?
         </p>
 
@@ -464,11 +509,12 @@ export function VerifyEmailForm() {
           className="
             mt-2
             text-sm
-            font-medium
-            text-[var(--color-charcoal)]
+            font-semibold
+            text-[var(--color-text)]
             underline
             underline-offset-4
             transition-opacity
+            duration-[var(--duration-fast)]
             hover:opacity-60
             disabled:cursor-not-allowed
             disabled:opacity-40
@@ -484,16 +530,17 @@ export function VerifyEmailForm() {
           CHANGE EMAIL
       =================================================== */}
 
-      <p className="text-center text-sm text-[var(--color-secondary)]">
+      <p className="text-center text-sm text-[var(--color-text-secondary)]">
         Entered the wrong email?{" "}
         <Link
           href="/register"
           className="
-            font-medium
-            text-[var(--color-charcoal)]
+            font-semibold
+            text-[var(--color-text)]
             underline
             underline-offset-4
             transition-opacity
+            duration-[var(--duration-fast)]
             hover:opacity-60
           "
         >
