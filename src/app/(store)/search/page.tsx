@@ -37,29 +37,51 @@ export default async function SearchPage({
   }
 
   return (
-    <main className="bg-[var(--color-ivory)]">
+    <main className="min-h-screen bg-[var(--color-bg)]">
       {/* =====================================================
           SEARCH INTRO
       ===================================================== */}
 
-      <section className="border-b border-[var(--color-border)]">
-        <div className="mx-auto max-w-5xl px-4 py-14 text-center sm:px-6 lg:py-18">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
-            Search Ayesha
-          </p>
+      <section className="border-b border-[var(--color-border-light)]">
+        <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
+          <div className="grid min-h-[42vh] items-end gap-10 py-14 sm:py-18 lg:grid-cols-[minmax(0,1fr)_320px] lg:py-24">
+            <div className="max-w-5xl">
+              <p className="eyebrow flex items-center gap-3 text-[var(--color-accent)]">
+                <span className="h-px w-8 bg-[var(--color-accent)]" />
+                Search Aayesha
+              </p>
 
-          <h1 className="mt-3 font-[var(--font-cormorant)] text-4xl text-[var(--color-charcoal)] sm:text-5xl">
-            {query
-              ? `Results for “${query}”`
-              : "Find your next piece."}
-          </h1>
+              <h1
+                className="
+                  mt-6
+                  max-w-5xl
+                  font-display
+                  text-[clamp(3rem,7vw,6.5rem)]
+                  font-medium
+                  leading-[0.86]
+                  tracking-[var(--tracking-tight)]
+                  text-[var(--color-text)]
+                "
+              >
+                {query
+                  ? `Results for “${query}”`
+                  : "Find your next piece."}
+              </h1>
+            </div>
 
-          {query && (
-            <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-[var(--color-text-secondary)]">
-              Exploring our current collection for
-              pieces matching your search.
-            </p>
-          )}
+            {query && (
+              <div className="border-t border-[var(--color-border)] pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
+                <p className="font-display text-2xl leading-tight text-[var(--color-text)] sm:text-3xl">
+                  Curated around what you are looking for.
+                </p>
+
+                <p className="mt-4 font-body text-sm leading-7 text-[var(--color-text-secondary)]">
+                  Exploring our current collection for pieces
+                  matching your search.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
@@ -67,39 +89,70 @@ export default async function SearchPage({
           SEARCH RESULTS
       ===================================================== */}
 
-      <section className="mx-auto max-w-[1400px] px-4 py-12 sm:px-6 lg:px-10">
+      <section className="mx-auto max-w-[1600px] px-4 py-10 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
         {/* ===================================================
             NO QUERY
         =================================================== */}
 
         {!query ? (
-          <div className="py-20 text-center">
-            <p className="text-sm leading-7 text-[var(--color-text-secondary)]">
-              Use the search field in the header to discover
-              products.
-            </p>
+          <div className="flex min-h-[42vh] items-center justify-center py-16 text-center">
+            <div className="max-w-lg">
+              <p className="eyebrow text-[var(--color-accent)]">
+                Begin exploring
+              </p>
 
-            <Link
-              href="/shop"
-              className="
-                mt-6
-                inline-flex
-                min-h-11
-                items-center
-                bg-[var(--color-charcoal)]
-                px-6
-                text-[10px]
-                font-semibold
-                uppercase
-                tracking-[0.15em]
-                text-white
-                transition-colors
-                duration-300
-                hover:bg-[var(--color-rose-dark)]
-              "
-            >
-              Browse Shop
-            </Link>
+              <h2
+                className="
+                  mt-4
+                  font-display
+                  text-[var(--text-heading-lg)]
+                  font-medium
+                  leading-[0.95]
+                  tracking-[var(--tracking-tight)]
+                  text-[var(--color-text)]
+                "
+              >
+                Discover something made for you.
+              </h2>
+
+              <p className="mx-auto mt-5 max-w-md font-body text-sm leading-7 text-[var(--color-text-secondary)]">
+                Use the search field in the header to discover
+                silhouettes, collections and pieces from Aayesha
+                Fashion.
+              </p>
+
+              <Link
+                href="/shop"
+                className="
+                  mt-8
+                  inline-flex
+                  min-h-12
+                  items-center
+                  gap-3
+                  border
+                  border-[var(--color-text)]
+                  bg-[var(--color-text)]
+                  px-6
+                  py-3.5
+                  font-body
+                  text-[10px]
+                  font-semibold
+                  uppercase
+                  tracking-[var(--tracking-wider)]
+                  text-[var(--color-text-inverse)]
+                  transition-all
+                  duration-[var(--duration-base)]
+                  hover:border-[var(--color-accent-dark)]
+                  hover:bg-[var(--color-accent-dark)]
+                  focus:outline-none
+                  focus:ring-2
+                  focus:ring-[var(--color-accent)]
+                  focus:ring-offset-2
+                "
+              >
+                Browse Shop
+              </Link>
+            </div>
           </div>
         ) : results.length ? (
           /* =================================================
@@ -107,43 +160,44 @@ export default async function SearchPage({
           ================================================= */
 
           <div>
-            <div className="mb-7 flex items-end justify-between border-b border-[var(--color-border)] pb-4">
+            <div className="mb-9 flex items-end justify-between gap-6 border-b border-[var(--color-border)] pb-5">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
+                <p className="eyebrow text-[var(--color-accent)]">
                   Search Results
                 </p>
 
-                <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+                <p className="mt-2 font-body text-sm text-[var(--color-text-secondary)]">
                   {results.length}{" "}
-                  {results.length === 1
-                    ? "piece"
-                    : "pieces"}{" "}
-                  found
+                  {results.length === 1 ? "piece" : "pieces"} found
                 </p>
               </div>
 
               <Link
                 href="/shop"
                 className="
+                  link-luxury
+                  group
                   hidden
+                  items-center
+                  gap-2
+                  font-body
                   text-[10px]
                   font-semibold
                   uppercase
-                  tracking-[0.15em]
-                  text-[var(--color-charcoal)]
-                  underline
-                  underline-offset-4
-                  transition-colors
-                  duration-300
-                  hover:text-[var(--color-rose-dark)]
-                  sm:block
+                  tracking-[var(--tracking-wider)]
+                  text-[var(--color-text)]
+                  sm:inline-flex
                 "
               >
-                View All
+                View all
+
+                <span className="transition-transform duration-[var(--duration-base)] group-hover:translate-x-1">
+                  →
+                </span>
               </Link>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 lg:gap-6 xl:grid-cols-4">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-5 lg:grid-cols-3 lg:gap-x-6 lg:gap-y-14 xl:grid-cols-4">
               {results.map((product) => (
                 <ProductCard
                   key={product.id}
@@ -151,48 +205,115 @@ export default async function SearchPage({
                 />
               ))}
             </div>
+
+            <div className="mt-12 border-t border-[var(--color-border-light)] pt-6 sm:hidden">
+              <Link
+                href="/shop"
+                className="
+                  link-luxury
+                  inline-flex
+                  items-center
+                  gap-2
+                  font-body
+                  text-[10px]
+                  font-semibold
+                  uppercase
+                  tracking-[var(--tracking-wider)]
+                  text-[var(--color-text)]
+                "
+              >
+                View all pieces
+                <span>→</span>
+              </Link>
+            </div>
           </div>
         ) : (
           /* =================================================
              NO RESULTS
           ================================================= */
 
-          <div className="py-20 text-center">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
-              No Match
-            </p>
+          <div className="flex min-h-[48vh] items-center justify-center py-16 text-center">
+            <div className="max-w-xl">
+              <p className="eyebrow text-[var(--color-accent)]">
+                No match
+              </p>
 
-            <h2 className="mt-3 font-[var(--font-cormorant)] text-3xl text-[var(--color-charcoal)]">
-              Nothing found.
-            </h2>
+              <h2
+                className="
+                  mt-4
+                  font-display
+                  text-[var(--text-heading-lg)]
+                  font-medium
+                  leading-[0.95]
+                  tracking-[var(--tracking-tight)]
+                  text-[var(--color-text)]
+                "
+              >
+                Nothing found.
+              </h2>
 
-            <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-[var(--color-text-secondary)]">
-              We could not find a piece matching “{query}”.
-              Try another term or explore the complete
-              collection.
-            </p>
+              <p className="mx-auto mt-5 max-w-md font-body text-sm leading-7 text-[var(--color-text-secondary)]">
+                We could not find a piece matching “{query}”.
+                Try another term or explore the complete collection.
+              </p>
 
-            <Link
-              href="/shop"
-              className="
-                mt-6
-                inline-flex
-                min-h-11
-                items-center
-                bg-[var(--color-charcoal)]
-                px-6
-                text-[10px]
-                font-semibold
-                uppercase
-                tracking-[0.15em]
-                text-white
-                transition-colors
-                duration-300
-                hover:bg-[var(--color-rose-dark)]
-              "
-            >
-              Explore Shop
-            </Link>
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+                <Link
+                  href="/shop"
+                  className="
+                    inline-flex
+                    min-h-12
+                    items-center
+                    gap-3
+                    border
+                    border-[var(--color-text)]
+                    bg-[var(--color-text)]
+                    px-6
+                    py-3.5
+                    font-body
+                    text-[10px]
+                    font-semibold
+                    uppercase
+                    tracking-[var(--tracking-wider)]
+                    text-[var(--color-text-inverse)]
+                    transition-all
+                    duration-[var(--duration-base)]
+                    hover:border-[var(--color-accent-dark)]
+                    hover:bg-[var(--color-accent-dark)]
+                    focus:outline-none
+                    focus:ring-2
+                    focus:ring-[var(--color-accent)]
+                    focus:ring-offset-2
+                  "
+                >
+                  Explore Shop
+                </Link>
+
+                <Link
+                  href="/collections/new-arrivals"
+                  className="
+                    inline-flex
+                    min-h-12
+                    items-center
+                    border
+                    border-[var(--color-border-dark)]
+                    px-6
+                    py-3.5
+                    font-body
+                    text-[10px]
+                    font-semibold
+                    uppercase
+                    tracking-[var(--tracking-wider)]
+                    text-[var(--color-text)]
+                    transition-colors
+                    duration-[var(--duration-base)]
+                    hover:border-[var(--color-text)]
+                  "
+                >
+                  New Arrivals
+                </Link>
+              </div>
+            </div>
           </div>
         )}
       </section>

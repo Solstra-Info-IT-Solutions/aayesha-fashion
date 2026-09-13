@@ -45,8 +45,7 @@ const categoryLabels: Record<
   festive: "Festive",
   ethnic: "Ethnic",
   contemporary: "Contemporary",
-  "new-arrival":
-    "New Arrivals",
+  "new-arrival": "New Arrivals",
 };
 
 const productTypeLabels: Record<
@@ -106,15 +105,11 @@ const sectionLabels: Record<
   color: "Color",
   size: "Size",
   price: "Price",
-  availability:
-    "Availability",
+  availability: "Availability",
 };
 
 function getCollectionBasePath() {
-  if (
-    typeof window ===
-    "undefined"
-  ) {
+  if (typeof window === "undefined") {
     return "/shop";
   }
 
@@ -153,12 +148,6 @@ function buildFilterHref(
     params.delete(key);
   }
 
-  /*
-   * These are route-specific filters,
-   * so don't leak the flags into the
-   * public URL when we are already on
-   * their dedicated collection pages.
-   */
   if (
     getCollectionBasePath() ===
     "/collections/new-arrivals"
@@ -200,36 +189,24 @@ export function ShopFilters({
     ]);
 
   const initialPrice =
-    typeof window !==
-    "undefined"
+    typeof window !== "undefined"
       ? (() => {
+          const params =
+            new URLSearchParams(
+              window.location.search,
+            );
+
           const min =
-            window
-              .location
-              .search
-              ? new URLSearchParams(
-                  window.location.search,
-                ).get("minPrice")
-              : null;
+            params.get("minPrice");
 
           const max =
-            window
-              .location
-              .search
-              ? new URLSearchParams(
-                  window.location.search,
-                ).get("maxPrice")
-              : null;
+            params.get("maxPrice");
 
           return (
             priceRanges.find(
               (range) =>
-                String(
-                  range.min,
-                ) === min &&
-                String(
-                  range.max,
-                ) === max,
+                String(range.min) === min &&
+                String(range.max) === max,
             )?.label ?? null
           );
         })()
@@ -247,17 +224,11 @@ export function ShopFilters({
       const values =
         new Set<ProductCategory>();
 
-      products.forEach(
-        (product) => {
-          values.add(
-            product.category,
-          );
-        },
-      );
+      products.forEach((product) => {
+        values.add(product.category);
+      });
 
-      return Array.from(
-        values,
-      );
+      return Array.from(values);
     }, [products]);
 
   const typeOptions =
@@ -265,17 +236,11 @@ export function ShopFilters({
       const values =
         new Set<ProductType>();
 
-      products.forEach(
-        (product) => {
-          values.add(
-            product.productType,
-          );
-        },
-      );
+      products.forEach((product) => {
+        values.add(product.productType);
+      });
 
-      return Array.from(
-        values,
-      );
+      return Array.from(values);
     }, [products]);
 
   const colorOptions =
@@ -290,34 +255,21 @@ export function ShopFilters({
           }
         >();
 
-      products.forEach(
-        (product) => {
-          getProductColors(
-            product,
-          ).forEach(
-            (color) => {
-              if (
-                !map.has(
-                  color.id,
-                )
-              ) {
-                map.set(
-                  color.id,
-                  {
-                    id: color.id,
-                    name: color.name,
-                    hex: color.hex,
-                  },
-                );
-              }
-            },
-          );
-        },
-      );
+      products.forEach((product) => {
+        getProductColors(product).forEach(
+          (color) => {
+            if (!map.has(color.id)) {
+              map.set(color.id, {
+                id: color.id,
+                name: color.name,
+                hex: color.hex,
+              });
+            }
+          },
+        );
+      });
 
-      return Array.from(
-        map.values(),
-      );
+      return Array.from(map.values());
     }, [products]);
 
   const sizeOptions =
@@ -331,33 +283,20 @@ export function ShopFilters({
           }
         >();
 
-      products.forEach(
-        (product) => {
-          getProductSizes(
-            product,
-          ).forEach(
-            (size) => {
-              if (
-                !map.has(
-                  size.code,
-                )
-              ) {
-                map.set(
-                  size.code,
-                  {
-                    code: size.code,
-                    label: size.label,
-                  },
-                );
-              }
-            },
-          );
-        },
-      );
+      products.forEach((product) => {
+        getProductSizes(product).forEach(
+          (size) => {
+            if (!map.has(size.code)) {
+              map.set(size.code, {
+                code: size.code,
+                label: size.label,
+              });
+            }
+          },
+        );
+      });
 
-      return Array.from(
-        map.values(),
-      );
+      return Array.from(map.values());
     }, [products]);
 
   const availabilityOptions =
@@ -369,75 +308,56 @@ export function ShopFilters({
           | "out-of-stock"
         >();
 
-      products.forEach(
-        (product) => {
-          const availableVariants =
-            product.variants.filter(
-              (variant) =>
-                variant.status ===
-                  "active" &&
-                variant.inventory.stock >
-                  variant.inventory.reserved,
-            );
+      products.forEach((product) => {
+        const availableVariants =
+          product.variants.filter(
+            (variant) =>
+              variant.status === "active" &&
+              variant.inventory.stock >
+                variant.inventory.reserved,
+          );
 
-          if (
-            availableVariants.length ===
-            0
-          ) {
-            values.add(
-              "out-of-stock",
-            );
-            return;
-          }
+        if (
+          availableVariants.length === 0
+        ) {
+          values.add("out-of-stock");
+          return;
+        }
 
-          const hasLowStock =
-            availableVariants.some(
-              (variant) => {
-                const available =
-                  variant.inventory.stock -
-                  variant.inventory.reserved;
+        const hasLowStock =
+          availableVariants.some(
+            (variant) => {
+              const available =
+                variant.inventory.stock -
+                variant.inventory.reserved;
 
-                return (
-                  available <=
-                  variant.inventory
-                    .lowStockThreshold
-                );
-              },
-            );
+              return (
+                available <=
+                variant.inventory
+                  .lowStockThreshold
+              );
+            },
+          );
 
-          if (hasLowStock) {
-            values.add(
-              "low",
-            );
-          } else {
-            values.add(
-              "in-stock",
-            );
-          }
-        },
-      );
+        if (hasLowStock) {
+          values.add("low");
+        } else {
+          values.add("in-stock");
+        }
+      });
 
-      return Array.from(
-        values,
-      );
+      return Array.from(values);
     }, [products]);
 
   function toggleSection(
     section: FilterSection,
   ) {
-    setOpenSections(
-      (current) =>
-        current.includes(
-          section,
-        )
-          ? current.filter(
-              (item) =>
-                item !== section,
-            )
-          : [
-              ...current,
-              section,
-            ],
+    setOpenSections((current) =>
+      current.includes(section)
+        ? current.filter(
+            (item) => item !== section,
+          )
+        : [...current, section],
     );
   }
 
@@ -447,8 +367,7 @@ export function ShopFilters({
     const pathname =
       getCollectionBasePath();
 
-    window.location.href =
-      pathname;
+    window.location.href = pathname;
   }
 
   function handlePriceChange(
@@ -456,9 +375,7 @@ export function ShopFilters({
     min: number,
     max: number,
   ) {
-    setSelectedPrice(
-      label,
-    );
+    setSelectedPrice(label);
 
     const params =
       new URLSearchParams(
@@ -470,22 +387,13 @@ export function ShopFilters({
       String(min),
     );
 
-    /*
-     * Infinity cannot be sent to
-     * the backend as a useful numeric
-     * query parameter.
-     */
-    if (
-      Number.isFinite(max)
-    ) {
+    if (Number.isFinite(max)) {
       params.set(
         "maxPrice",
         String(max),
       );
     } else {
-      params.delete(
-        "maxPrice",
-      );
+      params.delete("maxPrice");
     }
 
     const pathname =
@@ -512,13 +420,39 @@ export function ShopFilters({
           FILTER HEADER
       ===================================================== */}
 
-      <div className="mb-5 flex items-center justify-between">
+      <div
+        className="
+          mb-5
+          flex
+          items-end
+          justify-between
+          gap-4
+        "
+      >
         <div>
-          <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">
+          <p
+            className="
+              font-body
+              text-[9px]
+              font-semibold
+              uppercase
+              tracking-[0.2em]
+              text-[var(--color-accent)]
+            "
+          >
             Refine
           </p>
 
-          <h2 className="mt-1 font-[var(--font-display)] text-2xl text-[var(--color-charcoal)]">
+          <h2
+            className="
+              mt-1
+              font-display
+              text-[1.9rem]
+              font-medium
+              leading-none
+              text-[var(--color-text)]
+            "
+          >
             Shop by
           </h2>
         </div>
@@ -526,41 +460,70 @@ export function ShopFilters({
         <button
           type="button"
           onClick={resetFilters}
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-charcoal)]"
+          className="
+            inline-flex
+            min-h-9
+            items-center
+            gap-1.5
+            font-body
+            text-[9px]
+            font-semibold
+            uppercase
+            tracking-[0.14em]
+            text-[var(--color-text-muted)]
+            transition-colors
+            duration-[var(--duration-fast)]
+            hover:text-[var(--color-text)]
+            focus-visible:outline-none
+            focus-visible:ring-1
+            focus-visible:ring-[var(--color-text)]
+          "
         >
           <RotateCcw
-            size={13}
-            strokeWidth={1.7}
+            size={12}
+            strokeWidth={1.4}
           />
 
           Reset
         </button>
       </div>
 
-      <div className="divide-y divide-[var(--color-border)] border-y border-[var(--color-border)]">
-        {/* =====================================================
-            CATEGORY
-        ===================================================== */}
+      {/* =====================================================
+          FILTER SECTIONS
+      ===================================================== */}
+
+      <div
+        className="
+          divide-y
+          divide-[var(--color-border)]
+          border-y
+          border-[var(--color-border)]
+        "
+      >
+        {/* CATEGORY */}
 
         <FilterSectionUI
-          title={
-            sectionLabels.category
-          }
+          title={sectionLabels.category}
           open={openSections.includes(
             "category",
           )}
           onToggle={() =>
-            toggleSection(
-              "category",
-            )
+            toggleSection("category")
           }
         >
-          <div className="space-y-1.5">
+          <div className="space-y-0.5">
             {categoryOptions.map(
               (category) => {
                 const active =
                   selectedCategory ===
                   category;
+
+                const count =
+                  products.filter(
+                    (product) =>
+                      product.category ===
+                      category,
+                  ).length;
 
                 return (
                   <Link
@@ -569,16 +532,42 @@ export function ShopFilters({
                       "category",
                       category,
                     )}
-                    onClick={
-                      onClose
-                    }
-                    className={`flex items-center justify-between py-2 text-sm transition-colors ${
-                      active
-                        ? "font-medium text-[var(--color-charcoal)]"
-                        : "text-[var(--color-text-secondary)] hover:text-[var(--color-charcoal)]"
-                    }`}
+                    onClick={onClose}
+                    className={`
+                      group
+                      flex
+                      min-h-10
+                      items-center
+                      justify-between
+                      gap-3
+                      py-2
+                      font-body
+                      text-[11px]
+                      transition-colors
+                      duration-[var(--duration-fast)]
+                      ${
+                        active
+                          ? "font-semibold text-[var(--color-text)]"
+                          : "text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"
+                      }
+                    `}
                   >
-                    <span>
+                    <span className="flex items-center gap-2.5">
+                      <span
+                        className={`
+                          h-1
+                          w-1
+                          bg-[var(--color-accent)]
+                          transition-opacity
+                          ${
+                            active
+                              ? "opacity-100"
+                              : "opacity-0 group-hover:opacity-60"
+                          }
+                        `}
+                        aria-hidden="true"
+                      />
+
                       {
                         categoryLabels[
                           category
@@ -586,16 +575,14 @@ export function ShopFilters({
                       }
                     </span>
 
-                    <span className="text-xs text-[var(--color-muted)]">
-                      {
-                        products.filter(
-                          (
-                            product,
-                          ) =>
-                            product.category ===
-                            category,
-                        ).length
-                      }
+                    <span
+                      className="
+                        font-body
+                        text-[9px]
+                        text-[var(--color-text-muted)]
+                      "
+                    >
+                      {count}
                     </span>
                   </Link>
                 );
@@ -604,24 +591,18 @@ export function ShopFilters({
           </div>
         </FilterSectionUI>
 
-        {/* =====================================================
-            PRODUCT TYPE
-        ===================================================== */}
+        {/* PRODUCT TYPE */}
 
         <FilterSectionUI
-          title={
-            sectionLabels.type
-          }
+          title={sectionLabels.type}
           open={openSections.includes(
             "type",
           )}
           onToggle={() =>
-            toggleSection(
-              "type",
-            )
+            toggleSection("type")
           }
         >
-          <div className="grid grid-cols-1 gap-1.5">
+          <div className="space-y-0.5">
             {typeOptions.map(
               (type) => (
                 <Link
@@ -630,10 +611,19 @@ export function ShopFilters({
                     "type",
                     type,
                   )}
-                  onClick={
-                    onClose
-                  }
-                  className="py-2 text-sm text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-charcoal)]"
+                  onClick={onClose}
+                  className="
+                    flex
+                    min-h-10
+                    items-center
+                    py-2
+                    font-body
+                    text-[11px]
+                    text-[var(--color-text-secondary)]
+                    transition-colors
+                    duration-[var(--duration-fast)]
+                    hover:text-[var(--color-text)]
+                  "
                 >
                   {
                     productTypeLabels[
@@ -646,24 +636,18 @@ export function ShopFilters({
           </div>
         </FilterSectionUI>
 
-        {/* =====================================================
-            COLOR
-        ===================================================== */}
+        {/* COLOR */}
 
         <FilterSectionUI
-          title={
-            sectionLabels.color
-          }
+          title={sectionLabels.color}
           open={openSections.includes(
             "color",
           )}
           onToggle={() =>
-            toggleSection(
-              "color",
-            )
+            toggleSection("color")
           }
         >
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-1">
             {colorOptions.map(
               (color) => (
                 <Link
@@ -672,18 +656,43 @@ export function ShopFilters({
                     "color",
                     color.id,
                   )}
-                  onClick={
-                    onClose
-                  }
-                  className="flex items-center gap-2.5 py-2 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-charcoal)]"
+                  onClick={onClose}
+                  className="
+                    group
+                    flex
+                    min-h-10
+                    min-w-0
+                    items-center
+                    gap-2.5
+                    py-2
+                    font-body
+                    text-[10px]
+                    text-[var(--color-text-secondary)]
+                    transition-colors
+                    duration-[var(--duration-fast)]
+                    hover:text-[var(--color-text)]
+                  "
                 >
                   <span
-                    className="size-5 rounded-full border border-[var(--color-border-dark)]"
+                    className="
+                      relative
+                      h-5
+                      w-5
+                      shrink-0
+                      overflow-hidden
+                      rounded-full
+                      border
+                      border-[var(--color-border-dark)]
+                      transition-transform
+                      duration-[var(--duration-fast)]
+                      group-hover:scale-105
+                    "
                     style={{
                       backgroundColor:
                         color.hex ??
                         "#e8e3de",
                     }}
+                    aria-hidden="true"
                   />
 
                   <span className="truncate">
@@ -695,38 +704,49 @@ export function ShopFilters({
           </div>
         </FilterSectionUI>
 
-        {/* =====================================================
-            SIZE
-        ===================================================== */}
+        {/* SIZE */}
 
         <FilterSectionUI
-          title={
-            sectionLabels.size
-          }
+          title={sectionLabels.size}
           open={openSections.includes(
             "size",
           )}
           onToggle={() =>
-            toggleSection(
-              "size",
-            )
+            toggleSection("size")
           }
         >
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {sizeOptions.map(
               (size) => (
                 <Link
-                  key={
-                    size.code
-                  }
+                  key={size.code}
                   href={buildFilterHref(
                     "size",
                     size.code,
                   )}
-                  onClick={
-                    onClose
-                  }
-                  className="flex h-9 min-w-9 items-center justify-center border border-[var(--color-border)] px-3 text-xs font-medium text-[var(--color-charcoal)] transition-colors hover:border-[var(--color-charcoal)]"
+                  onClick={onClose}
+                  className="
+                    flex
+                    min-h-9
+                    min-w-10
+                    items-center
+                    justify-center
+                    border
+                    border-[var(--color-border)]
+                    bg-[var(--color-surface)]
+                    px-2.5
+                    font-body
+                    text-[10px]
+                    font-medium
+                    text-[var(--color-text)]
+                    transition-all
+                    duration-[var(--duration-fast)]
+                    hover:border-[var(--color-text)]
+                    hover:bg-[var(--color-bg-soft)]
+                    focus-visible:outline-none
+                    focus-visible:ring-1
+                    focus-visible:ring-[var(--color-text)]
+                  "
                 >
                   {size.label}
                 </Link>
@@ -735,31 +755,31 @@ export function ShopFilters({
           </div>
         </FilterSectionUI>
 
-        {/* =====================================================
-            PRICE
-        ===================================================== */}
+        {/* PRICE */}
 
         <FilterSectionUI
-          title={
-            sectionLabels.price
-          }
+          title={sectionLabels.price}
           open={openSections.includes(
             "price",
           )}
           onToggle={() =>
-            toggleSection(
-              "price",
-            )
+            toggleSection("price")
           }
         >
-          <div className="space-y-2">
+          <div className="space-y-0.5">
             {priceRanges.map(
               (range) => (
                 <label
-                  key={
-                    range.label
-                  }
-                  className="flex cursor-pointer items-center gap-3 py-1.5"
+                  key={range.label}
+                  className="
+                    group
+                    flex
+                    min-h-10
+                    cursor-pointer
+                    items-center
+                    gap-3
+                    py-2
+                  "
                 >
                   <input
                     type="radio"
@@ -779,13 +799,28 @@ export function ShopFilters({
                         range.max,
                       )
                     }
-                    className="size-4 accent-[var(--color-charcoal)]"
+                    className="
+                      h-4
+                      w-4
+                      shrink-0
+                      accent-[var(--color-accent-dark)]
+                    "
                   />
 
-                  <span className="text-sm text-[var(--color-text-secondary)]">
-                    {
-                      range.label
-                    }
+                  <span
+                    className={`
+                      font-body
+                      text-[11px]
+                      transition-colors
+                      ${
+                        selectedPrice ===
+                        range.label
+                          ? "font-medium text-[var(--color-text)]"
+                          : "text-[var(--color-text-secondary)] group-hover:text-[var(--color-text)]"
+                      }
+                    `}
+                  >
+                    {range.label}
                   </span>
                 </label>
               ),
@@ -793,9 +828,7 @@ export function ShopFilters({
           </div>
         </FilterSectionUI>
 
-        {/* =====================================================
-            AVAILABILITY
-        ===================================================== */}
+        {/* AVAILABILITY */}
 
         <FilterSectionUI
           title={
@@ -810,7 +843,7 @@ export function ShopFilters({
             )
           }
         >
-          <div className="space-y-2">
+          <div className="space-y-0.5">
             {availabilityOptions.map(
               (status) => (
                 <Link
@@ -819,11 +852,38 @@ export function ShopFilters({
                     "availability",
                     status,
                   )}
-                  onClick={
-                    onClose
-                  }
-                  className="flex py-1.5 text-sm text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-charcoal)]"
+                  onClick={onClose}
+                  className="
+                    flex
+                    min-h-10
+                    items-center
+                    gap-2.5
+                    py-2
+                    font-body
+                    text-[11px]
+                    text-[var(--color-text-secondary)]
+                    transition-colors
+                    duration-[var(--duration-fast)]
+                    hover:text-[var(--color-text)]
+                  "
                 >
+                  <span
+                    className={`
+                      h-1.5
+                      w-1.5
+                      shrink-0
+                      ${
+                        status ===
+                        "in-stock"
+                          ? "bg-[var(--color-success)]"
+                          : status === "low"
+                            ? "bg-[var(--color-warning)]"
+                            : "bg-[var(--color-text-muted)]"
+                      }
+                    `}
+                    aria-hidden="true"
+                  />
+
                   {
                     availabilityLabels[
                       status
@@ -836,24 +896,56 @@ export function ShopFilters({
         </FilterSectionUI>
       </div>
 
+      {/* =====================================================
+          EDITORIAL NOTE
+      ===================================================== */}
+
       {!mobile && (
-        <div className="mt-6 border border-[var(--color-border)] bg-[var(--color-cream)] p-5">
-          <p className="font-[var(--font-display)] text-xl text-[var(--color-charcoal)]">
+        <div
+          className="
+            mt-6
+            border
+            border-[var(--color-border)]
+            bg-[var(--color-bg-soft)]
+            p-5
+          "
+        >
+          <p
+            className="
+              font-display
+              text-[1.45rem]
+              font-medium
+              leading-none
+              text-[var(--color-text)]
+            "
+          >
             Find your signature
             style
           </p>
 
-          <p className="mt-2 text-xs leading-5 text-[var(--color-text-secondary)]">
+          <p
+            className="
+              mt-2.5
+              font-body
+              text-[10px]
+              leading-6
+              text-[var(--color-text-secondary)]
+            "
+          >
             Explore refined silhouettes
             designed for celebrations,
-            everyday elegance and
-            modern Indian dressing.
+            everyday elegance and modern
+            Indian dressing.
           </p>
         </div>
       )}
     </div>
   );
 }
+
+/* ============================================================
+   FILTER SECTION UI
+============================================================ */
 
 interface FilterSectionUIProps {
   title: string;
@@ -873,20 +965,48 @@ function FilterSectionUI({
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center justify-between text-left"
+        aria-expanded={open}
+        className="
+          flex
+          min-h-8
+          w-full
+          items-center
+          justify-between
+          gap-4
+          text-left
+          focus-visible:outline-none
+          focus-visible:ring-1
+          focus-visible:ring-[var(--color-text)]
+        "
       >
-        <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-charcoal)]">
+        <span
+          className="
+            font-body
+            text-[9px]
+            font-semibold
+            uppercase
+            tracking-[0.18em]
+            text-[var(--color-text)]
+          "
+        >
           {title}
         </span>
 
         <ChevronDown
-          size={15}
-          strokeWidth={1.7}
-          className={`transition-transform ${
-            open
-              ? "rotate-180"
-              : ""
-          }`}
+          size={14}
+          strokeWidth={1.3}
+          className={`
+            shrink-0
+            text-[var(--color-text-muted)]
+            transition-transform
+            duration-[var(--duration-base)]
+            ${
+              open
+                ? "rotate-180"
+                : ""
+            }
+          `}
+          aria-hidden="true"
         />
       </button>
 

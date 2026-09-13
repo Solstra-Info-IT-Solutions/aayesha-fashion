@@ -57,10 +57,7 @@ const collectionLinks = [
    COLLECTION PATHS
 ========================================================= */
 
-const collectionPathMap: Record<
-  ProductCategory,
-  string
-> = {
+const collectionPathMap: Record<ProductCategory, string> = {
   festive: "/collections/festive",
   ethnic: "/collections/ethnic",
   contemporary: "/collections/contemporary",
@@ -107,58 +104,35 @@ export function CollectionPage({
         ]}
       />
 
-      <main className="min-h-screen bg-[var(--color-ivory)]">
+      <main className="min-h-screen bg-[var(--color-bg)]">
         {/* =====================================================
             EDITORIAL HERO
         ===================================================== */}
 
-        <section className="relative overflow-hidden border-b border-[var(--color-border)] bg-[var(--color-ivory)]">
+        <section className="border-b border-[var(--color-border-light)] bg-[var(--color-bg)]">
           <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
-            <div className="relative py-12 sm:py-16 lg:py-20">
-              {/* subtle editorial accent */}
+            <div className="py-14 sm:py-18 lg:py-24 xl:py-28">
+              <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end xl:grid-cols-[minmax(0,1fr)_360px]">
+                {/* =================================================
+                    HERO COPY
+                ================================================= */}
 
-              <div
-                aria-hidden="true"
-                className="
-                  pointer-events-none
-                  absolute
-                  right-0
-                  top-8
-                  h-32
-                  w-32
-                  rounded-full
-                  border
-                  border-[var(--color-rose)]/35
-                  sm:h-44
-                  sm:w-44
-                  lg:h-56
-                  lg:w-56
-                "
-              />
-
-              <div className="relative grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-end xl:grid-cols-[minmax(0,1fr)_340px]">
                 <div className="max-w-4xl">
-                  <div className="flex items-center gap-3">
-                    <span className="h-px w-8 bg-[var(--color-rose-dark)]" />
+                  <div className="eyebrow flex items-center gap-3">
+                    <span className="h-px w-8 bg-[var(--color-accent)]" />
 
-                    <p className="text-[9px] font-semibold uppercase tracking-[0.3em] text-[var(--color-rose-dark)]">
-                      {eyebrow}
-                    </p>
+                    <span>{eyebrow}</span>
                   </div>
 
                   <h1
                     className="
-                      mt-5
-                      max-w-4xl
-                      font-[var(--font-display)]
-                      text-[3.2rem]
+                      mt-6
+                      font-display
+                      text-[clamp(3.5rem,8vw,7rem)]
                       font-medium
-                      leading-[0.9]
-                      tracking-[-0.035em]
-                      text-[var(--color-charcoal)]
-                      sm:text-[4.4rem]
-                      lg:text-[5.4rem]
-                      xl:text-[6rem]
+                      leading-[0.86]
+                      tracking-[var(--tracking-tight)]
+                      text-[var(--color-text)]
                     "
                   >
                     {title}
@@ -166,99 +140,127 @@ export function CollectionPage({
 
                   <p
                     className="
-                      mt-7
+                      mt-8
                       max-w-2xl
-                      text-sm
+                      font-body
+                      text-[var(--text-body)]
                       leading-7
                       text-[var(--color-text-secondary)]
-                      sm:text-[15px]
+                      sm:text-[1.0625rem]
                       sm:leading-8
                     "
                   >
                     {description}
                   </p>
 
-                  <div className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-3">
-                    <div className="flex items-center gap-2 text-[9px] font-semibold uppercase tracking-[0.18em] text-[var(--color-charcoal)]">
+                  <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-4">
+                    <div
+                      className="
+                        inline-flex
+                        items-center
+                        gap-2.5
+                        font-body
+                        text-[10px]
+                        font-semibold
+                        uppercase
+                        tracking-[var(--tracking-wider)]
+                        text-[var(--color-text)]
+                      "
+                    >
                       <Sparkles
-                        size={13}
-                        strokeWidth={1.3}
+                        size={14}
+                        strokeWidth={1.25}
+                        className="text-[var(--color-accent)]"
                       />
 
                       Curated for modern Indian dressing
                     </div>
 
-                    <span className="hidden h-3 w-px bg-[var(--color-border)] sm:block" />
+                    <span
+                      aria-hidden="true"
+                      className="hidden h-4 w-px bg-[var(--color-border)] sm:block"
+                    />
 
-                    <p className="text-[10px] italic text-[var(--color-secondary)]">
+                    <p
+                      className="
+                        font-display
+                        text-sm
+                        italic
+                        text-[var(--color-text-secondary)]
+                      "
+                    >
                       {mood}
                     </p>
                   </div>
                 </div>
 
-                {/* COLLECTION INDEX */}
+                {/* =================================================
+                    COLLECTION INDEX
+                ================================================= */}
 
-                <div className="border-t border-[var(--color-border)] pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
-                  <p className="text-[9px] font-semibold uppercase tracking-[0.26em] text-[var(--color-muted)]">
+                <div
+                  className="
+                    border-t
+                    border-[var(--color-border)]
+                    pt-7
+                    lg:border-l
+                    lg:border-t-0
+                    lg:pl-8
+                    lg:pt-0
+                  "
+                >
+                  <p className="font-body text-[10px] font-semibold uppercase tracking-[var(--tracking-luxury)] text-[var(--color-text-muted)]">
                     Browse the edits
                   </p>
 
-                  <div className="mt-5 space-y-1">
-                    {collectionLinks.map(
-                      (item) => {
-                        const isActive =
-                          item.category ===
-                          category;
+                  <div className="mt-5">
+                    {collectionLinks.map((item) => {
+                      const isActive = item.category === category;
 
-                        return (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            className={`
-                              group
-                              flex
-                              items-center
-                              justify-between
-                              border-b
-                              border-[var(--color-border)]
-                              py-3
-                              text-sm
-                              transition-colors
-                              duration-300
-                              ${
-                                isActive
-                                  ? "text-[var(--color-charcoal)]"
-                                  : "text-[var(--color-secondary)] hover:text-[var(--color-charcoal)]"
-                              }
-                            `}
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          aria-current={
+                            isActive ? "page" : undefined
+                          }
+                          className="
+                            group
+                            flex
+                            min-h-12
+                            items-center
+                            justify-between
+                            border-b
+                            border-[var(--color-border-light)]
+                            py-3
+                            font-body
+                            text-sm
+                            transition-colors
+                            duration-[var(--duration-base)]
+                          "
+                        >
+                          <span
+                            className={
+                              isActive
+                                ? "font-semibold text-[var(--color-text)]"
+                                : "font-medium text-[var(--color-text-secondary)] group-hover:text-[var(--color-text)]"
+                            }
                           >
-                            <span
-                              className={
-                                isActive
-                                  ? "font-semibold"
-                                  : "font-medium"
-                              }
-                            >
-                              {item.label}
-                            </span>
+                            {item.label}
+                          </span>
 
-                            <ArrowUpRight
-                              size={14}
-                              strokeWidth={1.35}
-                              className={`
-                                transition-transform
-                                duration-300
-                                ${
-                                  isActive
-                                    ? "text-[var(--color-rose-dark)]"
-                                    : "text-[var(--color-muted)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                                }
-                              `}
-                            />
-                          </Link>
-                        );
-                      },
-                    )}
+                          <ArrowUpRight
+                            size={15}
+                            strokeWidth={1.3}
+                            className={
+                              isActive
+                                ? "text-[var(--color-accent)]"
+                                : "text-[var(--color-text-muted)] transition-transform duration-[var(--duration-base)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                            }
+                          />
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -270,44 +272,57 @@ export function CollectionPage({
             COLLECTION TOOLBAR
         ===================================================== */}
 
-        <section className="border-b border-[var(--color-border)] bg-white">
+        <section
+          className="
+            sticky
+            top-0
+            z-[var(--z-header)]
+            border-b
+            border-[var(--color-border-light)]
+            bg-[var(--color-bg)]/95
+            backdrop-blur-md
+          "
+        >
           <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
             <div className="flex min-h-16 items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[var(--color-muted)]">
+                <span className="font-body text-[10px] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text-muted)]">
                   Collection
                 </span>
 
-                <span className="h-3 w-px bg-[var(--color-border)]" />
+                <span
+                  aria-hidden="true"
+                  className="h-3 w-px bg-[var(--color-border)]"
+                />
 
-                <span className="text-[11px] font-medium text-[var(--color-charcoal)]">
+                <span className="font-body text-xs font-medium text-[var(--color-text)]">
                   {products.length}{" "}
-                  {products.length === 1
-                    ? "piece"
-                    : "pieces"}
+                  {products.length === 1 ? "piece" : "pieces"}
                 </span>
               </div>
 
               <Link
                 href="/shop"
                 className="
+                  link-luxury
                   group
                   inline-flex
                   items-center
                   gap-2
-                  text-[9px]
+                  font-body
+                  text-[10px]
                   font-semibold
                   uppercase
-                  tracking-[0.2em]
-                  text-[var(--color-charcoal)]
+                  tracking-[var(--tracking-wider)]
+                  text-[var(--color-text)]
                 "
               >
                 Shop all
 
                 <ArrowRight
                   size={14}
-                  strokeWidth={1.35}
-                  className="transition-transform duration-300 group-hover:translate-x-1"
+                  strokeWidth={1.3}
+                  className="transition-transform duration-[var(--duration-base)] group-hover:translate-x-1"
                 />
               </Link>
             </div>
@@ -318,14 +333,14 @@ export function CollectionPage({
             PRODUCT AREA
         ===================================================== */}
 
-        <section className="mx-auto max-w-[1600px] px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
-          <div className="grid gap-8 lg:grid-cols-[235px_minmax(0,1fr)] xl:gap-10">
+        <section className="mx-auto max-w-[1600px] px-4 py-9 sm:px-6 sm:py-12 lg:px-8 lg:py-14">
+          <div className="grid gap-10 lg:grid-cols-[235px_minmax(0,1fr)] xl:gap-12">
             {/* =================================================
                 FILTERS
             ================================================= */}
 
             <aside className="hidden lg:block">
-              <div className="sticky top-28">
+              <div className="sticky top-24">
                 <ShopFilters
                   products={products}
                   selectedCategory={category}
@@ -351,15 +366,25 @@ export function CollectionPage({
             EDIT NAVIGATION
         ===================================================== */}
 
-        <section className="border-t border-[var(--color-border)] bg-[var(--color-cream)]">
-          <div className="mx-auto max-w-[1600px] px-4 py-12 sm:px-6 lg:px-8 lg:py-14">
+        <section className="border-t border-[var(--color-border-light)] bg-[var(--color-bg-soft)]">
+          <div className="mx-auto max-w-[1600px] px-4 py-14 sm:px-6 sm:py-18 lg:px-8 lg:py-20">
             <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
-              <div>
-                <p className="text-[9px] font-semibold uppercase tracking-[0.28em] text-[var(--color-rose-dark)]">
+              <div className="max-w-2xl">
+                <p className="eyebrow text-[var(--color-accent)]">
                   Continue exploring
                 </p>
 
-                <h2 className="mt-3 max-w-xl font-[var(--font-display)] text-3xl leading-tight tracking-[-0.02em] text-[var(--color-charcoal)] sm:text-4xl">
+                <h2
+                  className="
+                    mt-4
+                    font-display
+                    text-[var(--text-heading-lg)]
+                    font-medium
+                    leading-[0.95]
+                    tracking-[var(--tracking-tight)]
+                    text-[var(--color-text)]
+                  "
+                >
                   Find the pieces that become part of your story.
                 </h2>
               </div>
@@ -369,28 +394,38 @@ export function CollectionPage({
                 className="
                   group
                   inline-flex
+                  min-h-12
                   items-center
+                  justify-center
                   gap-3
                   border
-                  border-[var(--color-charcoal)]
-                  bg-[var(--color-charcoal)]
-                  px-5
+                  border-[var(--color-text)]
+                  bg-[var(--color-text)]
+                  px-6
                   py-3.5
-                  text-[9px]
+                  font-body
+                  text-[10px]
                   font-semibold
                   uppercase
-                  tracking-[0.18em]
-                  text-white
-                  transition-opacity
-                  hover:opacity-90
+                  tracking-[var(--tracking-wider)]
+                  text-[var(--color-text-inverse)]
+                  transition-all
+                  duration-[var(--duration-base)]
+                  hover:bg-[var(--color-accent-dark)]
+                  hover:border-[var(--color-accent-dark)]
+                  focus:outline-none
+                  focus:ring-2
+                  focus:ring-[var(--color-accent)]
+                  focus:ring-offset-2
+                  focus:ring-offset-[var(--color-bg-soft)]
                 "
               >
                 Discover new arrivals
 
                 <ArrowUpRight
-                  size={14}
-                  strokeWidth={1.35}
-                  className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                  size={15}
+                  strokeWidth={1.3}
+                  className="transition-transform duration-[var(--duration-base)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
                 />
               </Link>
             </div>

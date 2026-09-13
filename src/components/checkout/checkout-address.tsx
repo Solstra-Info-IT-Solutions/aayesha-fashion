@@ -182,10 +182,6 @@ export function CheckoutAddress() {
     setSelectedAddressId(null);
     setShowManualForm(true);
 
-    /*
-     * This is a newly entered checkout address.
-     * Do not treat it as a saved/default address.
-     */
     setAddress({
       isDefault: false,
     });
@@ -204,38 +200,46 @@ export function CheckoutAddress() {
 
   if (shouldShowSavedAddressView) {
     return (
-      <section className="border border-[var(--color-border)] bg-white">
+      <section className="overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface)]">
         {/* HEADER */}
 
-        <div className="border-b border-[var(--color-border)] px-5 py-5 sm:px-7">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
-            02 · Delivery Address
-          </p>
+        <div className="border-b border-[var(--color-border-light)] px-5 py-6 sm:px-8 sm:py-7">
+          <div className="flex items-start gap-4">
+            <span className="mt-0.5 font-[var(--font-display)] text-lg text-[var(--color-accent)]">
+              02
+            </span>
 
-          <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <h2 className="font-[var(--font-cormorant)] text-2xl">
-                Where should we deliver?
-              </h2>
-
-              <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-                Select a saved address or add a new
-                delivery address.
+            <div className="min-w-0 flex-1">
+              <p className="eyebrow text-[var(--color-text-muted)]">
+                Delivery Address
               </p>
-            </div>
 
-            <Link
-              href="/account/addresses"
-              className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-charcoal)] transition-opacity hover:opacity-60"
-            >
-              Manage Addresses
-            </Link>
+              <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
+                <div>
+                  <h2 className="font-[var(--font-display)] text-3xl font-medium leading-none tracking-[var(--tracking-tight)] text-[var(--color-text)] sm:text-4xl">
+                    Where should we deliver?
+                  </h2>
+
+                  <p className="mt-3 max-w-lg text-xs leading-5 text-[var(--color-text-secondary)] sm:text-sm">
+                    Select a saved address or add a new
+                    delivery address.
+                  </p>
+                </div>
+
+                <Link
+                  href="/account/addresses"
+                  className="link-luxury shrink-0 text-[10px] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text)]"
+                >
+                  Manage Addresses
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* CONTENT */}
 
-        <div className="space-y-5 px-5 py-6 sm:px-7">
+        <div className="space-y-6 px-5 py-7 sm:px-8 sm:py-8">
           {isLoadingAddresses ? (
             <AddressLoadingState />
           ) : (
@@ -243,9 +247,9 @@ export function CheckoutAddress() {
               {/* ERROR */}
 
               {addressError ? (
-                <div className="flex items-start justify-between gap-4 border border-[var(--color-border)] bg-[var(--color-ivory)] px-4 py-4">
+                <div className="flex items-start justify-between gap-4 border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-4 py-4 sm:px-5">
                   <div>
-                    <p className="text-sm font-medium text-[var(--color-charcoal)]">
+                    <p className="text-sm font-medium text-[var(--color-text)]">
                       We couldn&apos;t load your saved
                       addresses.
                     </p>
@@ -261,7 +265,7 @@ export function CheckoutAddress() {
                     onClick={() => {
                       window.location.reload();
                     }}
-                    className="inline-flex shrink-0 items-center gap-2 border border-[var(--color-border-dark)] px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--color-charcoal)] transition-colors hover:bg-[var(--color-ivory)]"
+                    className="inline-flex shrink-0 items-center gap-2 border border-[var(--color-border-dark)] bg-[var(--color-surface)] px-3 py-2 text-[10px] font-semibold uppercase tracking-[var(--tracking-wide)] text-[var(--color-text)] transition-colors hover:border-[var(--color-accent)] hover:bg-[var(--color-bg-subtle)]"
                   >
                     <RefreshCw size={13} />
                     Retry
@@ -273,9 +277,9 @@ export function CheckoutAddress() {
 
               {!addressError &&
               savedAddresses.length > 0 ? (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between border-b border-[var(--color-border-light)] pb-3">
+                    <p className="eyebrow text-[var(--color-text-muted)]">
                       Saved Addresses
                     </p>
 
@@ -303,40 +307,39 @@ export function CheckoutAddress() {
                                 savedAddress,
                               )
                             }
-                            className={`w-full border text-left transition-colors ${
+                            aria-pressed={isSelected}
+                            className={`group w-full border text-left transition-all duration-[var(--duration-base)] ${
                               isSelected
-                                ? "border-[var(--color-charcoal)] bg-[var(--color-ivory)]"
-                                : "border-[var(--color-border)] bg-white hover:border-[var(--color-border-dark)]"
+                                ? "border-[var(--color-accent)] bg-[var(--color-bg-subtle)]"
+                                : "border-[var(--color-border)] bg-[var(--color-surface)] hover:border-[var(--color-border-dark)]"
                             }`}
                           >
-                            <div className="flex items-start gap-4 px-4 py-4 sm:px-5">
+                            <div className="flex items-start gap-4 px-4 py-5 sm:px-5">
                               {/* SELECT INDICATOR */}
 
                               <div
-                                className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center border ${
+                                className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center border transition-colors ${
                                   isSelected
-                                    ? "border-[var(--color-charcoal)] bg-[var(--color-charcoal)] text-white"
-                                    : "border-[var(--color-border-dark)] bg-white"
+                                    ? "border-[var(--color-accent)] bg-[var(--color-accent)] text-[var(--color-text-inverse)]"
+                                    : "border-[var(--color-border-dark)] bg-[var(--color-surface)] text-transparent group-hover:border-[var(--color-accent)]"
                                 }`}
                               >
-                                {isSelected ? (
-                                  <Check
-                                    size={12}
-                                    strokeWidth={2.5}
-                                  />
-                                ) : null}
+                                <Check
+                                  size={12}
+                                  strokeWidth={2.5}
+                                />
                               </div>
 
                               {/* ADDRESS DETAILS */}
 
                               <div className="min-w-0 flex-1">
                                 <div className="flex flex-wrap items-center gap-2">
-                                  <p className="text-sm font-semibold text-[var(--color-charcoal)]">
+                                  <p className="text-sm font-semibold text-[var(--color-text)]">
                                     {savedAddress.name}
                                   </p>
 
                                   {savedAddress.isDefault ? (
-                                    <span className="border border-[var(--color-rose-light)] bg-[var(--color-rose-light)] px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.1em] text-[var(--color-charcoal)]">
+                                    <span className="border border-[var(--color-accent-soft)] bg-[var(--color-accent-soft)] px-2 py-1 text-[9px] font-semibold uppercase tracking-[var(--tracking-wide)] text-[var(--color-accent-dark)]">
                                       Default
                                     </span>
                                   ) : null}
@@ -366,9 +369,9 @@ export function CheckoutAddress() {
 
                               <MapPin
                                 size={16}
-                                className={`mt-0.5 shrink-0 ${
+                                className={`mt-0.5 shrink-0 transition-colors ${
                                   isSelected
-                                    ? "text-[var(--color-charcoal)]"
+                                    ? "text-[var(--color-accent)]"
                                     : "text-[var(--color-text-muted)]"
                                 }`}
                               />
@@ -386,19 +389,20 @@ export function CheckoutAddress() {
               <button
                 type="button"
                 onClick={handleManualAddress}
-                className={`flex w-full items-center justify-between border px-4 py-4 text-left transition-colors sm:px-5 ${
+                aria-expanded={showManualForm}
+                className={`group flex w-full items-center justify-between border px-4 py-4 text-left transition-all duration-[var(--duration-base)] sm:px-5 ${
                   showManualForm
-                    ? "border-[var(--color-charcoal)] bg-[var(--color-ivory)]"
-                    : "border-[var(--color-border)] hover:border-[var(--color-border-dark)]"
+                    ? "border-[var(--color-accent)] bg-[var(--color-bg-subtle)]"
+                    : "border-[var(--color-border)] bg-[var(--color-surface)] hover:border-[var(--color-border-dark)]"
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center border border-[var(--color-border-dark)] bg-white">
+                  <div className="flex h-9 w-9 items-center justify-center border border-[var(--color-border-dark)] bg-[var(--color-surface)] text-[var(--color-text)] transition-colors group-hover:border-[var(--color-accent)]">
                     <Plus size={15} />
                   </div>
 
                   <div>
-                    <p className="text-sm font-semibold text-[var(--color-charcoal)]">
+                    <p className="text-sm font-semibold text-[var(--color-text)]">
                       Add a new address
                     </p>
 
@@ -410,7 +414,7 @@ export function CheckoutAddress() {
 
                 <ChevronDown
                   size={16}
-                  className={`transition-transform ${
+                  className={`text-[var(--color-text-secondary)] transition-transform duration-[var(--duration-base)] ${
                     showManualForm
                       ? "rotate-180"
                       : ""
@@ -431,13 +435,13 @@ export function CheckoutAddress() {
 
               {selectedSavedAddress &&
               !showManualForm ? (
-                <div className="border-t border-[var(--color-border)] pt-4">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--color-text-muted)]">
+                <div className="border-t border-[var(--color-border-light)] pt-5">
+                  <p className="eyebrow text-[var(--color-text-muted)]">
                     Selected delivery address
                   </p>
 
                   <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-                    <p className="text-xs font-medium text-[var(--color-charcoal)]">
+                    <p className="text-xs font-semibold text-[var(--color-text)]">
                       {selectedSavedAddress.name}
                     </p>
 
@@ -470,18 +474,31 @@ export function CheckoutAddress() {
   ========================================================== */
 
   return (
-    <section className="border border-[var(--color-border)] bg-white">
-      <div className="border-b border-[var(--color-border)] px-5 py-5 sm:px-7">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
-          02 · Delivery Address
-        </p>
+    <section className="overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface)]">
+      <div className="border-b border-[var(--color-border-light)] px-5 py-6 sm:px-8 sm:py-7">
+        <div className="flex items-start gap-4">
+          <span className="mt-0.5 font-[var(--font-display)] text-lg text-[var(--color-accent)]">
+            02
+          </span>
 
-        <h2 className="mt-2 font-[var(--font-cormorant)] text-2xl">
-          Where should we deliver?
-        </h2>
+          <div>
+            <p className="eyebrow text-[var(--color-text-muted)]">
+              Delivery Address
+            </p>
+
+            <h2 className="mt-2 font-[var(--font-display)] text-3xl font-medium leading-none tracking-[var(--tracking-tight)] text-[var(--color-text)] sm:text-4xl">
+              Where should we deliver?
+            </h2>
+
+            <p className="mt-3 max-w-lg text-xs leading-5 text-[var(--color-text-secondary)] sm:text-sm">
+              Enter the address where you&apos;d like your
+              order delivered.
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div className="grid gap-5 px-5 py-6 sm:grid-cols-2 sm:px-7">
+      <div className="grid gap-6 px-5 py-7 sm:grid-cols-2 sm:px-8 sm:py-8">
         <Field
           label="First Name"
           value={address.firstName}
@@ -572,23 +589,14 @@ export function CheckoutAddress() {
           }
         />
 
-        <label className="flex items-center gap-3 sm:col-span-2">
-          <input
-            type="checkbox"
-            checked={!!address.isDefault}
-            onChange={(event) =>
-              setAddress({
-                isDefault:
-                  event.target.checked,
-              })
-            }
-            className="h-4 w-4 accent-[var(--color-charcoal)]"
-          />
-
-          <span className="text-xs text-[var(--color-text-secondary)]">
-            Save this address for future orders
-          </span>
-        </label>
+        <SaveAddressCheckbox
+          checked={!!address.isDefault}
+          onChange={(checked) =>
+            setAddress({
+              isDefault: checked,
+            })
+          }
+        />
       </div>
     </section>
   );
@@ -608,7 +616,7 @@ function ManualAddressForm({
   ) => void;
 }) {
   return (
-    <div className="grid gap-5 border-t border-[var(--color-border)] pt-5 sm:grid-cols-2">
+    <div className="grid gap-6 border-t border-[var(--color-border-light)] pt-6 sm:grid-cols-2">
       <Field
         label="First Name"
         value={address.firstName}
@@ -699,24 +707,44 @@ function ManualAddressForm({
         }
       />
 
-      <label className="flex items-center gap-3 sm:col-span-2">
-        <input
-          type="checkbox"
-          checked={!!address.isDefault}
-          onChange={(event) =>
-            setAddress({
-              isDefault:
-                event.target.checked,
-            })
-          }
-          className="h-4 w-4 accent-[var(--color-charcoal)]"
-        />
-
-        <span className="text-xs text-[var(--color-text-secondary)]">
-          Save this address for future orders
-        </span>
-      </label>
+      <SaveAddressCheckbox
+        checked={!!address.isDefault}
+        onChange={(checked) =>
+          setAddress({
+            isDefault: checked,
+          })
+        }
+      />
     </div>
+  );
+}
+
+/* ============================================================
+   SAVE ADDRESS CHECKBOX
+============================================================ */
+
+function SaveAddressCheckbox({
+  checked,
+  onChange,
+}: {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <label className="group flex cursor-pointer items-center gap-3 border-t border-[var(--color-border-light)] pt-5 sm:col-span-2">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(event) =>
+          onChange(event.target.checked)
+        }
+        className="h-4 w-4 accent-[var(--color-accent)]"
+      />
+
+      <span className="text-xs text-[var(--color-text-secondary)] transition-colors group-hover:text-[var(--color-text)]">
+        Save this address for future orders
+      </span>
+    </label>
   );
 }
 
@@ -726,19 +754,23 @@ function ManualAddressForm({
 
 function AddressLoadingState() {
   return (
-    <div className="space-y-3">
+    <div
+      className="space-y-3"
+      aria-busy="true"
+      aria-label="Loading saved addresses"
+    >
       {[1, 2].map((item) => (
         <div
           key={item}
           className="animate-pulse border border-[var(--color-border)] px-5 py-5"
         >
-          <div className="h-3 w-28 bg-[var(--color-cream)]" />
+          <div className="h-3 w-28 bg-[var(--color-bg-soft)]" />
 
-          <div className="mt-3 h-3 w-40 bg-[var(--color-cream)]" />
+          <div className="mt-3 h-3 w-40 bg-[var(--color-bg-soft)]" />
 
-          <div className="mt-2 h-3 w-full max-w-md bg-[var(--color-cream)]" />
+          <div className="mt-2 h-3 w-full max-w-md bg-[var(--color-bg-soft)]" />
 
-          <div className="mt-2 h-3 w-3/4 max-w-sm bg-[var(--color-cream)]" />
+          <div className="mt-2 h-3 w-3/4 max-w-sm bg-[var(--color-bg-soft)]" />
         </div>
       ))}
     </div>
@@ -781,12 +813,6 @@ function applySavedAddress(
       savedAddress.isDefault,
   });
 
-  /*
-   * Important:
-   * Saved address phone is synced with checkout contact.
-   * The backend address API may return +91 / 91 / 10-digit,
-   * so normalize it before storing it.
-   */
   setContact({
     phone: normalizeIndianPhone(
       savedAddress.phone,
@@ -926,22 +952,26 @@ function Field({
   inputMode?: "numeric" | "text";
 }) {
   return (
-    <label className="block">
-      <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.12em]">
+    <label className="group block">
+      <span className="mb-2.5 block text-[10px] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text-secondary)]">
         {label}
       </span>
 
-      <input
-        value={value}
-        onChange={(event) =>
-          onChange(
-            event.target.value,
-          )
-        }
-        placeholder={placeholder}
-        inputMode={inputMode}
-        className="h-12 w-full border border-[var(--color-border-dark)] bg-transparent px-4 text-sm outline-none transition placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-charcoal)]"
-      />
+      <div className="relative">
+        <input
+          value={value}
+          onChange={(event) =>
+            onChange(
+              event.target.value,
+            )
+          }
+          placeholder={placeholder}
+          inputMode={inputMode}
+          className="h-13 w-full border border-[var(--color-border-dark)] bg-[var(--color-surface-soft)] px-4 text-sm text-[var(--color-text)] outline-none transition-all duration-[var(--duration-base)] placeholder:text-[var(--color-text-muted)] hover:border-[var(--color-accent-soft)] focus:border-[var(--color-accent)] focus:bg-[var(--color-surface)]"
+        />
+
+        <span className="pointer-events-none absolute bottom-0 left-0 h-px w-0 bg-[var(--color-accent)] transition-all duration-[var(--duration-luxury)] group-focus-within:w-full" />
+      </div>
     </label>
   );
 }

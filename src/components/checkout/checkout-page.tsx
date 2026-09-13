@@ -21,26 +21,73 @@ export function CheckoutPage() {
     (state) => state.items,
   );
 
+  /* ==========================================================
+     EMPTY CART
+  ========================================================== */
+
   if (!items.length) {
     return (
-      <main className="min-h-[65vh] bg-[var(--color-ivory)]">
-        <div className="mx-auto flex min-h-[65vh] max-w-2xl flex-col items-center justify-center px-4 py-20 text-center">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
+      <main className="min-h-[70vh] bg-[var(--color-bg)]">
+        <div className="mx-auto flex min-h-[70vh] max-w-2xl flex-col items-center justify-center px-4 py-20 text-center sm:px-6">
+          <div className="flex h-16 w-16 items-center justify-center border border-[var(--color-border)]">
+            <ShieldCheck
+              size={22}
+              strokeWidth={1.25}
+              className="text-[var(--color-text)]"
+            />
+          </div>
+
+          <p className="eyebrow mt-7 text-[var(--color-accent)]">
             Checkout
           </p>
 
-          <h1 className="mt-3 font-[var(--font-cormorant)] text-4xl">
+          <h1
+            className="
+              mt-3
+              font-display
+              text-[var(--text-heading-lg)]
+              font-medium
+              leading-[0.95]
+              tracking-[var(--tracking-tight)]
+              text-[var(--color-text)]
+            "
+          >
             Your bag is empty.
           </h1>
 
-          <p className="mt-4 text-sm text-[var(--color-text-secondary)]">
+          <p className="mt-5 max-w-md font-body text-sm leading-7 text-[var(--color-text-secondary)]">
             Add something beautiful before continuing to
             checkout.
           </p>
 
           <Link
             href="/shop"
-            className="mt-8 inline-flex min-h-12 items-center justify-center bg-[var(--color-charcoal)] px-7 text-[10px] font-semibold uppercase tracking-[0.16em] text-white"
+            className="
+              mt-8
+              inline-flex
+              min-h-12
+              items-center
+              justify-center
+              border
+              border-[var(--color-text)]
+              bg-[var(--color-text)]
+              px-7
+              py-3.5
+              font-body
+              text-[10px]
+              font-semibold
+              uppercase
+              tracking-[var(--tracking-wider)]
+              text-[var(--color-text-inverse)]
+              transition-all
+              duration-[var(--duration-base)]
+              hover:border-[var(--color-accent-dark)]
+              hover:bg-[var(--color-accent-dark)]
+              focus:outline-none
+              focus:ring-2
+              focus:ring-[var(--color-accent)]
+              focus:ring-offset-2
+            "
           >
             Continue Shopping
           </Link>
@@ -49,41 +96,104 @@ export function CheckoutPage() {
     );
   }
 
+  /* ==========================================================
+     CHECKOUT
+  ========================================================== */
+
   return (
-    <main className="bg-[var(--color-ivory)]">
-      <div className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6 sm:py-12 lg:px-10 lg:py-16">
-        {/* HEADER */}
-        <div className="border-b border-[var(--color-border)] pb-7">
-          <Link
-            href="/cart"
-            className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-muted)] transition hover:text-[var(--color-charcoal)]"
-          >
-            <ChevronLeft size={14} />
-            Back to Bag
-          </Link>
+    <main className="min-h-screen bg-[var(--color-bg)]">
+      <div className="mx-auto max-w-[1600px] px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
+        {/* ====================================================
+            HEADER
+        ==================================================== */}
 
-          <div className="mt-5 flex items-end justify-between gap-5">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
-                Ayesha Fashion
-              </p>
+        <div className="border-b border-[var(--color-border-light)] pb-7">
+          <div className="flex items-center justify-between gap-5">
+            <Link
+              href="/cart"
+              className="
+                link-luxury
+                inline-flex
+                items-center
+                gap-1
+                font-body
+                text-[10px]
+                font-semibold
+                uppercase
+                tracking-[var(--tracking-wider)]
+                text-[var(--color-text-muted)]
+                transition-colors
+                hover:text-[var(--color-text)]
+              "
+            >
+              <ChevronLeft
+                size={14}
+                strokeWidth={1.4}
+              />
 
-              <h1 className="mt-2 font-[var(--font-cormorant)] text-4xl leading-none sm:text-5xl">
-                Checkout
-              </h1>
-            </div>
+              Back to Bag
+            </Link>
 
-            <div className="hidden items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--color-text-muted)] sm:flex">
-              <ShieldCheck size={15} />
+            <div
+              className="
+                hidden
+                items-center
+                gap-2
+                font-body
+                text-[10px]
+                font-semibold
+                uppercase
+                tracking-[var(--tracking-wider)]
+                text-[var(--color-text-muted)]
+                sm:flex
+              "
+            >
+              <ShieldCheck
+                size={15}
+                strokeWidth={1.3}
+                className="text-[var(--color-accent)]"
+              />
+
               Secure Checkout
             </div>
           </div>
+
+          <div className="mt-7">
+            <p className="eyebrow text-[var(--color-accent)]">
+              Aayesha Fashion
+            </p>
+
+            <h1
+              className="
+                mt-3
+                font-display
+                text-[var(--text-heading-lg)]
+                font-medium
+                leading-[0.9]
+                tracking-[var(--tracking-tight)]
+                text-[var(--color-text)]
+              "
+            >
+              Checkout
+            </h1>
+
+            <p className="mt-4 max-w-xl font-body text-sm leading-7 text-[var(--color-text-secondary)]">
+              Complete your details below to place your order
+              with Aayesha Fashion.
+            </p>
+          </div>
         </div>
 
-        {/* BODY */}
-        <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_390px] lg:items-start lg:gap-16">
-          {/* LEFT */}
-          <div className="space-y-5">
+        {/* ====================================================
+            CHECKOUT BODY
+        ==================================================== */}
+
+        <div className="mt-9 grid gap-10 lg:grid-cols-[minmax(0,1fr)_390px] lg:items-start lg:gap-16 xl:gap-20">
+          {/* ==================================================
+              LEFT — CHECKOUT STEPS
+          ================================================== */}
+
+          <div className="min-w-0 space-y-4 sm:space-y-5">
             <CheckoutContact />
 
             <CheckoutAddress />
@@ -97,8 +207,13 @@ export function CheckoutPage() {
             <CheckoutPlaceOrder />
           </div>
 
-          {/* RIGHT */}
-          <CheckoutSummary />
+          {/* ==================================================
+              RIGHT — ORDER SUMMARY
+          ================================================== */}
+
+          <aside className="lg:sticky lg:top-24">
+            <CheckoutSummary />
+          </aside>
         </div>
       </div>
     </main>

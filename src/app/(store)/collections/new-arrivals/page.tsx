@@ -94,46 +94,33 @@ export default async function NewArrivalsPage({
 
   const category =
     params.category &&
-    validCategories.includes(
-      params.category as ProductCategory,
-    )
+    validCategories.includes(params.category as ProductCategory)
       ? (params.category as ProductCategory)
       : undefined;
 
   const sort =
     params.sort &&
-    validSorts.includes(
-      params.sort as ProductSort,
-    )
+    validSorts.includes(params.sort as ProductSort)
       ? (params.sort as ProductSort)
       : "newest";
 
   const productType =
     params.type &&
-    validProductTypes.includes(
-      params.type as ProductType,
-    )
+    validProductTypes.includes(params.type as ProductType)
       ? (params.type as ProductType)
       : undefined;
 
-  const minPrice = parseNumber(
-    params.minPrice,
-  );
-
-  const maxPrice = parseNumber(
-    params.maxPrice,
-  );
+  const minPrice = parseNumber(params.minPrice);
+  const maxPrice = parseNumber(params.maxPrice);
 
   const inStockOnly =
-    params.availability === "in-stock"
-      ? true
-      : undefined;
+    params.availability === "in-stock" ? true : undefined;
 
   const response = await getProducts({
     page: 1,
     limit: 48,
 
-    // New Arrivals collection = products marked as New
+    // New Arrivals collection
     isNew: true,
 
     category,
@@ -150,11 +137,11 @@ export default async function NewArrivalsPage({
   });
 
   return (
-    <main className="min-h-screen bg-[var(--color-ivory)]">
+    <main className="min-h-screen bg-[var(--color-bg)]">
       {/* =====================================================
           COLLECTION HEADER + TOOLBAR
       ===================================================== */}
-      <section className="border-b border-[var(--color-border)] bg-[var(--color-ivory)]">
+      <section className="border-b border-[var(--color-border-light)] bg-[var(--color-bg)]">
         <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
           <ShopHeader
             products={response.products}
@@ -165,10 +152,10 @@ export default async function NewArrivalsPage({
       </section>
 
       {/* =====================================================
-          PRODUCTS
+          COLLECTION CONTENT
       ===================================================== */}
-      <section className="mx-auto max-w-[1600px] px-4 py-7 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-        <div className="grid gap-8 lg:grid-cols-[235px_minmax(0,1fr)] xl:gap-10">
+      <section className="mx-auto max-w-[1600px] px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
+        <div className="grid gap-10 lg:grid-cols-[235px_minmax(0,1fr)] xl:gap-12">
           {/* =================================================
               DESKTOP FILTERS
           ================================================= */}

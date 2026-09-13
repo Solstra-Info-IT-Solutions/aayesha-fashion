@@ -16,7 +16,8 @@ export function SizeGuide({
   open = false,
   onOpenChange,
 }: SizeGuideProps) {
-  const controlled = typeof onOpenChange === "function";
+  const controlled =
+    typeof onOpenChange === "function";
 
   const close = () => {
     onOpenChange?.(false);
@@ -26,43 +27,123 @@ export function SizeGuide({
     if (!open) return;
 
     const escape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") close();
+      if (event.key === "Escape") {
+        close();
+      }
     };
 
-    document.addEventListener("keydown", escape);
+    document.addEventListener(
+      "keydown",
+      escape,
+    );
+
     document.body.style.overflow = "hidden";
 
     return () => {
-      document.removeEventListener("keydown", escape);
+      document.removeEventListener(
+        "keydown",
+        escape,
+      );
+
       document.body.style.overflow = "";
     };
   }, [open]);
 
-  if (!controlled) {
-    return null;
-  }
-
-  if (!open) {
+  if (!controlled || !open) {
     return null;
   }
 
   return (
-    <div className="fixed inset-0 z-[90]">
+    <div
+      className="
+        fixed
+        inset-0
+        z-[var(--z-modal)]
+      "
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="size-guide-title"
+    >
+      {/* =====================================================
+          BACKDROP
+      ===================================================== */}
+
       <button
         type="button"
         aria-label="Close size guide"
         onClick={close}
-        className="absolute inset-0 bg-black/40"
+        className="
+          absolute
+          inset-0
+          cursor-default
+          bg-[var(--color-text)]/45
+          backdrop-blur-[2px]
+        "
       />
 
-      <aside className="absolute inset-y-0 right-0 w-full max-w-xl overflow-y-auto bg-[var(--color-ivory)] px-5 py-6 sm:px-8">
-        <div className="flex items-center justify-between border-b border-[var(--color-border)] pb-5">
+      {/* =====================================================
+          DRAWER
+      ===================================================== */}
+
+      <aside
+        className="
+          absolute
+          inset-y-0
+          right-0
+          flex
+          w-full
+          max-w-xl
+          flex-col
+          overflow-hidden
+          bg-[var(--color-surface)]
+          shadow-[var(--shadow-lg)]
+        "
+      >
+        {/* =================================================
+            HEADER
+        ================================================= */}
+
+        <header
+          className="
+            flex
+            shrink-0
+            items-center
+            justify-between
+            border-b
+            border-[var(--color-border)]
+            px-5
+            py-5
+            sm:px-8
+            sm:py-6
+          "
+        >
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
-              Ayesha sizing
+            <p
+              className="
+                font-body
+                text-[9px]
+                font-semibold
+                uppercase
+                tracking-[0.2em]
+                text-[var(--color-accent)]
+              "
+            >
+              Ayesha Sizing
             </p>
 
-            <h2 className="mt-1 font-[var(--font-cormorant)] text-3xl">
+            <h2
+              id="size-guide-title"
+              className="
+                mt-1
+                font-display
+                text-[2rem]
+                font-medium
+                leading-none
+                tracking-tight
+                text-[var(--color-text)]
+                sm:text-[2.4rem]
+              "
+            >
               Size Guide
             </h2>
           </div>
@@ -70,115 +151,471 @@ export function SizeGuide({
           <button
             type="button"
             onClick={close}
-            className="flex h-10 w-10 items-center justify-center border border-[var(--color-border)]"
-            aria-label="Close"
+            aria-label="Close size guide"
+            className="
+              flex
+              h-10
+              w-10
+              shrink-0
+              items-center
+              justify-center
+              border
+              border-[var(--color-border)]
+              bg-[var(--color-surface)]
+              text-[var(--color-text)]
+              transition-all
+              duration-[var(--duration-base)]
+              hover:border-[var(--color-text)]
+              hover:bg-[var(--color-bg-soft)]
+              focus-visible:outline-none
+              focus-visible:ring-1
+              focus-visible:ring-[var(--color-text)]
+              focus-visible:ring-offset-2
+            "
           >
-            <X size={18} />
+            <X
+              size={17}
+              strokeWidth={1.25}
+            />
           </button>
-        </div>
+        </header>
 
-        {sizeChart ? (
-          <div className="py-7">
-            <p className="text-xs text-[var(--color-text-muted)]">
-              Measurements shown in {sizeChart.unit}.
-            </p>
+        {/* =================================================
+            SCROLLABLE CONTENT
+        ================================================= */}
 
-            <div className="mt-6 overflow-x-auto">
-              <table className="w-full min-w-[520px] border-collapse text-left">
-                <thead>
-                  <tr className="border-y border-[var(--color-border)]">
-                    <th className="px-3 py-3 text-[10px] font-semibold uppercase tracking-[0.1em]">
-                      Size
-                    </th>
+        <div
+          className="
+            min-h-0
+            flex-1
+            overflow-y-auto
+            overscroll-contain
+            px-5
+            sm:px-8
+          "
+        >
+          {sizeChart ? (
+            <div className="py-7 sm:py-8">
+              {/* Measurement intro */}
 
-                    <th className="px-3 py-3 text-[10px] font-semibold uppercase tracking-[0.1em]">
-                      Bust
-                    </th>
-
-                    <th className="px-3 py-3 text-[10px] font-semibold uppercase tracking-[0.1em]">
-                      Waist
-                    </th>
-
-                    <th className="px-3 py-3 text-[10px] font-semibold uppercase tracking-[0.1em]">
-                      Hip
-                    </th>
-
-                    <th className="px-3 py-3 text-[10px] font-semibold uppercase tracking-[0.1em]">
-                      Length
-                    </th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {sizeChart.measurements.map((measurement) => (
-                    <tr
-                      key={measurement.size}
-                      className="border-b border-[var(--color-border)]"
-                    >
-                      <td className="px-3 py-3 text-xs font-semibold">
-                        {measurement.size}
-                      </td>
-
-                      <td className="px-3 py-3 text-xs text-[var(--color-text-secondary)]">
-                        {measurement.bust ?? "—"}
-                      </td>
-
-                      <td className="px-3 py-3 text-xs text-[var(--color-text-secondary)]">
-                        {measurement.waist ?? "—"}
-                      </td>
-
-                      <td className="px-3 py-3 text-xs text-[var(--color-text-secondary)]">
-                        {measurement.hip ?? "—"}
-                      </td>
-
-                      <td className="px-3 py-3 text-xs text-[var(--color-text-secondary)]">
-                        {measurement.garmentLength ?? "—"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {sizeChart.fitNote && (
-              <div className="mt-7 border-l-2 border-[var(--color-rose)] pl-4">
-                <p className="text-sm leading-6 text-[var(--color-text-secondary)]">
-                  {sizeChart.fitNote}
+              <div
+                className="
+                  flex
+                  items-end
+                  justify-between
+                  gap-4
+                "
+              >
+                <p
+                  className="
+                    font-body
+                    text-[11px]
+                    leading-5
+                    text-[var(--color-text-secondary)]
+                  "
+                >
+                  Measurements shown in{" "}
+                  <span className="font-semibold text-[var(--color-text)]">
+                    {sizeChart.unit}
+                  </span>
+                  .
                 </p>
-              </div>
-            )}
 
-            <div className="mt-8">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.13em]">
-                How to measure
+                <span
+                  className="
+                    shrink-0
+                    font-body
+                    text-[9px]
+                    uppercase
+                    tracking-[0.14em]
+                    text-[var(--color-text-muted)]
+                  "
+                >
+                  Product measurements
+                </span>
+              </div>
+
+              {/* =================================================
+                  SIZE TABLE
+              ================================================= */}
+
+              <div
+                className="
+                  mt-6
+                  overflow-x-auto
+                  border-y
+                  border-[var(--color-border)]
+                "
+              >
+                <table
+                  className="
+                    w-full
+                    min-w-[520px]
+                    border-collapse
+                    text-left
+                  "
+                >
+                  <thead>
+                    <tr className="border-b border-[var(--color-border)]">
+                      <th
+                        scope="col"
+                        className="
+                          px-3
+                          py-3.5
+                          font-body
+                          text-[9px]
+                          font-semibold
+                          uppercase
+                          tracking-[0.14em]
+                          text-[var(--color-text)]
+                        "
+                      >
+                        Size
+                      </th>
+
+                      <th
+                        scope="col"
+                        className="
+                          px-3
+                          py-3.5
+                          font-body
+                          text-[9px]
+                          font-semibold
+                          uppercase
+                          tracking-[0.14em]
+                          text-[var(--color-text)]
+                        "
+                      >
+                        Bust
+                      </th>
+
+                      <th
+                        scope="col"
+                        className="
+                          px-3
+                          py-3.5
+                          font-body
+                          text-[9px]
+                          font-semibold
+                          uppercase
+                          tracking-[0.14em]
+                          text-[var(--color-text)]
+                        "
+                      >
+                        Waist
+                      </th>
+
+                      <th
+                        scope="col"
+                        className="
+                          px-3
+                          py-3.5
+                          font-body
+                          text-[9px]
+                          font-semibold
+                          uppercase
+                          tracking-[0.14em]
+                          text-[var(--color-text)]
+                        "
+                      >
+                        Hip
+                      </th>
+
+                      <th
+                        scope="col"
+                        className="
+                          px-3
+                          py-3.5
+                          font-body
+                          text-[9px]
+                          font-semibold
+                          uppercase
+                          tracking-[0.14em]
+                          text-[var(--color-text)]
+                        "
+                      >
+                        Length
+                      </th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {sizeChart.measurements.map(
+                      (measurement) => (
+                        <tr
+                          key={measurement.size}
+                          className="
+                            border-b
+                            border-[var(--color-border-light)]
+                            last:border-b-0
+                          "
+                        >
+                          <td
+                            className="
+                              px-3
+                              py-4
+                              font-body
+                              text-[11px]
+                              font-semibold
+                              text-[var(--color-text)]
+                            "
+                          >
+                            {measurement.size}
+                          </td>
+
+                          <td
+                            className="
+                              px-3
+                              py-4
+                              font-body
+                              text-[11px]
+                              text-[var(--color-text-secondary)]
+                            "
+                          >
+                            {measurement.bust ?? "—"}
+                          </td>
+
+                          <td
+                            className="
+                              px-3
+                              py-4
+                              font-body
+                              text-[11px]
+                              text-[var(--color-text-secondary)]
+                            "
+                          >
+                            {measurement.waist ?? "—"}
+                          </td>
+
+                          <td
+                            className="
+                              px-3
+                              py-4
+                              font-body
+                              text-[11px]
+                              text-[var(--color-text-secondary)]
+                            "
+                          >
+                            {measurement.hip ?? "—"}
+                          </td>
+
+                          <td
+                            className="
+                              px-3
+                              py-4
+                              font-body
+                              text-[11px]
+                              text-[var(--color-text-secondary)]
+                            "
+                          >
+                            {measurement.garmentLength ?? "—"}
+                          </td>
+                        </tr>
+                      ),
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* =================================================
+                  FIT NOTE
+              ================================================= */}
+
+              {sizeChart.fitNote && (
+                <div
+                  className="
+                    mt-7
+                    border-l-2
+                    border-[var(--color-accent)]
+                    bg-[var(--color-bg-soft)]
+                    px-4
+                    py-4
+                  "
+                >
+                  <p
+                    className="
+                      font-body
+                      text-[11px]
+                      leading-6
+                      text-[var(--color-text-secondary)]
+                    "
+                  >
+                    {sizeChart.fitNote}
+                  </p>
+                </div>
+              )}
+
+              {/* =================================================
+                  HOW TO MEASURE
+              ================================================= */}
+
+              <div
+                className="
+                  mt-9
+                  border-t
+                  border-[var(--color-border)]
+                  pt-7
+                "
+              >
+                <div>
+                  <p
+                    className="
+                      font-body
+                      text-[9px]
+                      font-semibold
+                      uppercase
+                      tracking-[0.2em]
+                      text-[var(--color-accent)]
+                    "
+                  >
+                    Find your fit
+                  </p>
+
+                  <h3
+                    className="
+                      mt-1
+                      font-display
+                      text-[1.65rem]
+                      font-medium
+                      text-[var(--color-text)]
+                    "
+                  >
+                    How to measure
+                  </h3>
+                </div>
+
+                <div className="mt-5 space-y-0">
+                  <div
+                    className="
+                      border-b
+                      border-[var(--color-border-light)]
+                      py-4
+                    "
+                  >
+                    <p
+                      className="
+                        font-body
+                        text-[10px]
+                        font-semibold
+                        uppercase
+                        tracking-[0.12em]
+                        text-[var(--color-text)]
+                      "
+                    >
+                      Bust
+                    </p>
+
+                    <p
+                      className="
+                        mt-1.5
+                        font-body
+                        text-[11px]
+                        leading-6
+                        text-[var(--color-text-secondary)]
+                      "
+                    >
+                      Measure around the fullest
+                      part of your bust.
+                    </p>
+                  </div>
+
+                  <div
+                    className="
+                      border-b
+                      border-[var(--color-border-light)]
+                      py-4
+                    "
+                  >
+                    <p
+                      className="
+                        font-body
+                        text-[10px]
+                        font-semibold
+                        uppercase
+                        tracking-[0.12em]
+                        text-[var(--color-text)]
+                      "
+                    >
+                      Waist
+                    </p>
+
+                    <p
+                      className="
+                        mt-1.5
+                        font-body
+                        text-[11px]
+                        leading-6
+                        text-[var(--color-text-secondary)]
+                      "
+                    >
+                      Measure around your natural
+                      waistline.
+                    </p>
+                  </div>
+
+                  <div className="py-4">
+                    <p
+                      className="
+                        font-body
+                        text-[10px]
+                        font-semibold
+                        uppercase
+                        tracking-[0.12em]
+                        text-[var(--color-text)]
+                      "
+                    >
+                      Hip
+                    </p>
+
+                    <p
+                      className="
+                        mt-1.5
+                        font-body
+                        text-[11px]
+                        leading-6
+                        text-[var(--color-text-secondary)]
+                      "
+                    >
+                      Measure around the fullest
+                      part of your hips.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div
+              className="
+                py-12
+                sm:py-16
+              "
+            >
+              <p
+                className="
+                  font-display
+                  text-2xl
+                  text-[var(--color-text)]
+                "
+              >
+                Size information coming soon.
               </p>
 
-              <div className="mt-4 space-y-3 text-sm leading-6 text-[var(--color-text-secondary)]">
-                <p>
-                  <strong>Bust:</strong> Measure around the fullest
-                  part of your bust.
-                </p>
-
-                <p>
-                  <strong>Waist:</strong> Measure around your natural
-                  waistline.
-                </p>
-
-                <p>
-                  <strong>Hip:</strong> Measure around the fullest
-                  part of your hips.
-                </p>
-              </div>
+              <p
+                className="
+                  mt-3
+                  max-w-md
+                  font-body
+                  text-[11px]
+                  leading-6
+                  text-[var(--color-text-secondary)]
+                "
+              >
+                Size measurements for this
+                product will be added soon.
+              </p>
             </div>
-          </div>
-        ) : (
-          <div className="py-10">
-            <p className="text-sm leading-7 text-[var(--color-text-secondary)]">
-              Size measurements for this product will be added
-              soon.
-            </p>
-          </div>
-        )}
+          )}
+        </div>
       </aside>
     </div>
   );

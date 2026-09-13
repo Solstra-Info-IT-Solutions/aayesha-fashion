@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+
 import { getProducts } from "@/lib/api/products";
+
 import type { ProductSort } from "@/types/product";
 
 import { CollectionPage } from "@/components/collections/collection-page";
@@ -36,9 +38,7 @@ export default async function EthnicPage({
 
   const sort =
     params.sort &&
-    validSorts.includes(
-      params.sort as ProductSort,
-    )
+    validSorts.includes(params.sort as ProductSort)
       ? (params.sort as ProductSort)
       : "featured";
 

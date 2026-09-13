@@ -5,7 +5,9 @@ import {
   useState,
 } from "react";
 
-import { Heart } from "lucide-react";
+import {
+  Heart,
+} from "lucide-react";
 
 import { useWishlistStore } from "@/store/wishlist-store";
 
@@ -43,12 +45,14 @@ export function WishlistButton({
   const active =
     hydrated && isInWishlist;
 
+  const handleToggle = () => {
+    toggle(productId);
+  };
+
   return (
     <button
       type="button"
-      onClick={() =>
-        toggle(productId)
-      }
+      onClick={handleToggle}
       aria-label={
         active
           ? `Remove ${productName} from wishlist`
@@ -56,21 +60,54 @@ export function WishlistButton({
       }
       aria-pressed={active}
       className={[
-        "flex h-11 w-11 items-center justify-center border transition",
+        `
+          group
+          flex
+          h-10
+          w-10
+          items-center
+          justify-center
+          border
+          backdrop-blur-sm
+          transition-all
+          duration-[var(--duration-base)]
+          ease-[var(--ease-luxury)]
+          focus-visible:outline-none
+          focus-visible:ring-1
+          focus-visible:ring-[var(--color-text)]
+          focus-visible:ring-offset-2
+        `,
         active
-          ? "border-[var(--color-rose)] bg-[var(--color-rose-light)] text-[var(--color-rose-dark)]"
-          : "border-[var(--color-border)] bg-[var(--color-ivory)] text-[var(--color-charcoal)] hover:border-[var(--color-charcoal)]",
+          ? `
+            border-[var(--color-accent-soft)]
+            bg-[rgba(247,243,238,0.94)]
+            text-[var(--color-accent-dark)]
+          `
+          : `
+            border-white/70
+            bg-[rgba(255,255,255,0.88)]
+            text-[var(--color-text)]
+            hover:border-white
+            hover:bg-[var(--color-surface)]
+          `,
         className,
       ].join(" ")}
     >
       <Heart
-        size={18}
-        strokeWidth={1.5}
+        aria-hidden="true"
+        size={17}
+        strokeWidth={1.25}
         fill={
           active
             ? "currentColor"
             : "none"
         }
+        className="
+          transition-all
+          duration-[var(--duration-base)]
+          ease-[var(--ease-luxury)]
+          group-hover:scale-110
+        "
       />
     </button>
   );

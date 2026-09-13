@@ -4,43 +4,128 @@ interface ProductPriceProps {
   variant: ProductVariant | null;
 }
 
-export function ProductPrice({ variant }: ProductPriceProps) {
+export function ProductPrice({
+  variant,
+}: ProductPriceProps) {
   if (!variant) {
     return (
-      <div className="text-lg font-semibold">
+      <div
+        className="
+          font-body
+          text-sm
+          font-medium
+          text-[var(--color-text-secondary)]
+        "
+      >
         Select a variant
       </div>
     );
   }
 
-  const { mrp, sellingPrice } = variant.pricing;
+  const {
+    mrp,
+    sellingPrice,
+  } = variant.pricing;
 
   const discount =
     mrp > sellingPrice
-      ? Math.round(((mrp - sellingPrice) / mrp) * 100)
+      ? Math.round(
+          ((mrp - sellingPrice) /
+            mrp) *
+            100,
+        )
       : 0;
 
   return (
     <div>
-      <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
-        <span className="text-[22px] font-semibold tracking-[-0.02em]">
-          ₹{sellingPrice.toLocaleString("en-IN")}
+      {/* =====================================================
+          PRICE ROW
+      ===================================================== */}
+
+      <div
+        className="
+          flex
+          flex-wrap
+          items-baseline
+          gap-x-3
+          gap-y-1.5
+        "
+      >
+        {/* SELLING PRICE */}
+
+        <span
+          className="
+            font-body
+            text-[26px]
+            font-semibold
+            leading-none
+            tracking-[-0.025em]
+            text-[var(--color-text)]
+            sm:text-[28px]
+          "
+        >
+          ₹
+          {sellingPrice.toLocaleString(
+            "en-IN",
+          )}
         </span>
 
-        {mrp > sellingPrice && (
-          <>
-            <span className="text-sm text-[var(--color-text-muted)] line-through">
-              ₹{mrp.toLocaleString("en-IN")}
-            </span>
+        {/* MRP */}
 
-            <span className="text-xs font-semibold text-[var(--color-rose-dark)]">
-              {discount}% OFF
-            </span>
-          </>
+        {mrp > sellingPrice && (
+          <span
+            className="
+              font-body
+              text-[13px]
+              font-medium
+              leading-none
+              text-[var(--color-text-muted)]
+              line-through
+            "
+          >
+            ₹
+            {mrp.toLocaleString(
+              "en-IN",
+            )}
+          </span>
+        )}
+
+        {/* DISCOUNT */}
+
+        {discount > 0 && (
+          <span
+            className="
+              border
+              border-[var(--color-accent-soft)]
+              bg-[var(--color-bg-soft)]
+              px-2
+              py-1
+              font-body
+              text-[9px]
+              font-semibold
+              uppercase
+              tracking-[0.12em]
+              text-[var(--color-accent-dark)]
+            "
+          >
+            {discount}% off
+          </span>
         )}
       </div>
 
-      <p className="mt-2 text-xs text-[var(--color-text-muted)]">
+      {/* =====================================================
+          TAX NOTE
+      ===================================================== */}
+
+      <p
+        className="
+          mt-2.5
+          font-body
+          text-[9px]
+          leading-5
+          text-[var(--color-text-muted)]
+        "
+      >
         Inclusive of applicable taxes
       </p>
     </div>

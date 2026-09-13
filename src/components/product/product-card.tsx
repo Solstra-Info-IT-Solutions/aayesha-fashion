@@ -16,20 +16,19 @@ type ProductCardProps = {
   priority?: boolean;
 };
 
+/* =========================================================
+   HELPERS
+========================================================= */
+
 function formatPrice(price: number) {
-  return new Intl.NumberFormat(
-    "en-IN",
-    {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    },
-  ).format(price);
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(price);
 }
 
-function formatCategory(
-  category: string,
-) {
+function formatCategory(category: string) {
   return category
     .replace(/-/g, " ")
     .replace(/\b\w/g, (letter) =>
@@ -37,15 +36,17 @@ function formatCategory(
     );
 }
 
-function formatBadge(
-  badge: string,
-) {
+function formatBadge(badge: string) {
   return badge
     .replace(/-/g, " ")
     .replace(/\b\w/g, (letter) =>
       letter.toUpperCase(),
     );
 }
+
+/* =========================================================
+   COMPONENT
+========================================================= */
 
 export function ProductCard({
   product,
@@ -79,23 +80,51 @@ export function ProductCard({
     return null;
   }
 
+  const secondaryMedia =
+    product.media.find(
+      (media) =>
+        media.type === "image" &&
+        media.id !== primaryMedia.id,
+    );
+
   const discount =
     getDiscountPercentage(
       primaryVariant.pricing,
     );
 
+  const hasBadge =
+    product.merchandising.badges.length > 0;
+
   return (
-    <article className="group w-full">
+    <article
+      className="
+        group
+        w-full
+      "
+    >
       {/* =====================================================
-          IMAGE
+          PRODUCT IMAGE
       ===================================================== */}
 
-      <div className="relative overflow-hidden bg-[var(--color-warm-gray)]">
+      <div
+        className="
+          relative
+          overflow-hidden
+          bg-[var(--color-bg-soft)]
+        "
+      >
         <Link
           href={`/products/${product.slug}`}
           aria-label={`View ${product.name}`}
-          className="relative block aspect-[3/4] overflow-hidden"
+          className="
+            relative
+            block
+            aspect-[3/4]
+            overflow-hidden
+          "
         >
+          {/* PRIMARY IMAGE */}
+
           <Image
             src={primaryMedia.src}
             alt={
@@ -104,19 +133,105 @@ export function ProductCard({
             }
             fill
             priority={priority}
-            sizes="(max-width: 767px) 50vw, (max-width: 1023px) 50vw, 33vw"
-            className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.025]"
+            sizes="
+              (max-width: 639px) 78vw,
+              (max-width: 767px) 50vw,
+              (max-width: 1023px) 43vw,
+              (max-width: 1279px) 29vw,
+              27vw
+            "
+            className="
+              object-cover
+              object-center
+              transition-transform
+              duration-[var(--duration-luxury)]
+              ease-[var(--ease-luxury)]
+              group-hover:scale-[1.025]
+            "
           />
 
-          <div className="absolute inset-0 bg-black/[0.015] transition-colors duration-500 group-hover:bg-black/[0.055]" />
+          {/* SECONDARY IMAGE */}
+
+          {secondaryMedia && (
+            <Image
+              src={secondaryMedia.src}
+              alt={
+                secondaryMedia.alt ??
+                product.name
+              }
+              fill
+              sizes="
+                (max-width: 639px) 78vw,
+                (max-width: 767px) 50vw,
+                (max-width: 1023px) 43vw,
+                (max-width: 1279px) 29vw,
+                27vw
+              "
+              className="
+                pointer-events-none
+                object-cover
+                object-center
+                opacity-0
+                transition-all
+                duration-[var(--duration-luxury)]
+                ease-[var(--ease-luxury)]
+                group-hover:scale-[1.025]
+                group-hover:opacity-100
+              "
+            />
+          )}
+
+          {/* IMAGE VEIL */}
+
+          <span
+            aria-hidden="true"
+            className="
+              pointer-events-none
+              absolute
+              inset-0
+              bg-transparent
+              transition-colors
+              duration-[var(--duration-slow)]
+              group-hover:bg-[rgba(33,31,29,0.025)]
+            "
+          />
         </Link>
 
-        {/* BADGE */}
+        {/* ===================================================
+            BADGE
+        =================================================== */}
 
-        {product.merchandising.badges
-          .length > 0 && (
-          <div className="absolute left-4 top-4 bg-[var(--color-ivory)] px-3 py-2.5 sm:left-5 sm:top-5">
-            <span className="text-[8px] font-semibold uppercase tracking-[0.18em] text-[var(--color-charcoal)]">
+        {hasBadge && (
+          <div
+            className="
+              pointer-events-none
+              absolute
+              left-3
+              top-3
+              z-10
+              sm:left-4
+              sm:top-4
+            "
+          >
+            <span
+              className="
+                inline-flex
+                items-center
+                border
+                border-[var(--color-border-light)]
+                bg-[rgba(255,255,255,0.94)]
+                px-3
+                py-2
+                font-body
+                text-[8px]
+                font-semibold
+                uppercase
+                tracking-[0.18em]
+                text-[var(--color-text)]
+                shadow-[var(--shadow-xs)]
+                backdrop-blur-sm
+              "
+            >
               {formatBadge(
                 product.merchandising
                   .badges[0],
@@ -125,20 +240,56 @@ export function ProductCard({
           </div>
         )}
 
-        {/* WISHLIST */}
+        {/* ===================================================
+            WISHLIST
+        =================================================== */}
 
-        <div className="absolute right-4 top-4 sm:right-5 sm:top-5">
+        <div
+          className="
+            absolute
+            right-3
+            top-3
+            z-10
+            sm:right-4
+            sm:top-4
+          "
+        >
           <WishlistButton
             productId={product.id}
             productName={product.name}
           />
         </div>
 
-        {/* SOLD OUT */}
+        {/* ===================================================
+            SOLD OUT
+        =================================================== */}
 
         {availability.isSoldOut && (
-          <div className="absolute inset-x-0 bottom-0 bg-[var(--color-charcoal)] px-4 py-3 text-center">
-            <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-white">
+          <div
+            className="
+              absolute
+              inset-x-0
+              bottom-0
+              z-10
+              border-t
+              border-white/10
+              bg-[rgba(33,31,29,0.94)]
+              px-4
+              py-3
+              text-center
+              backdrop-blur-sm
+            "
+          >
+            <span
+              className="
+                font-body
+                text-[8px]
+                font-semibold
+                uppercase
+                tracking-[0.22em]
+                text-[var(--color-text-inverse)]
+              "
+            >
               Sold Out
             </span>
           </div>
@@ -149,12 +300,36 @@ export function ProductCard({
           PRODUCT INFORMATION
       ===================================================== */}
 
-      <div className="pt-5">
-        <div className="flex items-start justify-between gap-5">
-          {/* NAME */}
+      <div
+        className="
+          pt-4
+          sm:pt-5
+        "
+      >
+        <div
+          className="
+            flex
+            items-start
+            justify-between
+            gap-4
+          "
+        >
+          {/* =================================================
+              PRODUCT NAME
+          ================================================= */}
 
           <div className="min-w-0">
-            <p className="text-[9px] font-semibold uppercase tracking-[0.17em] text-[var(--color-text-secondary)]">
+            <p
+              className="
+                font-body
+                text-[8px]
+                font-medium
+                uppercase
+                tracking-[0.2em]
+                text-[var(--color-text-muted)]
+                sm:text-[9px]
+              "
+            >
               {formatCategory(
                 product.category,
               )}
@@ -162,18 +337,48 @@ export function ProductCard({
 
             <Link
               href={`/products/${product.slug}`}
-              className="mt-2 block"
+              className="group/title mt-2 block"
             >
-              <h3 className="font-display text-[1.5rem] font-bold leading-[1.04] tracking-[-0.02em] text-[var(--color-charcoal)] transition-colors duration-300 group-hover:text-[var(--color-rose-dark)] sm:text-[1.65rem]">
+              <h3
+                className="
+                  font-display
+                  text-[22px]
+                  font-medium
+                  leading-[1]
+                  tracking-[-0.02em]
+                  text-[var(--color-text)]
+                  transition-colors
+                  duration-[var(--duration-base)]
+                  group-hover/title:text-[var(--color-accent)]
+                  sm:text-[24px]
+                "
+              >
                 {product.name}
               </h3>
             </Link>
           </div>
 
-          {/* PRICE */}
+          {/* =================================================
+              PRICE
+          ================================================= */}
 
-          <div className="shrink-0 text-right">
-            <p className="text-[13px] font-semibold text-[var(--color-charcoal)] sm:text-sm">
+          <div
+            className="
+              shrink-0
+              pt-0.5
+              text-right
+            "
+          >
+            <p
+              className="
+                font-body
+                text-[12px]
+                font-semibold
+                tracking-[-0.01em]
+                text-[var(--color-text)]
+                sm:text-[13px]
+              "
+            >
               {formatPrice(
                 primaryVariant
                   .pricing
@@ -182,8 +387,25 @@ export function ProductCard({
             </p>
 
             {discount > 0 && (
-              <div className="mt-1 flex items-center justify-end gap-1.5">
-                <span className="text-[9px] font-medium text-[var(--color-text-muted)] line-through">
+              <div
+                className="
+                  mt-1
+                  flex
+                  items-center
+                  justify-end
+                  gap-1.5
+                "
+              >
+                <span
+                  className="
+                    font-body
+                    text-[8px]
+                    font-medium
+                    text-[var(--color-text-muted)]
+                    line-through
+                    sm:text-[9px]
+                  "
+                >
                   {formatPrice(
                     primaryVariant
                       .pricing
@@ -191,7 +413,17 @@ export function ProductCard({
                   )}
                 </span>
 
-                <span className="text-[9px] font-semibold text-[var(--color-rose-dark)]">
+                <span
+                  className="
+                    font-body
+                    text-[8px]
+                    font-semibold
+                    uppercase
+                    tracking-[0.04em]
+                    text-[var(--color-accent-dark)]
+                    sm:text-[9px]
+                  "
+                >
                   {discount}% OFF
                 </span>
               </div>
@@ -199,12 +431,24 @@ export function ProductCard({
           </div>
         </div>
 
-        {/* QUICK ADD */}
+        {/* =================================================
+            QUICK ADD
+        ================================================= */}
 
         {!availability.isSoldOut && (
-          <ProductQuickAdd
-            product={product}
-          />
+          <div
+            className="
+              mt-4
+              transition-transform
+              duration-[var(--duration-base)]
+              ease-[var(--ease-luxury)]
+              sm:mt-5
+            "
+          >
+            <ProductQuickAdd
+              product={product}
+            />
+          </div>
         )}
       </div>
     </article>

@@ -61,8 +61,7 @@ export function CartContent() {
     ResolvedCartItem[]
   >([]);
 
-  const [isLoading, setIsLoading] =
-    useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   /* ==========================================================
      LOAD PRODUCTS FROM BACKEND
@@ -89,20 +88,19 @@ export function CartContent() {
           ),
         );
 
-        const productResults =
-          await Promise.all(
-            uniqueProductIds.map(
-              async (productId) => {
-                try {
-                  return await getProductById(
-                    productId,
-                  );
-                } catch {
-                  return null;
-                }
-              },
-            ),
-          );
+        const productResults = await Promise.all(
+          uniqueProductIds.map(
+            async (productId) => {
+              try {
+                return await getProductById(
+                  productId,
+                );
+              } catch {
+                return null;
+              }
+            },
+          ),
+        );
 
         if (cancelled) {
           return;
@@ -194,15 +192,12 @@ export function CartContent() {
         const sellingPrice =
           variant.pricing.sellingPrice;
 
-        const mrp =
-          variant.pricing.mrp;
+        const mrp = variant.pricing.mrp;
 
-        result.itemCount +=
-          item.quantity;
+        result.itemCount += item.quantity;
 
         result.subtotal +=
-          sellingPrice *
-          item.quantity;
+          sellingPrice * item.quantity;
 
         result.mrpTotal +=
           mrp * item.quantity;
@@ -223,12 +218,8 @@ export function CartContent() {
       summary.subtotal,
   );
 
-  const formatPrice = (
-    value: number,
-  ) =>
-    `₹${value.toLocaleString(
-      "en-IN",
-    )}`;
+  const formatPrice = (value: number) =>
+    `₹${value.toLocaleString("en-IN")}`;
 
   /* ==========================================================
      LOADING STATE
@@ -236,39 +227,39 @@ export function CartContent() {
 
   if (isLoading) {
     return (
-      <section className="bg-[var(--color-ivory)]">
-        <div className="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16">
-          <div className="border-b border-[var(--color-border)] pb-7">
-            <div className="h-4 w-28 animate-pulse bg-[var(--color-cream)]" />
+      <section className="min-h-screen bg-[var(--color-bg)]">
+        <div className="mx-auto max-w-[1600px] px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
+          <div className="border-b border-[var(--color-border-light)] pb-7">
+            <div className="h-3 w-28 animate-pulse bg-[var(--color-bg-soft)]" />
 
-            <div className="mt-6 h-12 w-52 animate-pulse bg-[var(--color-cream)]" />
+            <div className="mt-6 h-12 w-52 animate-pulse bg-[var(--color-bg-soft)]" />
           </div>
 
-          <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_390px] lg:gap-16">
-            <div className="border-y border-[var(--color-border)]">
+          <div className="mt-9 grid gap-10 lg:grid-cols-[minmax(0,1fr)_390px] lg:gap-16">
+            <div className="border-y border-[var(--color-border-light)]">
               {items.map((item) => (
                 <div
                   key={`${item.productId}-${item.variantId}`}
-                  className="grid grid-cols-[100px_minmax(0,1fr)] gap-4 border-b border-[var(--color-border)] py-6 last:border-b-0 sm:grid-cols-[140px_minmax(0,1fr)] sm:gap-6"
+                  className="grid grid-cols-[100px_minmax(0,1fr)] gap-4 border-b border-[var(--color-border-light)] py-6 last:border-b-0 sm:grid-cols-[140px_minmax(0,1fr)] sm:gap-6"
                 >
-                  <div className="aspect-[3/4] animate-pulse bg-[var(--color-cream)]" />
+                  <div className="aspect-[3/4] animate-pulse bg-[var(--color-bg-soft)]" />
 
                   <div>
-                    <div className="h-3 w-20 animate-pulse bg-[var(--color-cream)]" />
+                    <div className="h-3 w-20 animate-pulse bg-[var(--color-bg-soft)]" />
 
-                    <div className="mt-3 h-8 w-52 max-w-full animate-pulse bg-[var(--color-cream)]" />
+                    <div className="mt-3 h-8 w-52 max-w-full animate-pulse bg-[var(--color-bg-soft)]" />
 
-                    <div className="mt-5 h-4 w-40 animate-pulse bg-[var(--color-cream)]" />
+                    <div className="mt-5 h-4 w-40 animate-pulse bg-[var(--color-bg-soft)]" />
 
-                    <div className="mt-5 h-5 w-28 animate-pulse bg-[var(--color-cream)]" />
+                    <div className="mt-5 h-5 w-28 animate-pulse bg-[var(--color-bg-soft)]" />
 
-                    <div className="mt-6 h-10 w-28 animate-pulse bg-[var(--color-cream)]" />
+                    <div className="mt-6 h-10 w-28 animate-pulse bg-[var(--color-bg-soft)]" />
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="h-[360px] animate-pulse border border-[var(--color-border)] bg-white" />
+            <div className="h-[360px] animate-pulse border border-[var(--color-border-light)] bg-[var(--color-surface)]" />
           </div>
         </div>
       </section>
@@ -293,44 +284,73 @@ export function CartContent() {
       ),
   );
 
-  /*
-   * Do not mutate the cart automatically while
-   * rendering. Invalid persisted items are simply
-   * excluded from the UI until the user clears them.
-   */
-
   /* ==========================================================
      EMPTY CART
   ========================================================== */
 
   if (!cartItems.length) {
     return (
-      <section className="min-h-[65vh] bg-[var(--color-ivory)]">
-        <div className="mx-auto flex min-h-[65vh] max-w-2xl flex-col items-center justify-center px-4 py-20 text-center sm:px-6">
+      <section className="min-h-[70vh] bg-[var(--color-bg)]">
+        <div className="mx-auto flex min-h-[70vh] max-w-2xl flex-col items-center justify-center px-4 py-20 text-center sm:px-6">
           <div className="flex h-16 w-16 items-center justify-center border border-[var(--color-border)]">
             <ShoppingBag
               size={22}
-              strokeWidth={1.4}
+              strokeWidth={1.25}
+              className="text-[var(--color-text)]"
             />
           </div>
 
-          <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
-            Your Ayesha edit
+          <p className="eyebrow mt-7 text-[var(--color-accent)]">
+            Your Aayesha edit
           </p>
 
-          <h1 className="mt-2 font-[var(--font-cormorant)] text-4xl leading-none sm:text-5xl">
+          <h1
+            className="
+              mt-3
+              font-display
+              text-[var(--text-heading-lg)]
+              font-medium
+              leading-[0.95]
+              tracking-[var(--tracking-tight)]
+              text-[var(--color-text)]
+            "
+          >
             Your bag is empty.
           </h1>
 
-          <p className="mt-4 max-w-md text-sm leading-7 text-[var(--color-text-secondary)]">
-            Discover thoughtfully designed
-            pieces from the latest Ayesha
-            collection.
+          <p className="mt-5 max-w-md font-body text-sm leading-7 text-[var(--color-text-secondary)]">
+            Discover thoughtfully designed pieces from the
+            latest Aayesha collection.
           </p>
 
           <Link
             href="/shop"
-            className="mt-8 inline-flex min-h-12 items-center justify-center bg-[var(--color-charcoal)] px-7 text-[10px] font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[var(--color-charcoal-soft)]"
+            className="
+              mt-8
+              inline-flex
+              min-h-12
+              items-center
+              justify-center
+              border
+              border-[var(--color-text)]
+              bg-[var(--color-text)]
+              px-7
+              py-3.5
+              font-body
+              text-[10px]
+              font-semibold
+              uppercase
+              tracking-[var(--tracking-wider)]
+              text-[var(--color-text-inverse)]
+              transition-all
+              duration-[var(--duration-base)]
+              hover:border-[var(--color-accent-dark)]
+              hover:bg-[var(--color-accent-dark)]
+              focus:outline-none
+              focus:ring-2
+              focus:ring-[var(--color-accent)]
+              focus:ring-offset-2
+            "
           >
             Explore Collection
           </Link>
@@ -344,32 +364,61 @@ export function CartContent() {
   ========================================================== */
 
   return (
-    <main className="bg-[var(--color-ivory)]">
-      <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 sm:py-12 lg:px-10 lg:py-16">
-        {/* HEADER */}
+    <main className="min-h-screen bg-[var(--color-bg)]">
+      <div className="mx-auto max-w-[1600px] px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
+        {/* ====================================================
+            HEADER
+        ==================================================== */}
 
-        <div className="border-b border-[var(--color-border)] pb-7">
+        <div className="border-b border-[var(--color-border-light)] pb-7">
           <Link
             href="/shop"
-            className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-muted)] transition hover:text-[var(--color-charcoal)]"
+            className="
+              link-luxury
+              inline-flex
+              items-center
+              gap-1
+              font-body
+              text-[10px]
+              font-semibold
+              uppercase
+              tracking-[var(--tracking-wider)]
+              text-[var(--color-text-muted)]
+              transition-colors
+              hover:text-[var(--color-text)]
+            "
           >
-            <ChevronLeft size={14} />
+            <ChevronLeft
+              size={14}
+              strokeWidth={1.4}
+            />
+
             Continue Shopping
           </Link>
 
-          <div className="mt-6 flex items-end justify-between gap-6">
+          <div className="mt-7 flex items-end justify-between gap-6">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
-                Ayesha Fashion
+              <p className="eyebrow text-[var(--color-accent)]">
+                Aayesha Fashion
               </p>
 
-              <h1 className="mt-2 font-[var(--font-cormorant)] text-4xl leading-none sm:text-5xl">
+              <h1
+                className="
+                  mt-3
+                  font-display
+                  text-[var(--text-heading-lg)]
+                  font-medium
+                  leading-[0.9]
+                  tracking-[var(--tracking-tight)]
+                  text-[var(--color-text)]
+                "
+              >
                 Your Bag
               </h1>
             </div>
 
             <div className="text-right">
-              <p className="text-xs text-[var(--color-text-muted)]">
+              <p className="font-body text-xs text-[var(--color-text-muted)]">
                 {summary.itemCount}{" "}
                 {summary.itemCount === 1
                   ? "item"
@@ -377,28 +426,43 @@ export function CartContent() {
               </p>
 
               {savings > 0 && (
-                <p className="mt-1 text-[10px] font-semibold text-[var(--color-success)]">
-                  You save{" "}
-                  {formatPrice(savings)}
+                <p className="mt-1 font-body text-[10px] font-semibold text-[var(--color-success)]">
+                  You save {formatPrice(savings)}
                 </p>
               )}
             </div>
           </div>
         </div>
 
-        {/* MAIN */}
+        {/* ====================================================
+            MAIN
+        ==================================================== */}
 
-        <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_390px] lg:items-start lg:gap-16">
-          {/* ITEMS */}
+        <div className="mt-9 grid gap-10 lg:grid-cols-[minmax(0,1fr)_390px] lg:items-start lg:gap-16">
+          {/* ==================================================
+              ITEMS
+          ================================================== */}
 
           <section>
             {invalidItems.length > 0 && (
-              <div className="mb-5 border border-[var(--color-rose-light)] bg-[var(--color-rose-light)] px-4 py-3 text-xs leading-5 text-[var(--color-charcoal)]">
-                Some saved items are no
-                longer available and have
-                been excluded from your bag.
-                Please review your selection
-                before checkout.
+              <div
+                role="status"
+                className="
+                  mb-6
+                  border
+                  border-[var(--color-accent-soft)]
+                  bg-[var(--color-bg-soft)]
+                  px-4
+                  py-4
+                  font-body
+                  text-xs
+                  leading-5
+                  text-[var(--color-text)]
+                "
+              >
+                Some saved items are no longer available and
+                have been excluded from your bag. Please review
+                your selection before checkout.
               </div>
             )}
 
@@ -416,8 +480,7 @@ export function CartContent() {
                     );
 
                   const price =
-                    variant.pricing
-                      .sellingPrice;
+                    variant.pricing.sellingPrice;
 
                   const mrp =
                     variant.pricing.mrp;
@@ -428,19 +491,35 @@ export function CartContent() {
                     );
 
                   const itemTotal =
-                    price *
-                    item.quantity;
+                    price * item.quantity;
 
                   return (
                     <article
                       key={`${item.productId}-${item.variantId}`}
-                      className="grid grid-cols-[100px_minmax(0,1fr)] gap-4 border-b border-[var(--color-border)] py-6 last:border-b-0 sm:grid-cols-[140px_minmax(0,1fr)] sm:gap-6"
+                      className="
+                        grid
+                        grid-cols-[100px_minmax(0,1fr)]
+                        gap-4
+                        border-b
+                        border-[var(--color-border-light)]
+                        py-7
+                        last:border-b-0
+                        sm:grid-cols-[140px_minmax(0,1fr)]
+                        sm:gap-6
+                        lg:py-8
+                      "
                     >
                       {/* PRODUCT IMAGE */}
 
                       <Link
                         href={`/products/${product.slug}`}
-                        className="relative aspect-[3/4] overflow-hidden bg-[var(--color-cream)]"
+                        className="
+                          group
+                          relative
+                          aspect-[3/4]
+                          overflow-hidden
+                          bg-[var(--color-bg-soft)]
+                        "
                       >
                         {media?.src ? (
                           <Image
@@ -450,11 +529,17 @@ export function CartContent() {
                               product.name
                             }
                             fill
-                            className="object-cover transition duration-500 hover:scale-[1.02]"
-                            sizes="140px"
+                            className="
+                              object-cover
+                              transition-transform
+                              duration-700
+                              ease-[cubic-bezier(0.22,1,0.36,1)]
+                              group-hover:scale-[1.025]
+                            "
+                            sizes="(max-width: 640px) 100px, 140px"
                           />
                         ) : (
-                          <div className="flex h-full items-center justify-center text-[10px] uppercase tracking-[0.1em] text-[var(--color-text-muted)]">
+                          <div className="flex h-full items-center justify-center px-2 text-center font-body text-[9px] uppercase tracking-[0.1em] text-[var(--color-text-muted)]">
                             No image
                           </div>
                         )}
@@ -465,19 +550,27 @@ export function CartContent() {
                       <div className="min-w-0">
                         <div className="flex items-start justify-between gap-4">
                           <div className="min-w-0">
-                            <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
-                              {
-                                product.category
-                              }
+                            <p className="font-body text-[9px] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text-muted)]">
+                              {product.category}
                             </p>
 
                             <Link
                               href={`/products/${product.slug}`}
-                              className="mt-1 block font-[var(--font-cormorant)] text-[24px] leading-tight transition hover:text-[var(--color-rose-dark)]"
+                              className="
+                                mt-1
+                                block
+                                font-display
+                                text-[25px]
+                                font-medium
+                                leading-tight
+                                tracking-[var(--tracking-tight)]
+                                text-[var(--color-text)]
+                                transition-colors
+                                duration-[var(--duration-base)]
+                                hover:text-[var(--color-accent-dark)]
+                              "
                             >
-                              {
-                                product.name
-                              }
+                              {product.name}
                             </Link>
                           </div>
 
@@ -494,67 +587,70 @@ export function CartContent() {
                               );
                             }}
                             aria-label={`Remove ${product.name}`}
-                            className="flex h-9 w-9 shrink-0 items-center justify-center text-[var(--color-text-muted)] transition hover:text-[var(--color-error)]"
+                            className="
+                              flex
+                              h-9
+                              w-9
+                              shrink-0
+                              items-center
+                              justify-center
+                              border
+                              border-transparent
+                              text-[var(--color-text-muted)]
+                              transition-all
+                              duration-[var(--duration-base)]
+                              hover:border-[var(--color-border)]
+                              hover:text-[var(--color-error)]
+                              focus:outline-none
+                              focus:ring-2
+                              focus:ring-[var(--color-accent)]
+                            "
                           >
-                            <Trash2 size={16} />
+                            <Trash2
+                              size={15}
+                              strokeWidth={1.35}
+                            />
                           </button>
                         </div>
 
                         {/* VARIANT DETAILS */}
 
-                        <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs">
+                        <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 font-body text-xs">
                           <span className="text-[var(--color-text-secondary)]">
                             Color:{" "}
-                            <strong className="font-medium text-[var(--color-charcoal)]">
-                              {
-                                variant
-                                  .color
-                                  .name
-                              }
+                            <strong className="font-medium text-[var(--color-text)]">
+                              {variant.color.name}
                             </strong>
                           </span>
 
                           <span className="text-[var(--color-text-secondary)]">
                             Size:{" "}
-                            <strong className="font-medium text-[var(--color-charcoal)]">
-                              {
-                                variant
-                                  .size
-                                  .label
-                              }
+                            <strong className="font-medium text-[var(--color-text)]">
+                              {variant.size.label}
                             </strong>
                           </span>
                         </div>
 
-                        <p className="mt-2 text-[10px] text-[var(--color-text-muted)]">
-                          SKU:{" "}
-                          {variant.sku}
+                        <p className="mt-2 font-body text-[10px] text-[var(--color-text-muted)]">
+                          SKU: {variant.sku}
                         </p>
 
                         {/* PRICE */}
 
-                        <div className="mt-4 flex flex-wrap items-baseline gap-2">
-                          <span className="text-sm font-semibold">
-                            {formatPrice(
-                              price,
-                            )}
+                        <div className="mt-5 flex flex-wrap items-baseline gap-2">
+                          <span className="font-body text-sm font-semibold text-[var(--color-text)]">
+                            {formatPrice(price)}
                           </span>
 
                           {mrp > price && (
                             <>
-                              <span className="text-xs text-[var(--color-text-muted)] line-through">
-                                {formatPrice(
-                                  mrp,
-                                )}
+                              <span className="font-body text-xs text-[var(--color-text-muted)] line-through">
+                                {formatPrice(mrp)}
                               </span>
 
-                              {discount >
-                                0 && (
-                                <span className="text-[10px] font-semibold text-[var(--color-rose-dark)]">
-                                  {
-                                    discount
-                                  }
-                                  % OFF
+                              {discount > 0 && (
+                                <span className="font-body text-[10px] font-semibold uppercase tracking-wide text-[var(--color-accent-dark)]">
+                                  {discount}% Off
                                 </span>
                               )}
                             </>
@@ -563,41 +659,50 @@ export function CartContent() {
 
                         {/* QUANTITY / TOTAL */}
 
-                        <div className="mt-6 flex flex-wrap items-end justify-between gap-5">
+                        <div className="mt-7 flex flex-wrap items-end justify-between gap-5">
                           <div>
-                            <p className="mb-2 text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
+                            <p className="mb-2 font-body text-[9px] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text-muted)]">
                               Quantity
                             </p>
 
-                            <div className="flex h-10 border border-[var(--color-border-dark)]">
+                            <div className="flex h-11 border border-[var(--color-border-dark)]">
                               <button
                                 type="button"
                                 onClick={() =>
                                   updateQuantity(
                                     item.productId,
-                                    item.quantity -
-                                      1,
+                                    item.quantity - 1,
                                     item.variantId,
                                   )
                                 }
                                 disabled={
-                                  item.quantity <=
-                                  1
+                                  item.quantity <= 1
                                 }
-                                className="flex w-10 items-center justify-center transition hover:bg-[var(--color-cream)] disabled:cursor-not-allowed disabled:opacity-25"
+                                className="
+                                  flex
+                                  w-10
+                                  items-center
+                                  justify-center
+                                  transition-colors
+                                  duration-[var(--duration-fast)]
+                                  hover:bg-[var(--color-bg-soft)]
+                                  disabled:cursor-not-allowed
+                                  disabled:opacity-25
+                                  focus:outline-none
+                                  focus:ring-2
+                                  focus:ring-inset
+                                  focus:ring-[var(--color-accent)]
+                                "
                                 aria-label="Decrease quantity"
                               >
                                 <Minus
-                                  size={
-                                    14
-                                  }
+                                  size={13}
+                                  strokeWidth={1.4}
                                 />
                               </button>
 
-                              <span className="flex w-10 items-center justify-center border-x border-[var(--color-border-dark)] text-xs font-semibold">
-                                {
-                                  item.quantity
-                                }
+                              <span className="flex w-10 items-center justify-center border-x border-[var(--color-border-dark)] font-body text-xs font-semibold text-[var(--color-text)]">
+                                {item.quantity}
                               </span>
 
                               <button
@@ -605,38 +710,47 @@ export function CartContent() {
                                 onClick={() =>
                                   updateQuantity(
                                     item.productId,
-                                    item.quantity +
-                                      1,
+                                    item.quantity + 1,
                                     item.variantId,
                                   )
                                 }
                                 disabled={
-                                  availableStock <=
-                                    0 ||
+                                  availableStock <= 0 ||
                                   item.quantity >=
                                     availableStock
                                 }
-                                className="flex w-10 items-center justify-center transition hover:bg-[var(--color-cream)] disabled:cursor-not-allowed disabled:opacity-25"
+                                className="
+                                  flex
+                                  w-10
+                                  items-center
+                                  justify-center
+                                  transition-colors
+                                  duration-[var(--duration-fast)]
+                                  hover:bg-[var(--color-bg-soft)]
+                                  disabled:cursor-not-allowed
+                                  disabled:opacity-25
+                                  focus:outline-none
+                                  focus:ring-2
+                                  focus:ring-inset
+                                  focus:ring-[var(--color-accent)]
+                                "
                                 aria-label="Increase quantity"
                               >
                                 <Plus
-                                  size={
-                                    14
-                                  }
+                                  size={13}
+                                  strokeWidth={1.4}
                                 />
                               </button>
                             </div>
                           </div>
 
                           <div className="text-right">
-                            <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
+                            <p className="font-body text-[9px] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text-muted)]">
                               Item Total
                             </p>
 
-                            <p className="mt-1 text-sm font-semibold">
-                              {formatPrice(
-                                itemTotal,
-                              )}
+                            <p className="mt-1 font-body text-sm font-semibold text-[var(--color-text)]">
+                              {formatPrice(itemTotal)}
                             </p>
                           </div>
                         </div>
@@ -644,43 +758,25 @@ export function CartContent() {
                         {/* INVENTORY */}
 
                         {availableStock <=
-                          variant
-                            .inventory
-                            .lowStockThreshold &&
-                          availableStock >
-                            0 && (
-                            <p className="mt-4 text-[10px] font-semibold text-[var(--color-rose-dark)]">
-                              Only{" "}
-                              {
-                                availableStock
-                              }{" "}
-                              left in this
+                          variant.inventory.lowStockThreshold &&
+                          availableStock > 0 && (
+                            <p className="mt-4 font-body text-[10px] font-semibold text-[var(--color-warning)]">
+                              Only {availableStock} left in this
                               size
                             </p>
                           )}
 
-                        {availableStock ===
-                          0 && (
-                          <p className="mt-4 text-[10px] font-semibold text-[var(--color-error)]">
-                            This variant
-                            is currently
-                            unavailable.
+                        {availableStock === 0 && (
+                          <p className="mt-4 font-body text-[10px] font-semibold text-[var(--color-error)]">
+                            This variant is currently unavailable.
                           </p>
                         )}
 
-                        {item.quantity >
-                          availableStock &&
-                          availableStock >
-                            0 && (
-                            <p className="mt-4 text-[10px] font-semibold text-[var(--color-error)]">
-                              Only{" "}
-                              {
-                                availableStock
-                              }{" "}
-                              units are
-                              currently
-                              available.
-                              Please reduce
+                        {item.quantity > availableStock &&
+                          availableStock > 0 && (
+                            <p className="mt-4 font-body text-[10px] font-semibold text-[var(--color-error)]">
+                              Only {availableStock} units are
+                              currently available. Please reduce
                               the quantity.
                             </p>
                           )}
@@ -691,7 +787,7 @@ export function CartContent() {
               )}
             </div>
 
-            {/* CLEAR CART */}
+            {/* CLEAR BAG */}
 
             <button
               type="button"
@@ -702,35 +798,49 @@ export function CartContent() {
                   "Your bag has been cleared.",
                 );
               }}
-              className="mt-5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-muted)] underline underline-offset-4 transition hover:text-[var(--color-error)]"
+              className="
+                mt-6
+                font-body
+                text-[10px]
+                font-semibold
+                uppercase
+                tracking-[var(--tracking-wider)]
+                text-[var(--color-text-muted)]
+                underline
+                underline-offset-4
+                transition-colors
+                duration-[var(--duration-base)]
+                hover:text-[var(--color-error)]
+                focus:outline-none
+                focus:ring-2
+                focus:ring-[var(--color-accent)]
+              "
             >
               Clear Bag
             </button>
           </section>
 
-          {/* SUMMARY */}
+          {/* ==================================================
+              SUMMARY
+          ================================================== */}
 
-          <aside className="lg:sticky lg:top-28">
-            <div className="border border-[var(--color-border)] bg-white p-6 sm:p-7">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
+          <aside className="lg:sticky lg:top-24">
+            <div className="border border-[var(--color-border)] bg-[var(--color-surface)] p-6 sm:p-7">
+              <p className="eyebrow text-[var(--color-accent)]">
                 Order Summary
               </p>
 
-              <div className="mt-6 space-y-4 border-b border-[var(--color-border)] pb-6">
+              <div className="mt-6 space-y-4 border-b border-[var(--color-border-light)] pb-6">
                 <SummaryRow
                   label="MRP Total"
-                  value={formatPrice(
-                    summary.mrpTotal,
-                  )}
+                  value={formatPrice(summary.mrpTotal)}
                 />
 
                 {savings > 0 && (
                   <SummaryRow
                     label="Product Discount"
-                    value={`- ${formatPrice(
-                      savings,
-                    )}`}
-                    valueClassName="text-[var(--color-success)]"
+                    value={`- ${formatPrice(savings)}`}
+                    valueClassName="font-semibold text-[var(--color-success)]"
                   />
                 )}
 
@@ -743,52 +853,71 @@ export function CartContent() {
 
               <div className="flex items-end justify-between gap-5 py-6">
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
+                  <p className="font-body text-[10px] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text-muted)]">
                     Subtotal
                   </p>
 
-                  <p className="mt-1 text-[10px] leading-5 text-[var(--color-text-muted)]">
-                    Inclusive of applicable
-                    taxes
+                  <p className="mt-1 max-w-[180px] font-body text-[10px] leading-5 text-[var(--color-text-muted)]">
+                    Inclusive of applicable taxes
                   </p>
                 </div>
 
-                <p className="text-xl font-semibold">
-                  {formatPrice(
-                    summary.subtotal,
-                  )}
+                <p className="font-body text-xl font-semibold text-[var(--color-text)]">
+                  {formatPrice(summary.subtotal)}
                 </p>
               </div>
 
               <Link
                 href="/checkout"
-                className="flex min-h-[52px] w-full items-center justify-center bg-[var(--color-charcoal)] px-6 text-[10px] font-semibold uppercase tracking-[0.17em] text-white transition hover:bg-[var(--color-charcoal-soft)]"
+                className="
+                  flex
+                  min-h-[54px]
+                  w-full
+                  items-center
+                  justify-center
+                  border
+                  border-[var(--color-text)]
+                  bg-[var(--color-text)]
+                  px-6
+                  py-3.5
+                  font-body
+                  text-[10px]
+                  font-semibold
+                  uppercase
+                  tracking-[var(--tracking-wider)]
+                  text-[var(--color-text-inverse)]
+                  transition-all
+                  duration-[var(--duration-base)]
+                  hover:border-[var(--color-accent-dark)]
+                  hover:bg-[var(--color-accent-dark)]
+                  focus:outline-none
+                  focus:ring-2
+                  focus:ring-[var(--color-accent)]
+                  focus:ring-offset-2
+                "
               >
                 Proceed to Checkout
               </Link>
 
-              <p className="mt-4 text-center text-[10px] leading-5 text-[var(--color-text-muted)]">
-                Secure checkout · Payment
-                and delivery options
+              <p className="mt-4 text-center font-body text-[10px] leading-5 text-[var(--color-text-muted)]">
+                Secure checkout · Payment and delivery options
                 available at checkout
               </p>
             </div>
 
-            {/* CARE CARD */}
+            {/* ==================================================
+                CARE CARD
+            ================================================== */}
 
-            <div className="mt-4 border border-[var(--color-border)] bg-[var(--color-cream)] p-5">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em]">
-                Ayesha Care
+            <div className="mt-4 border border-[var(--color-border-light)] bg-[var(--color-bg-soft)] p-5">
+              <p className="font-body text-[10px] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text)]">
+                Aayesha Care
               </p>
 
-              <p className="mt-2 text-xs leading-6 text-[var(--color-text-secondary)]">
-                Your selected color,
-                size and variant are
-                preserved in your bag.
-                Final inventory
-                availability is
-                confirmed before order
-                placement.
+              <p className="mt-2 font-body text-xs leading-6 text-[var(--color-text-secondary)]">
+                Your selected color, size and variant are preserved
+                in your bag. Final inventory availability is
+                confirmed before order placement.
               </p>
             </div>
           </aside>
@@ -812,7 +941,7 @@ function SummaryRow({
   valueClassName?: string;
 }) {
   return (
-    <div className="flex items-center justify-between gap-5 text-sm">
+    <div className="flex items-center justify-between gap-5 font-body text-sm">
       <span className="text-[var(--color-text-secondary)]">
         {label}
       </span>

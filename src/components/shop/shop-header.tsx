@@ -250,9 +250,6 @@ export function ShopHeader({
       );
     }
 
-    /*
-     * Keep collection scope intact.
-     */
     if (
       pathname ===
       "/collections/new-arrivals"
@@ -287,51 +284,85 @@ export function ShopHeader({
           COLLECTION INTRO
       ===================================================== */}
 
-      <section className="border-b border-[var(--color-border)] bg-[var(--color-ivory)]">
+      <section
+        className="
+          border-b
+          border-[var(--color-border)]
+          bg-[var(--color-bg)]
+        "
+      >
         <div
           className="
             mx-auto
             max-w-[1600px]
             px-5
-            pb-10
-            pt-11
+            pb-12
+            pt-12
 
             sm:px-8
-            sm:pb-12
+            sm:pb-14
             sm:pt-14
 
             lg:px-14
-            lg:pb-14
+            lg:pb-16
             lg:pt-16
 
             xl:px-20
           "
         >
-          <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-end">
+          <div
+            className="
+              grid
+              gap-9
+              md:grid-cols-[minmax(0,1fr)_260px]
+              md:items-end
+              lg:grid-cols-[minmax(0,1fr)_280px]
+            "
+          >
             {/* -------------------------------------------------
                 TITLE
             ------------------------------------------------- */}
 
             <div>
-              <div className="mb-5 flex items-center gap-3">
-                <span className="h-px w-7 bg-[var(--color-rose-dark)]" />
+              <div
+                className="
+                  mb-5
+                  flex
+                  items-center
+                  gap-3
+                "
+              >
+                <span
+                  className="
+                    h-px
+                    w-8
+                    bg-[var(--color-accent)]
+                  "
+                  aria-hidden="true"
+                />
 
-                <span className="text-[9px] font-semibold uppercase tracking-[0.28em] text-[var(--color-text-secondary)]">
+                <span
+                  className="
+                    font-body
+                    text-[9px]
+                    font-semibold
+                    uppercase
+                    tracking-[0.24em]
+                    text-[var(--color-accent)]
+                  "
+                >
                   {collectionContent.eyebrow}
                 </span>
               </div>
 
               <h1
                 className="
-                  font-[var(--font-display)]
-                  text-[2.8rem]
-                  leading-[0.94]
+                  font-display
+                  text-[clamp(3rem,6vw,5.75rem)]
+                  font-medium
+                  leading-[0.9]
                   tracking-[-0.035em]
-                  text-[var(--color-charcoal)]
-
-                  sm:text-[3.6rem]
-
-                  lg:text-[4.4rem]
+                  text-[var(--color-text)]
                 "
               >
                 {collectionContent.title}
@@ -339,19 +370,18 @@ export function ShopHeader({
 
               <p
                 className="
-                  mt-5
-                  max-w-[600px]
-                  text-[13px]
+                  mt-6
+                  max-w-[610px]
+                  font-body
+                  text-[12px]
                   leading-6
                   text-[var(--color-text-secondary)]
 
-                  sm:text-[14px]
+                  sm:text-[13px]
                   sm:leading-7
                 "
               >
-                {
-                  collectionContent.description
-                }
+                {collectionContent.description}
               </p>
             </div>
 
@@ -359,14 +389,38 @@ export function ShopHeader({
                 EDITORIAL NOTE
             ------------------------------------------------- */}
 
-            <div className="hidden max-w-[230px] pb-1 md:block">
-              <p className="text-right text-[10px] uppercase tracking-[0.2em] text-[var(--color-muted)]">
-                {
-                  collectionContent.noteLabel
-                }
+            <div
+              className="
+                hidden
+                border-l
+                border-[var(--color-border)]
+                pb-1
+                pl-6
+                md:block
+              "
+            >
+              <p
+                className="
+                  font-body
+                  text-[9px]
+                  font-semibold
+                  uppercase
+                  tracking-[0.18em]
+                  text-[var(--color-accent)]
+                "
+              >
+                {collectionContent.noteLabel}
               </p>
 
-              <p className="mt-2 text-right text-xs leading-5 text-[var(--color-text-secondary)]">
+              <p
+                className="
+                  mt-2
+                  font-body
+                  text-[11px]
+                  leading-6
+                  text-[var(--color-text-muted)]
+                "
+              >
                 {collectionContent.note}
               </p>
             </div>
@@ -382,10 +436,11 @@ export function ShopHeader({
         className="
           sticky
           top-[74px]
-          z-30
+          z-[var(--z-header)]
           border-b
           border-[var(--color-border)]
-          bg-[var(--color-ivory)]
+          bg-[var(--color-bg)]/95
+          backdrop-blur-md
 
           sm:top-[78px]
 
@@ -396,7 +451,7 @@ export function ShopHeader({
           className="
             mx-auto
             flex
-            min-h-[62px]
+            min-h-[64px]
             max-w-[1600px]
             items-center
             justify-between
@@ -413,7 +468,13 @@ export function ShopHeader({
               LEFT
           ------------------------------------------------- */}
 
-          <div className="flex items-center gap-5">
+          <div
+            className="
+              flex
+              items-center
+              gap-5
+            "
+          >
             <button
               type="button"
               onClick={() =>
@@ -424,29 +485,58 @@ export function ShopHeader({
               className="
                 group
                 inline-flex
+                min-h-10
                 items-center
                 gap-2.5
-                text-[10px]
+                font-body
+                text-[9px]
                 font-semibold
                 uppercase
-                tracking-[0.17em]
-                text-[var(--color-charcoal)]
+                tracking-[0.18em]
+                text-[var(--color-text)]
                 lg:hidden
               "
             >
               <SlidersHorizontal
                 size={15}
-                strokeWidth={1.5}
-                className="transition-transform duration-300 group-hover:rotate-[-8deg]"
+                strokeWidth={1.25}
+                className="
+                  transition-transform
+                  duration-[var(--duration-base)]
+                  group-hover:rotate-[-8deg]
+                "
               />
 
               Filters
             </button>
 
-            <div className="hidden items-center gap-3 lg:flex">
-              <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-rose-dark)]" />
+            <div
+              className="
+                hidden
+                items-center
+                gap-3
+                lg:flex
+              "
+            >
+              <span
+                className="
+                  h-1.5
+                  w-1.5
+                  bg-[var(--color-accent)]
+                "
+                aria-hidden="true"
+              />
 
-              <span className="text-[10px] font-semibold uppercase tracking-[0.17em] text-[var(--color-text-secondary)]">
+              <span
+                className="
+                  font-body
+                  text-[9px]
+                  font-semibold
+                  uppercase
+                  tracking-[0.18em]
+                  text-[var(--color-text-secondary)]
+                "
+              >
                 {collectionContent.title}
               </span>
             </div>
@@ -475,22 +565,39 @@ export function ShopHeader({
                 inline-flex
                 min-h-10
                 items-center
-                gap-2.5
+                gap-3
                 border
                 border-[var(--color-border)]
-                bg-[var(--color-ivory)]
+                bg-[var(--color-surface)]
                 px-3.5
-                text-[11px]
+                font-body
+                text-[10px]
                 font-medium
-                text-[var(--color-charcoal)]
+                text-[var(--color-text)]
                 transition-all
-                duration-200
+                duration-[var(--duration-base)]
                 hover:border-[var(--color-border-dark)]
+                hover:bg-[var(--color-surface-soft)]
+                focus-visible:outline-none
+                focus-visible:ring-1
+                focus-visible:ring-[var(--color-text)]
+                focus-visible:ring-offset-2
 
                 sm:px-4
               "
             >
-              <span className="hidden text-[9px] font-semibold uppercase tracking-[0.16em] text-[var(--color-muted)] sm:inline">
+              <span
+                className="
+                  hidden
+                  font-body
+                  text-[9px]
+                  font-semibold
+                  uppercase
+                  tracking-[0.16em]
+                  text-[var(--color-text-muted)]
+                  sm:inline
+                "
+              >
                 Sort
               </span>
 
@@ -499,13 +606,17 @@ export function ShopHeader({
               </span>
 
               <ChevronDown
-                size={14}
-                strokeWidth={1.6}
-                className={`transition-transform ${
-                  sortOpen
-                    ? "rotate-180"
-                    : ""
-                }`}
+                size={13}
+                strokeWidth={1.4}
+                className={`
+                  transition-transform
+                  duration-[var(--duration-base)]
+                  ${
+                    sortOpen
+                      ? "rotate-180"
+                      : ""
+                  }
+                `}
               />
             </button>
 
@@ -516,21 +627,46 @@ export function ShopHeader({
                   absolute
                   right-0
                   top-[calc(100%+8px)]
-                  z-50
-                  w-[235px]
+                  z-[var(--z-dropdown)]
+                  w-[245px]
                   overflow-hidden
                   border
                   border-[var(--color-border)]
-                  bg-[var(--color-ivory)]
-                  shadow-[0_20px_55px_rgba(23,23,23,0.12)]
+                  bg-[var(--color-surface)]
+                  shadow-[var(--shadow-lg)]
                 "
               >
-                <div className="border-b border-[var(--color-border)] px-5 py-4">
-                  <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[var(--color-muted)]">
+                <div
+                  className="
+                    border-b
+                    border-[var(--color-border)]
+                    px-5
+                    py-4
+                  "
+                >
+                  <p
+                    className="
+                      font-body
+                      text-[9px]
+                      font-semibold
+                      uppercase
+                      tracking-[0.2em]
+                      text-[var(--color-accent)]
+                    "
+                  >
                     Refine view
                   </p>
 
-                  <p className="mt-1.5 font-[var(--font-display)] text-lg text-[var(--color-charcoal)]">
+                  <p
+                    className="
+                      mt-1.5
+                      font-display
+                      text-[1.5rem]
+                      font-medium
+                      leading-none
+                      text-[var(--color-text)]
+                    "
+                  >
                     Sort by
                   </p>
                 </div>
@@ -544,7 +680,9 @@ export function ShopHeader({
 
                       return (
                         <button
-                          key={option.value}
+                          key={
+                            option.value
+                          }
                           type="button"
                           role="menuitem"
                           onClick={() =>
@@ -555,27 +693,29 @@ export function ShopHeader({
                           className={`
                             group/item
                             flex
+                            min-h-11
                             w-full
                             items-center
                             justify-between
                             px-3.5
                             py-3
                             text-left
+                            font-body
                             transition-colors
-                            duration-200
+                            duration-[var(--duration-fast)]
 
                             ${
                               active
-                                ? "bg-[var(--color-cream)] text-[var(--color-charcoal)]"
-                                : "text-[var(--color-text-secondary)] hover:bg-[var(--color-cream)] hover:text-[var(--color-charcoal)]"
+                                ? "bg-[var(--color-bg-soft)] text-[var(--color-text)]"
+                                : "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-soft)] hover:text-[var(--color-text)]"
                             }
                           `}
                         >
                           <span
                             className={
                               active
-                                ? "text-sm font-medium"
-                                : "text-sm"
+                                ? "text-[11px] font-semibold"
+                                : "text-[11px]"
                             }
                           >
                             {
@@ -587,16 +727,16 @@ export function ShopHeader({
                             className={`
                               h-1.5
                               w-1.5
-                              rounded-full
-                              bg-[var(--color-rose-dark)]
+                              bg-[var(--color-accent)]
                               transition-all
-                              duration-200
+                              duration-[var(--duration-fast)]
                               ${
                                 active
                                   ? "scale-100 opacity-100"
                                   : "scale-50 opacity-0"
                               }
                             `}
+                            aria-hidden="true"
                           />
                         </button>
                       );
@@ -614,7 +754,19 @@ export function ShopHeader({
       ===================================================== */}
 
       {mobileFiltersOpen && (
-        <div className="fixed inset-0 z-[70] lg:hidden">
+        <div
+          className="
+            fixed
+            inset-0
+            z-[var(--z-drawer)]
+            lg:hidden
+          "
+          role="dialog"
+          aria-modal="true"
+          aria-label="Product filters"
+        >
+          {/* Backdrop */}
+
           <button
             type="button"
             aria-label="Close filters"
@@ -626,9 +778,12 @@ export function ShopHeader({
             className="
               absolute
               inset-0
-              bg-black/30
+              bg-[var(--color-text)]/40
+              backdrop-blur-[2px]
             "
           />
+
+          {/* Drawer */}
 
           <div
             className="
@@ -640,17 +795,48 @@ export function ShopHeader({
               w-[90%]
               max-w-[430px]
               flex-col
-              bg-[var(--color-ivory)]
-              shadow-[-18px_0_55px_rgba(23,23,23,0.12)]
+              bg-[var(--color-surface)]
+              shadow-[var(--shadow-lg)]
             "
           >
-            <div className="flex items-center justify-between border-b border-[var(--color-border)] px-5 py-5">
+            {/* Drawer header */}
+
+            <div
+              className="
+                flex
+                shrink-0
+                items-center
+                justify-between
+                border-b
+                border-[var(--color-border)]
+                px-5
+                py-5
+              "
+            >
               <div>
-                <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[var(--color-muted)]">
+                <p
+                  className="
+                    font-body
+                    text-[9px]
+                    font-semibold
+                    uppercase
+                    tracking-[0.2em]
+                    text-[var(--color-accent)]
+                  "
+                >
                   Refine
                 </p>
 
-                <h2 className="mt-1 font-[var(--font-display)] text-[1.8rem] leading-none text-[var(--color-charcoal)]">
+                <h2
+                  className="
+                    mt-1
+                    font-display
+                    text-[2rem]
+                    font-medium
+                    leading-none
+                    text-[var(--color-text)]
+                  "
+                >
                   Filters
                 </h2>
               </div>
@@ -664,24 +850,40 @@ export function ShopHeader({
                   )
                 }
                 className="
-                  grid
-                  size-9
-                  place-items-center
+                  flex
+                  h-10
+                  w-10
+                  items-center
+                  justify-center
                   border
                   border-[var(--color-border)]
-                  text-[var(--color-charcoal)]
-                  transition-colors
-                  hover:border-[var(--color-charcoal)]
+                  text-[var(--color-text)]
+                  transition-all
+                  duration-[var(--duration-base)]
+                  hover:border-[var(--color-text)]
+                  hover:bg-[var(--color-bg-soft)]
+                  focus-visible:outline-none
+                  focus-visible:ring-1
+                  focus-visible:ring-[var(--color-text)]
                 "
               >
                 <X
-                  size={16}
-                  strokeWidth={1.5}
+                  size={17}
+                  strokeWidth={1.25}
                 />
               </button>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto px-5">
+            {/* Filter content */}
+
+            <div
+              className="
+                min-h-0
+                flex-1
+                overflow-y-auto
+                px-5
+              "
+            >
               <ShopFilters
                 products={products}
                 selectedCategory={
@@ -696,7 +898,17 @@ export function ShopHeader({
               />
             </div>
 
-            <div className="border-t border-[var(--color-border)] bg-[var(--color-ivory)] p-4">
+            {/* Drawer footer */}
+
+            <div
+              className="
+                shrink-0
+                border-t
+                border-[var(--color-border)]
+                bg-[var(--color-surface)]
+                p-4
+              "
+            >
               <button
                 type="button"
                 onClick={() =>
@@ -710,15 +922,21 @@ export function ShopHeader({
                   w-full
                   items-center
                   justify-center
-                  bg-[var(--color-charcoal)]
+                  bg-[var(--color-text)]
                   px-5
-                  text-[10px]
+                  font-body
+                  text-[9px]
                   font-semibold
                   uppercase
-                  tracking-[0.18em]
-                  text-white
-                  transition-colors
-                  hover:bg-[var(--color-soft-charcoal)]
+                  tracking-[0.2em]
+                  text-[var(--color-text-inverse)]
+                  transition-all
+                  duration-[var(--duration-base)]
+                  hover:bg-[var(--color-accent-dark)]
+                  focus-visible:outline-none
+                  focus-visible:ring-1
+                  focus-visible:ring-[var(--color-text)]
+                  focus-visible:ring-offset-2
                 "
               >
                 View Results

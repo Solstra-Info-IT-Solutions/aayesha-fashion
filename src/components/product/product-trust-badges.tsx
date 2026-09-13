@@ -30,7 +30,15 @@ const trustItems = [
 
 export function ProductTrustBadges() {
   return (
-    <section className="grid grid-cols-2 border-y border-[var(--color-border)]">
+    <section
+      aria-label="Shopping assurances"
+      className="
+        grid
+        grid-cols-2
+        border-y
+        border-[var(--color-border)]
+      "
+    >
       {trustItems.map((item, index) => {
         const Icon = item.icon;
 
@@ -38,27 +46,67 @@ export function ProductTrustBadges() {
           <div
             key={item.title}
             className={[
-              "flex gap-3 py-5",
+              "group flex gap-3 py-5",
+              "transition-colors duration-[var(--duration-base)]",
+              "hover:bg-[var(--color-bg-soft)]",
               index % 2 === 0
-                ? "border-r border-[var(--color-border)] pr-5"
-                : "pl-5",
+                ? "border-r border-[var(--color-border)] pr-4 sm:pr-5"
+                : "pl-4 sm:pl-5",
               index < 2
                 ? "border-b border-[var(--color-border)]"
                 : "",
             ].join(" ")}
           >
-            <Icon
-              size={17}
-              strokeWidth={1.4}
-              className="mt-0.5 shrink-0"
-            />
+            {/* Icon */}
+            <span
+              className="
+                flex
+                h-8
+                w-8
+                shrink-0
+                items-center
+                justify-center
+                border
+                border-[var(--color-border)]
+                bg-[var(--color-surface)]
+                text-[var(--color-accent)]
+                transition-all
+                duration-[var(--duration-base)]
+                ease-[var(--ease-luxury)]
+                group-hover:border-[var(--color-accent-soft)]
+                group-hover:bg-[var(--color-surface-soft)]
+              "
+            >
+              <Icon
+                size={15}
+                strokeWidth={1.25}
+              />
+            </span>
 
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.11em]">
+            {/* Content */}
+            <div className="min-w-0">
+              <p
+                className="
+                  font-body
+                  text-[9px]
+                  font-semibold
+                  uppercase
+                  tracking-[0.14em]
+                  text-[var(--color-text)]
+                "
+              >
                 {item.title}
               </p>
 
-              <p className="mt-1 text-[11px] leading-5 text-[var(--color-text-muted)]">
+              <p
+                className="
+                  mt-1.5
+                  font-body
+                  text-[10px]
+                  leading-[1.7]
+                  text-[var(--color-text-muted)]
+                "
+              >
                 {item.text}
               </p>
             </div>

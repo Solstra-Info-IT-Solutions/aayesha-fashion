@@ -334,10 +334,6 @@ export function CheckoutPlaceOrder() {
 
   const saveAddressForFutureOrders =
     async () => {
-      /*
-       * Address saving is only for authenticated
-       * customers who explicitly chose to save it.
-       */
       if (
         !isAuthenticated ||
         !accessToken ||
@@ -731,9 +727,6 @@ export function CheckoutPlaceOrder() {
 
         clearCart();
 
-        /*
-         * Reset only after successful order creation.
-         */
         idempotencyKeyRef.current =
           null;
 
@@ -775,187 +768,218 @@ export function CheckoutPlaceOrder() {
   ========================================================== */
 
   return (
-    <section className="border border-[var(--color-border)] bg-white p-5 sm:p-6">
+    <section className="overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface)]">
       {/* =====================================================
-          SECURITY
+          HEADER / SECURITY
       ===================================================== */}
 
-      <div className="flex gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-[var(--color-cream)]">
-          <LockKeyhole
-            size={16}
-            strokeWidth={1.5}
-          />
-        </div>
-
-        <div>
-          <p className="text-xs font-semibold text-[var(--color-charcoal)]">
-            Secure Order Placement
-          </p>
-
-          <p className="mt-1 text-[10px] leading-5 text-[var(--color-text-muted)]">
-            Your order information is handled
-            securely.
-          </p>
-        </div>
-      </div>
-
-      {/* =====================================================
-          PAYMENT + DELIVERY
-      ===================================================== */}
-
-      <div className="mt-5 border-y border-[var(--color-border)] py-4">
-        <div className="flex items-center justify-between gap-5">
-          <div>
-            <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
-              Payment Method
-            </p>
-
-            <p className="mt-1 text-sm font-medium text-[var(--color-charcoal)]">
-              {payment === "cod"
-                ? "Cash on Delivery"
-                : "Online Payment"}
-            </p>
-          </div>
-
-          <CheckCircle2
-            size={17}
-            className="text-[var(--color-success)]"
-          />
-        </div>
-
-        <div className="mt-4 flex items-center justify-between gap-5">
-          <div>
-            <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
-              Delivery
-            </p>
-
-            <p className="mt-1 text-sm font-medium text-[var(--color-charcoal)]">
-              {delivery ===
-              "express"
-                ? "Express Delivery"
-                : "Standard Delivery"}
-            </p>
-          </div>
-
-          <span className="text-xs font-semibold text-[var(--color-charcoal)]">
-            {shipping === 0
-              ? "FREE"
-              : `₹${shipping}`}
+      <div className="border-b border-[var(--color-border-light)] px-5 py-6 sm:px-7 sm:py-7">
+        <div className="flex items-start gap-4">
+          <span className="mt-0.5 font-[var(--font-display)] text-lg text-[var(--color-accent)]">
+            05
           </span>
+
+          <div>
+            <p className="eyebrow text-[var(--color-text-muted)]">
+              Complete Order
+            </p>
+
+            <h2 className="mt-2 font-[var(--font-display)] text-3xl font-medium leading-none tracking-[var(--tracking-tight)] text-[var(--color-text)] sm:text-4xl">
+              Review &amp; place order
+            </h2>
+
+            <p className="mt-3 max-w-lg text-xs leading-5 text-[var(--color-text-secondary)] sm:text-sm">
+              Review your selections before completing your
+              purchase.
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* =====================================================
-          COUPON
-      ===================================================== */}
+      <div className="p-5 sm:p-7">
+        {/* ===================================================
+            SECURITY
+        =================================================== */}
 
-      {couponCode && (
-        <div className="border-b border-[var(--color-border)] py-4">
-          <div className="flex items-center justify-between gap-4">
-            <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
-              Coupon
-            </span>
-
-            <span className="text-xs font-semibold text-[var(--color-success)]">
-              {couponCode}
-            </span>
+        <div className="flex gap-3 border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-4 py-4 sm:px-5">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-[var(--color-surface)] text-[var(--color-accent)]">
+            <LockKeyhole
+              size={16}
+              strokeWidth={1.5}
+            />
           </div>
 
-          {couponDiscount > 0 && (
-            <div className="mt-2 flex items-center justify-between gap-4">
-              <span className="text-[10px] text-[var(--color-text-muted)]">
-                Coupon Discount
-              </span>
+          <div>
+            <p className="text-xs font-semibold text-[var(--color-text)]">
+              Secure order placement
+            </p>
 
-              <span className="text-[10px] font-semibold text-[var(--color-success)]">
-                - ₹
-                {couponDiscount.toLocaleString(
-                  "en-IN",
-                )}
-              </span>
-            </div>
-          )}
-
-          {couponShippingDiscount >
-            0 && (
-            <div className="mt-2 flex items-center justify-between gap-4">
-              <span className="text-[10px] text-[var(--color-text-muted)]">
-                Shipping Discount
-              </span>
-
-              <span className="text-[10px] font-semibold text-[var(--color-success)]">
-                - ₹
-                {couponShippingDiscount.toLocaleString(
-                  "en-IN",
-                )}
-              </span>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* =====================================================
-          TOTAL
-      ===================================================== */}
-
-      <div className="flex items-end justify-between gap-5 py-5">
-        <div>
-          <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
-            Payable Total
-          </p>
-
-          <p className="mt-1 max-w-[220px] text-[10px] leading-5 text-[var(--color-text-muted)]">
-            Final amount is verified securely by
-            the server.
-          </p>
+            <p className="mt-1 text-[10px] leading-5 text-[var(--color-text-secondary)]">
+              Your order information is handled securely and
+              your final amount is verified by our server.
+            </p>
+          </div>
         </div>
 
-        <p className="shrink-0 text-xl font-semibold text-[var(--color-charcoal)]">
-          ₹
-          {total.toLocaleString(
-            "en-IN",
-          )}
+        {/* ===================================================
+            PAYMENT + DELIVERY
+        =================================================== */}
+
+        <div className="mt-6 border-y border-[var(--color-border-light)] py-5">
+          <div className="flex items-center justify-between gap-5">
+            <div>
+              <p className="eyebrow text-[var(--color-text-muted)]">
+                Payment Method
+              </p>
+
+              <p className="mt-1 text-sm font-medium text-[var(--color-text)]">
+                {payment === "cod"
+                  ? "Cash on Delivery"
+                  : "Online Payment"}
+              </p>
+            </div>
+
+            <CheckCircle2
+              size={17}
+              className="text-[var(--color-success)]"
+            />
+          </div>
+
+          <div className="mt-5 flex items-center justify-between gap-5">
+            <div>
+              <p className="eyebrow text-[var(--color-text-muted)]">
+                Delivery
+              </p>
+
+              <p className="mt-1 text-sm font-medium text-[var(--color-text)]">
+                {delivery ===
+                "express"
+                  ? "Express Delivery"
+                  : "Standard Delivery"}
+              </p>
+            </div>
+
+            <span className="text-xs font-semibold text-[var(--color-text)]">
+              {shipping === 0
+                ? "FREE"
+                : `₹${shipping}`}
+            </span>
+          </div>
+        </div>
+
+        {/* ===================================================
+            COUPON
+        =================================================== */}
+
+        {couponCode ? (
+          <div className="border-b border-[var(--color-border-light)] py-5">
+            <div className="flex items-center justify-between gap-4">
+              <span className="eyebrow text-[var(--color-text-muted)]">
+                Coupon
+              </span>
+
+              <span className="text-xs font-semibold uppercase tracking-[var(--tracking-wide)] text-[var(--color-success)]">
+                {couponCode}
+              </span>
+            </div>
+
+            {couponDiscount > 0 ? (
+              <div className="mt-3 flex items-center justify-between gap-4">
+                <span className="text-[10px] text-[var(--color-text-muted)]">
+                  Coupon Discount
+                </span>
+
+                <span className="text-[10px] font-semibold text-[var(--color-success)]">
+                  - ₹
+                  {couponDiscount.toLocaleString(
+                    "en-IN",
+                  )}
+                </span>
+              </div>
+            ) : null}
+
+            {couponShippingDiscount >
+            0 ? (
+              <div className="mt-2 flex items-center justify-between gap-4">
+                <span className="text-[10px] text-[var(--color-text-muted)]">
+                  Shipping Discount
+                </span>
+
+                <span className="text-[10px] font-semibold text-[var(--color-success)]">
+                  - ₹
+                  {couponShippingDiscount.toLocaleString(
+                    "en-IN",
+                  )}
+                </span>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+
+        {/* ===================================================
+            TOTAL
+        =================================================== */}
+
+        <div className="flex items-end justify-between gap-5 py-6">
+          <div>
+            <p className="eyebrow text-[var(--color-text-muted)]">
+              Payable Total
+            </p>
+
+            <p className="mt-2 max-w-[230px] text-[10px] leading-5 text-[var(--color-text-muted)]">
+              Final amount is verified securely by the server.
+            </p>
+          </div>
+
+          <p className="shrink-0 font-[var(--font-display)] text-3xl font-medium leading-none text-[var(--color-text)] sm:text-4xl">
+            ₹
+            {total.toLocaleString(
+              "en-IN",
+            )}
+          </p>
+        </div>
+
+        {/* ===================================================
+            PLACE ORDER
+        =================================================== */}
+
+        <button
+          type="button"
+          onClick={handlePlaceOrder}
+          disabled={
+            placingOrder ||
+            loadingProducts ||
+            !items.length ||
+            payment !== "cod"
+          }
+          className="group flex min-h-[54px] w-full items-center justify-center gap-2 bg-[var(--color-text)] px-5 text-[10px] font-semibold uppercase tracking-[var(--tracking-luxury)] text-[var(--color-text-inverse)] transition-all duration-[var(--duration-base)] hover:bg-[var(--color-accent-dark)] disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <ShoppingBag
+            size={16}
+            className="transition-transform duration-[var(--duration-base)] group-hover:-translate-y-px"
+          />
+
+          {loadingProducts
+            ? "Preparing Order..."
+            : placingOrder
+              ? "Placing Order..."
+              : payment === "cod"
+                ? `Place COD Order · ₹${total.toLocaleString(
+                    "en-IN",
+                  )}`
+                : "Online Payment Unavailable"}
+        </button>
+
+        {/* ===================================================
+            TERMS
+        =================================================== */}
+
+        <p className="mt-4 text-center text-[9px] leading-5 text-[var(--color-text-muted)]">
+          By placing your order, you agree to Aayesha
+          Fashion&apos;s applicable terms, shipping and return
+          policies.
         </p>
       </div>
-
-      {/* =====================================================
-          PLACE ORDER BUTTON
-      ===================================================== */}
-
-      <button
-        type="button"
-        onClick={handlePlaceOrder}
-        disabled={
-          placingOrder ||
-          loadingProducts ||
-          !items.length ||
-          payment !== "cod"
-        }
-        className="flex min-h-[52px] w-full items-center justify-center gap-2 bg-[var(--color-charcoal)] px-5 text-[10px] font-semibold uppercase tracking-[0.17em] text-white transition hover:bg-[var(--color-charcoal-soft)] disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        <ShoppingBag size={16} />
-
-        {loadingProducts
-          ? "Preparing Order..."
-          : placingOrder
-            ? "Placing Order..."
-            : payment === "cod"
-              ? `Place COD Order · ₹${total.toLocaleString(
-                  "en-IN",
-                )}`
-              : "Online Payment Unavailable"}
-      </button>
-
-      {/* =====================================================
-          TERMS
-      ===================================================== */}
-
-      <p className="mt-3 text-center text-[9px] leading-5 text-[var(--color-text-muted)]">
-        By placing your order, you agree to
-        Aayesha Fashion&apos;s applicable terms,
-        shipping and return policies.
-      </p>
     </section>
   );
 }

@@ -29,8 +29,12 @@ export function ProductCarousel({
     }
 
     const amount =
-  container.clientWidth *
-  (window.innerWidth >= 1024 ? 0.92 : 0.82);
+      container.clientWidth *
+      (window.innerWidth >= 1280
+        ? 0.76
+        : window.innerWidth >= 1024
+          ? 0.82
+          : 0.82);
 
     container.scrollBy({
       left:
@@ -48,7 +52,7 @@ export function ProductCarousel({
   return (
     <div className="relative">
       {/* =====================================================
-          PRODUCTS
+          PRODUCT TRACK
       ===================================================== */}
 
       <div
@@ -60,47 +64,55 @@ export function ProductCarousel({
           flex
           snap-x
           snap-mandatory
-          gap-5
+          gap-4
           overflow-x-auto
           overscroll-x-contain
           scroll-smooth
-          pb-5
+          pb-3
           outline-none
           [scrollbar-width:none]
           [&::-webkit-scrollbar]:hidden
-          sm:gap-7
-          lg:gap-8
-          xl:gap-10
+          sm:gap-5
+          lg:gap-6
+          xl:gap-7
         "
       >
         {products.map((product, index) => (
-          <div
+          <article
             key={product.id}
             className="
               w-[78vw]
-              max-w-[330px]
+              max-w-[320px]
               shrink-0
               snap-start
-              sm:w-[44vw]
-              sm:max-w-[370px]
-              lg:w-[30vw]
-              lg:max-w-[410px]
+              sm:w-[43vw]
+              sm:max-w-[350px]
+              md:w-[35vw]
+              md:max-w-[370px]
+              lg:w-[29vw]
+              lg:max-w-[390px]
+              xl:w-[27vw]
+              xl:max-w-[410px]
             "
           >
             <ProductCard
               product={product}
               priority={index === 0}
             />
-          </div>
+          </article>
         ))}
 
-        {/* ================================================
-            DESKTOP END SPACER
-        ================================================= */}
+        {/* ===================================================
+            END SPACER
+        =================================================== */}
 
         <div
           aria-hidden="true"
-          className="hidden w-[1px] shrink-0 lg:block"
+          className="
+            w-1
+            shrink-0
+            lg:w-4
+          "
         />
       </div>
 
@@ -109,60 +121,109 @@ export function ProductCarousel({
       ===================================================== */}
 
       {products.length > 1 && (
-        <div className="mt-7 flex items-center justify-end gap-2">
-          <button
-            type="button"
-            onClick={() => scroll("prev")}
-            aria-label="Previous products"
-            className="
-              flex
-              h-11
-              w-11
-              items-center
-              justify-center
-              border
-              border-[var(--color-border)]
-              bg-transparent
-              text-[var(--color-charcoal)]
-              transition-all
-              duration-300
-              hover:border-[var(--color-charcoal)]
-              hover:bg-[var(--color-charcoal)]
-              hover:text-white
-            "
-          >
-            <ArrowLeft
-              size={16}
-              strokeWidth={1.4}
-            />
-          </button>
+        <div
+          className="
+            mt-7
+            flex
+            items-center
+            justify-between
+            border-t
+            border-[var(--color-border)]
+            pt-5
+            sm:mt-8
+            sm:pt-6
+          "
+        >
+          {/* Scroll hint */}
 
-          <button
-            type="button"
-            onClick={() => scroll("next")}
-            aria-label="Next products"
+          <p
             className="
-              flex
-              h-11
-              w-11
-              items-center
-              justify-center
-              border
-              border-[var(--color-border)]
-              bg-transparent
-              text-[var(--color-charcoal)]
-              transition-all
-              duration-300
-              hover:border-[var(--color-charcoal)]
-              hover:bg-[var(--color-charcoal)]
-              hover:text-white
+              hidden
+              font-body
+              text-[9px]
+              font-medium
+              uppercase
+              tracking-[0.2em]
+              text-[var(--color-text-muted)]
+              sm:block
             "
           >
-            <ArrowRight
-              size={16}
-              strokeWidth={1.4}
-            />
-          </button>
+            Swipe to explore
+          </p>
+
+          {/* Arrow controls */}
+
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => scroll("prev")}
+              aria-label="Previous products"
+              className="
+                group
+                flex
+                h-10
+                w-10
+                items-center
+                justify-center
+                border
+                border-[var(--color-border)]
+                bg-transparent
+                text-[var(--color-text)]
+                transition-all
+                duration-[var(--duration-base)]
+                hover:border-[var(--color-text)]
+                hover:bg-[var(--color-text)]
+                hover:text-[var(--color-text-inverse)]
+                sm:h-11
+                sm:w-11
+              "
+            >
+              <ArrowLeft
+                size={15}
+                strokeWidth={1.2}
+                className="
+                  transition-transform
+                  duration-[var(--duration-base)]
+                  group-hover:-translate-x-0.5
+                "
+              />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => scroll("next")}
+              aria-label="Next products"
+              className="
+                group
+                flex
+                h-10
+                w-10
+                items-center
+                justify-center
+                border
+                border-[var(--color-border)]
+                bg-transparent
+                text-[var(--color-text)]
+                transition-all
+                duration-[var(--duration-base)]
+                hover:border-[var(--color-text)]
+                hover:bg-[var(--color-text)]
+                hover:text-[var(--color-text-inverse)]
+                sm:h-11
+                sm:w-11
+              "
+            >
+              <ArrowRight
+                size={15}
+                strokeWidth={1.2}
+                className="
+                  transition-transform
+                  duration-[var(--duration-base)]
+                  group-hover:translate-x-0.5
+                "
+              />
+            </button>
+          </div>
         </div>
       )}
     </div>
