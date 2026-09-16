@@ -14,150 +14,90 @@ export function Header() {
   const [isScrolled, setIsScrolled] =
     useState(false);
 
-  /* =========================================================
-     SCROLL STATE
-  ========================================================= */
-
   useEffect(() => {
     function handleScroll() {
-      setIsScrolled(window.scrollY > 20);
+      setIsScrolled(window.scrollY > 24);
     }
 
     handleScroll();
 
-    window.addEventListener(
-      "scroll",
-      handleScroll,
-      { passive: true },
-    );
+    window.addEventListener("scroll", handleScroll, {
+      passive: true,
+    });
 
     return () => {
-      window.removeEventListener(
-        "scroll",
-        handleScroll,
-      );
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
-  /* =========================================================
-     HEADER
-  ========================================================= */
-
   return (
     <header
-      className={[
-        "fixed",
-        "inset-x-0",
-        "top-0",
-        "z-[var(--z-header)]",
-        "w-full",
-        "transition-all",
-        "duration-300",
-
-        isScrolled
-          ? [
-              "border-b",
-              "border-[var(--color-border-light)]",
-              "bg-[rgba(247,243,238,0.96)]",
-              "text-[var(--color-text)]",
-              "backdrop-blur-md",
-            ].join(" ")
-          : [
-              "border-b",
-              "border-transparent",
-              "bg-transparent",
-              "text-white",
-            ].join(" "),
-      ].join(" ")}
+      className="
+        fixed
+        inset-x-0
+        top-0
+        z-[var(--z-header)]
+        w-full
+        border-b
+        border-[var(--color-border-light)]
+        bg-[var(--color-bg)]
+        text-[var(--color-text)]
+        shadow-none
+      "
     >
       <div
         className="
           relative
           mx-auto
           flex
-          h-[64px]
+          h-[72px]
           w-full
           max-w-[1600px]
           items-center
-          px-4
-          sm:h-[68px]
-          sm:px-6
-          md:h-[72px]
-          md:px-8
-          lg:h-[78px]
-          lg:px-10
-          xl:px-14
+          px-5
+          sm:h-[76px]
+          sm:px-8
+          md:h-[80px]
+          md:px-10
+          lg:h-[84px]
+          lg:px-12
+          xl:px-16
         "
       >
-        {/* ===================================================
-            MOBILE MENU
-        =================================================== */}
-
-        <div
-          className="
-            relative
-            z-[120]
-            flex
-            shrink-0
-            items-center
-            lg:hidden
-          "
-        >
+        {/* Mobile Menu */}
+        <div className="relative z-[120] lg:hidden">
           <MobileMenu
             isOpen={mobileMenuOpen}
-            onOpen={() =>
-              setMobileMenuOpen(true)
-            }
-            onClose={() =>
-              setMobileMenuOpen(false)
-            }
+            onOpen={() => setMobileMenuOpen(true)}
+            onClose={() => setMobileMenuOpen(false)}
           />
         </div>
 
-        {/* ===================================================
-            DESKTOP NAVIGATION
-        =================================================== */}
-
-        <nav
-          className="
-            hidden
-            shrink-0
-            lg:block
-          "
-          aria-label="Primary navigation"
-        >
+        {/* Desktop Navigation */}
+        <div className="hidden lg:block">
           <DesktopNavigation />
-        </nav>
+        </div>
 
-        {/* ===================================================
-            CENTER LOGO
-        =================================================== */}
-
+        {/* Center Logo */}
         <div
           className="
             pointer-events-none
             absolute
             left-1/2
-            top-1/2
             z-10
             -translate-x-1/2
-            -translate-y-1/2
           "
         >
           <BrandLogo />
         </div>
 
-        {/* ===================================================
-            HEADER ACTIONS
-        =================================================== */}
-
+        {/* Header Actions */}
         <div
           className="
             relative
             z-[20]
             ml-auto
             flex
-            shrink-0
             items-center
           "
         >
