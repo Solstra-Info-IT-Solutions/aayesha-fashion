@@ -33,10 +33,15 @@ export function FeaturedCategories() {
   ======================================================= */
 
   useEffect(() => {
+    console.log("🔥 FeaturedCategories mounted");
+    
     let mounted = true;
 
     async function load() {
       try {
+
+        console.log("🔥 Calling getCategories...");
+
         const data =
           await getCategories();
 
