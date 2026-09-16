@@ -22,248 +22,182 @@ export async function NewArrivals() {
       id="new-arrivals"
       className="
         bg-[var(--color-bg-soft)]
-        py-[var(--section-lg)]
-        lg:py-[var(--section-xl)]
+        py-14
+        sm:py-16
+        lg:py-20
       "
     >
       <Container>
         {/* =====================================================
-            SECTION INTRO
+            SECTION HEADER
         ===================================================== */}
 
         <div
           className="
-            border-t
-            border-[var(--color-border)]
-            pt-5
-            sm:pt-6
+            flex
+            flex-col
+            gap-4
+            sm:flex-row
+            sm:items-end
+            sm:justify-between
           "
         >
-          <div
-            className="
-              flex
-              items-center
-              justify-between
-            "
-          >
-            {/* Eyebrow */}
+          <div>
+            <p className="eyebrow">
+              New Arrivals
+            </p>
 
-            <div className="flex items-center gap-3 sm:gap-4">
-              <span
-                aria-hidden="true"
-                className="
-                  h-px
-                  w-7
-                  bg-[var(--color-accent)]
-                  sm:w-9
-                "
-              />
-
-              <p className="eyebrow">
-                The New Edit
-              </p>
-            </div>
-
-            {/* Product count */}
-
-            <span
-              className="
-                font-display
-                text-lg
-                font-medium
-                leading-none
-                text-[var(--color-text-muted)]
-                sm:text-xl
-              "
-            >
-              {String(newArrivals.length).padStart(2, "0")}
-            </span>
-          </div>
-
-          {/* ===================================================
-              EDITORIAL HEADING
-          =================================================== */}
-
-          <div className="mt-10 max-w-4xl sm:mt-12 lg:mt-14">
             <h2
               className="
+                mt-3
                 font-display
-                text-[clamp(3.4rem,8vw,7.5rem)]
-                font-medium
-                leading-[0.82]
-                tracking-[-0.055em]
+                text-3xl
+                leading-tight
+                tracking-[-0.025em]
                 text-[var(--color-text)]
+                sm:text-4xl
+                lg:text-[42px]
               "
             >
-              New{" "}
-              <span
-                className="
-                  italic
-                  text-[var(--color-accent)]
-                "
-              >
-                Arrivals.
-              </span>
+              Fresh from Aayesha
             </h2>
-
-            <div
-              className="
-                mt-7
-                flex
-                flex-col
-                gap-5
-                sm:mt-8
-                lg:flex-row
-                lg:items-end
-                lg:justify-between
-              "
-            >
-              <p
-                className="
-                  max-w-md
-                  font-body
-                  text-[12px]
-                  leading-6
-                  text-[var(--color-text-secondary)]
-                  sm:text-[13px]
-                  sm:leading-7
-                "
-              >
-                Discover the latest pieces added to
-                the Aayesha wardrobe — designed for
-                effortless elegance, meaningful
-                occasions and everyday luxury.
-              </p>
-
-              <div className="hidden lg:block">
-                <p
-                  className="
-                    font-body
-                    text-[9px]
-                    font-medium
-                    uppercase
-                    tracking-[0.22em]
-                    text-[var(--color-text-muted)]
-                  "
-                >
-                  New season · 2026
-                </p>
-              </div>
-            </div>
           </div>
+
+          {/* Desktop CTA */}
+
+          {newArrivals.length > 0 && (
+            <div className="hidden sm:block">
+              <LinkButton
+                href="/collections/new-arrivals"
+                variant="secondary"
+                size="md"
+                icon={
+                  <ArrowUpRight
+                    size={15}
+                    strokeWidth={1.25}
+                  />
+                }
+              >
+                View All
+              </LinkButton>
+            </div>
+          )}
         </div>
 
         {/* =====================================================
-            PRODUCT CAROUSEL
+            PRODUCTS / COMING SOON
         ===================================================== */}
 
         {newArrivals.length > 0 ? (
-          <div
-            className="
-              mt-12
-              sm:mt-14
-              lg:mt-16
-            "
-          >
-            <ProductCarousel
-              products={newArrivals}
-              ariaLabel="New arrivals products"
-            />
-          </div>
+          <>
+            <div
+              className="
+                mt-8
+                sm:mt-10
+                lg:mt-12
+              "
+            >
+              <ProductCarousel
+                products={newArrivals}
+                ariaLabel="New arrivals products"
+              />
+            </div>
+
+            {/* Mobile CTA */}
+
+            <div
+              className="
+                mt-8
+                flex
+                justify-center
+                sm:hidden
+              "
+            >
+              <LinkButton
+                href="/collections/new-arrivals"
+                variant="secondary"
+                size="md"
+                icon={
+                  <ArrowUpRight
+                    size={15}
+                    strokeWidth={1.25}
+                  />
+                }
+              >
+                View All New Arrivals
+              </LinkButton>
+            </div>
+          </>
         ) : (
+          /* ===================================================
+             COMING SOON
+          =================================================== */
+
           <div
             className="
-              mt-12
+              mt-8
               border-y
               border-[var(--color-border)]
+              px-5
               py-16
               text-center
-              sm:mt-14
+              sm:mt-10
+              sm:px-8
               sm:py-20
             "
           >
             <p className="eyebrow">
-              The New Edit
+              New Arrivals
             </p>
 
-            <p
+            <h3
               className="
                 mt-4
                 font-display
-                text-[28px]
-                leading-none
+                text-2xl
+                leading-tight
+                tracking-[-0.02em]
                 text-[var(--color-text)]
-                sm:text-[34px]
+                sm:text-3xl
               "
             >
-              New pieces are arriving soon.
-            </p>
+              Coming Soon
+            </h3>
 
             <p
               className="
                 mx-auto
-                mt-4
-                max-w-sm
+                mt-3
+                max-w-md
                 font-body
-                text-[11px]
-                leading-5
+                text-xs
+                leading-6
                 text-[var(--color-text-secondary)]
+                sm:text-sm
               "
             >
-              Keep an eye on this space for the
-              latest Aayesha Fashion arrivals.
+              Our latest styles are on their way.
+              Check back soon for new arrivals from
+              Aayesha Fashion.
             </p>
+
+            <div className="mt-7 flex justify-center">
+              <LinkButton
+                href="/shop"
+                variant="secondary"
+                size="md"
+                icon={
+                  <ArrowUpRight
+                    size={15}
+                    strokeWidth={1.25}
+                  />
+                }
+              >
+                Explore Shop
+              </LinkButton>
+            </div>
           </div>
         )}
-
-        {/* =====================================================
-            BOTTOM CTA
-        ===================================================== */}
-
-        <div
-          className="
-            mt-10
-            flex
-            items-center
-            justify-between
-            border-t
-            border-[var(--color-border)]
-            pt-6
-            sm:mt-12
-            sm:pt-7
-          "
-        >
-          <p
-            className="
-              hidden
-              font-body
-              text-[9px]
-              font-medium
-              uppercase
-              tracking-[0.2em]
-              text-[var(--color-text-muted)]
-              sm:block
-            "
-          >
-            Discover the latest collection
-          </p>
-
-          <div className="sm:ml-auto">
-            <LinkButton
-              href="/collections/new-arrivals"
-              variant="secondary"
-              size="md"
-              icon={
-                <ArrowUpRight
-                  size={16}
-                  strokeWidth={1.25}
-                />
-              }
-            >
-              View All New Arrivals
-            </LinkButton>
-          </div>
-        </div>
       </Container>
     </section>
   );
