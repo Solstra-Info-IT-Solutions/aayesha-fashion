@@ -235,7 +235,7 @@ function CategoryCard({
 }) {
   return (
     <Link
-      href={`/collections/${category.slug}`}
+      href={`/${category.slug}`}
       className="
         group
         block
