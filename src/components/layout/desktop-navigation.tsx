@@ -26,8 +26,8 @@ export function DesktopNavigation() {
       className="
         flex
         items-center
-        gap-7
-        xl:gap-9
+        gap-5
+        xl:gap-7
       "
     >
       {navigation.map((item) => (
@@ -37,15 +37,16 @@ export function DesktopNavigation() {
           className="
             group
             relative
-            py-3
+            whitespace-nowrap
+            py-2
             font-body
             text-[10px]
             font-medium
             uppercase
-            tracking-[0.18em]
-            text-[var(--color-text)]
+            tracking-[0.16em]
+            text-current
             transition-colors
-            duration-[var(--duration-base)]
+            duration-300
             hover:text-[var(--color-accent)]
             xl:text-[10.5px]
           "
@@ -54,15 +55,11 @@ export function DesktopNavigation() {
             {item.label}
           </span>
 
-          {/* -----------------------------------------------
-              LUXURY HOVER UNDERLINE
-          ----------------------------------------------- */}
-
           <span
             aria-hidden="true"
             className="
               absolute
-              bottom-[3px]
+              bottom-0
               left-0
               h-px
               w-full
@@ -70,7 +67,7 @@ export function DesktopNavigation() {
               scale-x-0
               bg-current
               transition-transform
-              duration-[var(--duration-base)]
+              duration-300
               ease-[var(--ease-luxury)]
               group-hover:origin-left
               group-hover:scale-x-100

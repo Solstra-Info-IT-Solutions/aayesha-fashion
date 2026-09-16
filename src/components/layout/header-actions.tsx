@@ -64,9 +64,6 @@ export function HeaderActions() {
   const [accountOpen, setAccountOpen] =
     useState(false);
 
-  const [mobileMenuOpen, setMobileMenuOpen] =
-    useState(false);
-
   const [query, setQuery] =
     useState("");
 
@@ -99,21 +96,21 @@ export function HeaderActions() {
   useEffect(() => {
     if (
       !searchOpen &&
-      !accountOpen &&
-      !mobileMenuOpen
+      !accountOpen
     ) {
       return;
     }
 
-    const handleKeyDown = (
+    function handleKeyDown(
       event: KeyboardEvent,
-    ) => {
-      if (event.key !== "Escape") return;
+    ) {
+      if (event.key !== "Escape") {
+        return;
+      }
 
       setSearchOpen(false);
       setAccountOpen(false);
-      setMobileMenuOpen(false);
-    };
+    }
 
     document.addEventListener(
       "keydown",
@@ -129,7 +126,6 @@ export function HeaderActions() {
   }, [
     searchOpen,
     accountOpen,
-    mobileMenuOpen,
   ]);
 
   /* =======================================================
@@ -139,9 +135,9 @@ export function HeaderActions() {
   useEffect(() => {
     if (!accountOpen) return;
 
-    const handlePointerDown = (
+    function handlePointerDown(
       event: MouseEvent,
-    ) => {
+    ) {
       const target =
         event.target as Node;
 
@@ -153,7 +149,7 @@ export function HeaderActions() {
       ) {
         setAccountOpen(false);
       }
-    };
+    }
 
     document.addEventListener(
       "mousedown",
@@ -169,30 +165,11 @@ export function HeaderActions() {
   }, [accountOpen]);
 
   /* =======================================================
-     BODY SCROLL LOCK
-  ======================================================= */
-
-  useEffect(() => {
-    if (!mobileMenuOpen) return;
-
-    const previousOverflow =
-      document.body.style.overflow;
-
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow =
-        previousOverflow;
-    };
-  }, [mobileMenuOpen]);
-
-  /* =======================================================
      SEARCH
   ======================================================= */
 
   const openSearch = () => {
     setAccountOpen(false);
-    setMobileMenuOpen(false);
     setSearchOpen(true);
   };
 
@@ -208,7 +185,9 @@ export function HeaderActions() {
     const trimmedQuery =
       query.trim();
 
-    if (!trimmedQuery) return;
+    if (!trimmedQuery) {
+      return;
+    }
 
     setSearchOpen(false);
 
@@ -224,10 +203,11 @@ export function HeaderActions() {
   ======================================================= */
 
   const handleAccountClick = () => {
-    if (!isInitialized) return;
+    if (!isInitialized) {
+      return;
+    }
 
     setSearchOpen(false);
-    setMobileMenuOpen(false);
 
     setAccountOpen(
       (current) => !current,
@@ -235,26 +215,15 @@ export function HeaderActions() {
   };
 
   /* =======================================================
-     MOBILE MENU
-  ======================================================= */
-
-  const closeMobileMenu = () => {
-    setMobileMenuOpen(false);
-  };
-
-  const navigateFromMobileMenu =
-    (href: string) => {
-      setMobileMenuOpen(false);
-      router.push(href);
-    };
-
-  /* =======================================================
      ACCOUNT LABEL
   ======================================================= */
 
   const accountLabel =
     isInitialized && loggedIn
-      ? `Account for ${user?.name ?? "customer"}`
+      ? `Account for ${
+          user?.name ??
+          "customer"
+        }`
       : "Sign in or account";
 
   return (
@@ -280,28 +249,22 @@ export function HeaderActions() {
           aria-label="Search"
           aria-expanded={searchOpen}
           className="
-            group
-            relative
             flex
-            h-10
-            w-10
+            h-9
+            w-9
             items-center
             justify-center
-            text-[var(--color-text)]
+            text-current
             transition-colors
-            duration-[var(--duration-base)]
+            duration-300
             hover:text-[var(--color-accent)]
+            sm:h-10
+            sm:w-10
           "
         >
           <Search
             size={18}
             strokeWidth={1.25}
-            className="
-              transition-transform
-              duration-[var(--duration-base)]
-              ease-[var(--ease-luxury)]
-              group-hover:scale-[1.06]
-            "
           />
         </button>
 
@@ -319,8 +282,12 @@ export function HeaderActions() {
         >
           <button
             type="button"
-            onClick={handleAccountClick}
-            aria-label={accountLabel}
+            onClick={
+              handleAccountClick
+            }
+            aria-label={
+              accountLabel
+            }
             aria-expanded={
               isInitialized
                 ? accountOpen
@@ -332,68 +299,66 @@ export function HeaderActions() {
                 : undefined
             }
             className="
-              group
-              relative
               flex
-              h-10
-              w-10
+              h-9
+              w-9
               items-center
               justify-center
-              text-[var(--color-text)]
+              text-current
               transition-colors
-              duration-[var(--duration-base)]
+              duration-300
               hover:text-[var(--color-accent)]
+              sm:h-10
+              sm:w-10
             "
           >
             <UserRound
               size={18}
               strokeWidth={1.25}
-              className="
-                transition-transform
-                duration-[var(--duration-base)]
-                ease-[var(--ease-luxury)]
-                group-hover:scale-[1.06]
-              "
             />
 
-            {isInitialized && loggedIn && (
-              <span
-                aria-hidden="true"
-                className="
-                  absolute
-                  right-[7px]
-                  top-[7px]
-                  h-1.5
-                  w-1.5
-                  rounded-full
-                  bg-[var(--color-accent)]
-                "
-              />
-            )}
+            {isInitialized &&
+              loggedIn && (
+                <span
+                  aria-hidden="true"
+                  className="
+                    absolute
+                    right-[5px]
+                    top-[5px]
+                    h-1.5
+                    w-1.5
+                    rounded-full
+                    bg-[var(--color-accent)]
+                  "
+                />
+              )}
           </button>
 
-          {/* LOGGED-IN ACCOUNT */}
-
-          {isInitialized && loggedIn ? (
-            <AccountPopup
-              isOpen={accountOpen}
-              onClose={() =>
-                setAccountOpen(false)
-              }
-            />
-          ) : null}
-
-          {/* GUEST ACCOUNT */}
+          {isInitialized &&
+            loggedIn && (
+              <AccountPopup
+                isOpen={
+                  accountOpen
+                }
+                onClose={() =>
+                  setAccountOpen(
+                    false,
+                  )
+                }
+              />
+            )}
 
           {isInitialized &&
-          !loggedIn &&
-          accountOpen ? (
-            <GuestAccountPopup
-              onClose={() =>
-                setAccountOpen(false)
-              }
-            />
-          ) : null}
+            !loggedIn &&
+            accountOpen && (
+              <GuestAccountPopup
+                onClose={() =>
+                  setAccountOpen(
+                    false,
+                  )
+                }
+              />
+            )}
         </div>
 
         {/* =================================================
@@ -403,33 +368,27 @@ export function HeaderActions() {
         <Link
           href="/wishlist"
           aria-label="Wishlist"
-          onClick={() => {
-            setMobileMenuOpen(false);
-            setAccountOpen(false);
-          }}
+          onClick={() =>
+            setAccountOpen(false)
+          }
           className="
-            group
             relative
             flex
-            h-10
-            w-10
+            h-9
+            w-9
             items-center
             justify-center
-            text-[var(--color-text)]
+            text-current
             transition-colors
-            duration-[var(--duration-base)]
+            duration-300
             hover:text-[var(--color-accent)]
+            sm:h-10
+            sm:w-10
           "
         >
           <Heart
             size={18}
             strokeWidth={1.25}
-            className="
-              transition-transform
-              duration-[var(--duration-base)]
-              ease-[var(--ease-luxury)]
-              group-hover:scale-[1.06]
-            "
           />
 
           <WishlistCount />
@@ -442,517 +401,32 @@ export function HeaderActions() {
         <Link
           href="/cart"
           aria-label="Shopping bag"
-          onClick={() => {
-            setMobileMenuOpen(false);
-            setAccountOpen(false);
-          }}
+          onClick={() =>
+            setAccountOpen(false)
+          }
           className="
-            group
             relative
             flex
-            h-10
-            w-10
+            h-9
+            w-9
             items-center
             justify-center
-            text-[var(--color-text)]
+            text-current
             transition-colors
-            duration-[var(--duration-base)]
+            duration-300
             hover:text-[var(--color-accent)]
+            sm:h-10
+            sm:w-10
           "
         >
           <ShoppingBag
             size={18}
             strokeWidth={1.25}
-            className="
-              transition-transform
-              duration-[var(--duration-base)]
-              ease-[var(--ease-luxury)]
-              group-hover:scale-[1.06]
-            "
           />
 
           <CartCount />
         </Link>
       </div>
-
-      {/* =====================================================
-          MOBILE MENU PANEL
-      ===================================================== */}
-
-      {mobileMenuOpen && (
-        <>
-          <button
-            type="button"
-            aria-label="Close menu"
-            onClick={closeMobileMenu}
-            className="
-              fixed
-              inset-0
-              z-[55]
-              bg-black/15
-              backdrop-blur-[1px]
-              sm:hidden
-            "
-          />
-
-          <div
-            className="
-              fixed
-              inset-x-0
-              top-0
-              z-[60]
-              border-b
-              border-[var(--color-border)]
-              bg-[var(--color-bg)]
-              shadow-[var(--shadow-lg)]
-              sm:hidden
-            "
-          >
-            {/* =================================================
-                PANEL HEADER
-            ================================================= */}
-
-            <div
-              className="
-                flex
-                items-center
-                justify-between
-                border-b
-                border-[var(--color-border)]
-                px-5
-                py-4
-              "
-            >
-              <div>
-                <p
-                  className="
-                    font-display
-                    text-[25px]
-                    leading-none
-                    tracking-[-0.025em]
-                    text-[var(--color-text)]
-                  "
-                >
-                  Aayesha Fashion
-                </p>
-
-                <p
-                  className="
-                    mt-1.5
-                    font-body
-                    text-[8px]
-                    font-medium
-                    uppercase
-                    tracking-[0.22em]
-                    text-[var(--color-text-muted)]
-                  "
-                >
-                  Discover your style
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={closeMobileMenu}
-                aria-label="Close menu"
-                className="
-                  flex
-                  h-9
-                  w-9
-                  items-center
-                  justify-center
-                  border
-                  border-[var(--color-border)]
-                  text-[var(--color-text-secondary)]
-                  transition-colors
-                  duration-[var(--duration-base)]
-                  hover:bg-[var(--color-bg-soft)]
-                  hover:text-[var(--color-text)]
-                "
-              >
-                <X
-                  size={18}
-                  strokeWidth={1.25}
-                />
-              </button>
-            </div>
-
-            {/* =================================================
-                ACCOUNT
-            ================================================= */}
-
-            <div className="px-5 pt-5">
-              {isInitialized && loggedIn ? (
-                <button
-                  type="button"
-                  onClick={() =>
-                    navigateFromMobileMenu(
-                      "/account",
-                    )
-                  }
-                  className="
-                    flex
-                    w-full
-                    items-center
-                    gap-3
-                    border
-                    border-[var(--color-border)]
-                    bg-[var(--color-surface)]
-                    px-4
-                    py-4
-                    text-left
-                  "
-                >
-                  <span
-                    className="
-                      flex
-                      h-10
-                      w-10
-                      shrink-0
-                      items-center
-                      justify-center
-                      border
-                      border-[var(--color-accent-soft)]
-                      bg-[var(--color-bg-soft)]
-                      font-display
-                      text-base
-                      text-[var(--color-text)]
-                    "
-                  >
-                    {user?.name
-                      ?.trim()
-                      .split(/\s+/)
-                      .slice(0, 2)
-                      .map(
-                        (part) =>
-                          part
-                            .charAt(0)
-                            .toUpperCase(),
-                      )
-                      .join("") || "A"}
-                  </span>
-
-                  <span className="min-w-0 flex-1">
-                    <span
-                      className="
-                        block
-                        truncate
-                        font-body
-                        text-sm
-                        font-medium
-                        text-[var(--color-text)]
-                      "
-                    >
-                      {user?.name ||
-                        "My Account"}
-                    </span>
-
-                    <span
-                      className="
-                        mt-0.5
-                        block
-                        truncate
-                        font-body
-                        text-[10px]
-                        text-[var(--color-text-secondary)]
-                      "
-                    >
-                      View your account
-                    </span>
-                  </span>
-
-                  <ChevronRight
-                    size={16}
-                    strokeWidth={1.4}
-                    className="
-                      shrink-0
-                      text-[var(--color-text-secondary)]
-                    "
-                  />
-                </button>
-              ) : (
-                <div className="space-y-3">
-                  <div>
-                    <p
-                      className="
-                        eyebrow
-                        text-[var(--color-text-muted)]
-                      "
-                    >
-                      Your Account
-                    </p>
-
-                    <p
-                      className="
-                        mt-1.5
-                        font-body
-                        text-xs
-                        leading-5
-                        text-[var(--color-text-secondary)]
-                      "
-                    >
-                      Sign in or create an account
-                      to manage your orders and
-                      details.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <Link
-                      href="/login"
-                      onClick={closeMobileMenu}
-                      className="
-                        flex
-                        h-11
-                        items-center
-                        justify-center
-                        border
-                        border-[var(--color-text)]
-                        bg-[var(--color-text)]
-                        font-body
-                        text-[10px]
-                        font-medium
-                        uppercase
-                        tracking-[0.16em]
-                        text-[var(--color-text-inverse)]
-                        transition-opacity
-                        duration-[var(--duration-base)]
-                        hover:opacity-90
-                      "
-                    >
-                      Sign In
-                    </Link>
-
-                    <Link
-                      href="/register"
-                      onClick={closeMobileMenu}
-                      className="
-                        flex
-                        h-11
-                        items-center
-                        justify-center
-                        border
-                        border-[var(--color-border)]
-                        bg-[var(--color-surface)]
-                        font-body
-                        text-[10px]
-                        font-medium
-                        uppercase
-                        tracking-[0.16em]
-                        text-[var(--color-text)]
-                        transition-colors
-                        duration-[var(--duration-base)]
-                        hover:bg-[var(--color-bg-soft)]
-                      "
-                    >
-                      Sign Up
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* =================================================
-                NAVIGATION
-            ================================================= */}
-
-            <nav
-              className="px-5 py-5"
-              aria-label="Mobile navigation"
-            >
-              <p
-                className="
-                  eyebrow
-                  mb-3
-                  text-[var(--color-text-muted)]
-                "
-              >
-                Explore
-              </p>
-
-              <div
-                className="
-                  overflow-hidden
-                  border-y
-                  border-[var(--color-border)]
-                  bg-[var(--color-surface)]
-                "
-              >
-                <MobileNavigationItem
-                  label="Shop"
-                  onClick={() =>
-                    navigateFromMobileMenu(
-                      "/shop",
-                    )
-                  }
-                />
-
-                <MobileNavigationItem
-                  label="Collections"
-                  onClick={() =>
-                    navigateFromMobileMenu(
-                      "/collections",
-                    )
-                  }
-                />
-
-                <div
-                  className="
-                    flex
-                    w-full
-                    items-center
-                    justify-between
-                    border-b
-                    border-[var(--color-border)]
-                    px-4
-                    py-4
-                  "
-                >
-                  <button
-                    type="button"
-                    onClick={() =>
-                      navigateFromMobileMenu(
-                        "/wishlist",
-                      )
-                    }
-                    className="
-                      flex
-                      min-w-0
-                      flex-1
-                      items-center
-                      justify-between
-                      text-left
-                    "
-                  >
-                    <span
-                      className="
-                        font-body
-                        text-sm
-                        text-[var(--color-text)]
-                      "
-                    >
-                      Wishlist
-                    </span>
-
-                    <WishlistCount />
-                  </button>
-
-                  <ChevronRight
-                    size={15}
-                    strokeWidth={1.4}
-                    className="
-                      ml-3
-                      shrink-0
-                      text-[var(--color-text-secondary)]
-                    "
-                  />
-                </div>
-
-                <div
-                  className="
-                    flex
-                    w-full
-                    items-center
-                    justify-between
-                    px-4
-                    py-4
-                  "
-                >
-                  <button
-                    type="button"
-                    onClick={() =>
-                      navigateFromMobileMenu(
-                        "/cart",
-                      )
-                    }
-                    className="
-                      flex
-                      min-w-0
-                      flex-1
-                      items-center
-                      justify-between
-                      text-left
-                    "
-                  >
-                    <span
-                      className="
-                        font-body
-                        text-sm
-                        text-[var(--color-text)]
-                      "
-                    >
-                      Shopping Bag
-                    </span>
-
-                    <CartCount />
-                  </button>
-
-                  <ChevronRight
-                    size={15}
-                    strokeWidth={1.4}
-                    className="
-                      ml-3
-                      shrink-0
-                      text-[var(--color-text-secondary)]
-                    "
-                  />
-                </div>
-              </div>
-            </nav>
-
-            {/* =================================================
-                MOBILE FOOTER
-            ================================================= */}
-
-            <div
-              className="
-                border-t
-                border-[var(--color-border)]
-                bg-[var(--color-bg-soft)]
-                px-5
-                py-4
-              "
-            >
-              <div className="flex items-center justify-between gap-4">
-                <p
-                  className="
-                    font-body
-                    text-[9px]
-                    uppercase
-                    tracking-[0.16em]
-                    text-[var(--color-text-muted)]
-                  "
-                >
-                  Timeless. Elegant. Yours.
-                </p>
-
-                <button
-                  type="button"
-                  onClick={openSearch}
-                  className="
-                    inline-flex
-                    items-center
-                    gap-1.5
-                    font-body
-                    text-[9px]
-                    font-medium
-                    uppercase
-                    tracking-[0.15em]
-                    text-[var(--color-text)]
-                  "
-                >
-                  Search
-
-                  <ArrowUpRight
-                    size={12}
-                    strokeWidth={1.3}
-                  />
-                </button>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
 
       {/* =====================================================
           SEARCH PANEL
@@ -975,46 +449,63 @@ export function HeaderActions() {
 
           <div
             className="
-              absolute
-              left-0
-              right-0
-              top-full
-              z-[60]
+              fixed
+              inset-x-0
+              top-[64px]
+              z-[70]
               border-b
               border-[var(--color-border)]
               bg-[var(--color-bg)]
               shadow-[var(--shadow-md)]
+              sm:top-[68px]
+              md:top-[72px]
+              lg:absolute
+              lg:top-full
             "
           >
             <div
               className="
                 mx-auto
                 max-w-[1600px]
-                px-5
-                sm:px-8
-                md:px-10
-                lg:px-12
-                xl:px-16
+                px-4
+                sm:px-6
+                md:px-8
+                lg:px-10
+                xl:px-14
               "
             >
               <div
                 className="
-                  border-t
-                  border-[var(--color-border)]
-                  py-5
-                  sm:py-6
+                  py-4
+                  sm:py-5
+                  md:py-6
                 "
               >
-                <div className="flex items-center justify-between gap-6">
+                <div
+                  className="
+                    flex
+                    items-center
+                    gap-4
+                  "
+                >
                   <form
                     onSubmit={
                       handleSearchSubmit
                     }
-                    className="min-w-0 flex-1"
+                    className="
+                      min-w-0
+                      flex-1
+                    "
                   >
-                    <div className="flex items-center gap-4">
+                    <div
+                      className="
+                        flex
+                        items-center
+                        gap-3
+                      "
+                    >
                       <Search
-                        size={19}
+                        size={18}
                         strokeWidth={1.2}
                         className="
                           shrink-0
@@ -1026,12 +517,15 @@ export function HeaderActions() {
                         ref={inputRef}
                         type="search"
                         value={query}
-                        onChange={(event) =>
+                        onChange={(
+                          event,
+                        ) =>
                           setQuery(
-                            event.target.value,
+                            event.target
+                              .value,
                           )
                         }
-                        placeholder="Search pieces, collections or styles"
+                        placeholder="Search products"
                         aria-label="Search products"
                         autoComplete="off"
                         className="
@@ -1041,12 +535,11 @@ export function HeaderActions() {
                           bg-transparent
                           p-0
                           font-body
-                          text-[15px]
-                          font-normal
+                          text-sm
                           text-[var(--color-text)]
                           outline-none
                           placeholder:text-[var(--color-text-muted)]
-                          sm:text-[17px]
+                          sm:text-base
                         "
                       />
 
@@ -1061,10 +554,8 @@ export function HeaderActions() {
                             text-[10px]
                             font-medium
                             uppercase
-                            tracking-[0.18em]
+                            tracking-[0.16em]
                             text-[var(--color-text)]
-                            transition-colors
-                            duration-[var(--duration-base)]
                             hover:text-[var(--color-accent)]
                             sm:inline-flex
                           "
@@ -1081,61 +572,32 @@ export function HeaderActions() {
 
                     <div
                       className="
-                        mt-4
+                        mt-3
                         h-px
                         bg-[var(--color-border)]
                       "
                     />
-
-                    <div className="mt-3 flex items-center justify-between gap-4">
-                      <p
-                        className="
-                          font-body
-                          text-[9px]
-                          uppercase
-                          tracking-[0.16em]
-                          text-[var(--color-text-muted)]
-                        "
-                      >
-                        Try “anarkali”, “ivory”
-                        or “festive”
-                      </p>
-
-                      <p
-                        className="
-                          hidden
-                          font-body
-                          text-[9px]
-                          uppercase
-                          tracking-[0.16em]
-                          text-[var(--color-text-muted)]
-                          sm:block
-                        "
-                      >
-                        Press Enter to search
-                      </p>
-                    </div>
                   </form>
 
                   <button
                     type="button"
-                    onClick={closeSearch}
+                    onClick={
+                      closeSearch
+                    }
                     aria-label="Close search"
                     className="
                       flex
-                      h-10
-                      w-10
+                      h-9
+                      w-9
                       shrink-0
                       items-center
                       justify-center
                       text-[var(--color-text-secondary)]
-                      transition-colors
-                      duration-[var(--duration-base)]
                       hover:text-[var(--color-text)]
                     "
                   >
                     <X
-                      size={19}
+                      size={18}
                       strokeWidth={1.2}
                     />
                   </button>
@@ -1146,57 +608,6 @@ export function HeaderActions() {
         </>
       )}
     </>
-  );
-}
-
-/* =========================================================
-   MOBILE NAVIGATION ITEM
-========================================================= */
-
-function MobileNavigationItem({
-  label,
-  onClick,
-}: {
-  label: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="
-        flex
-        w-full
-        items-center
-        justify-between
-        border-b
-        border-[var(--color-border)]
-        px-4
-        py-4
-        text-left
-        transition-colors
-        duration-[var(--duration-base)]
-        hover:bg-[var(--color-bg-soft)]
-      "
-    >
-      <span
-        className="
-          font-body
-          text-sm
-          text-[var(--color-text)]
-        "
-      >
-        {label}
-      </span>
-
-      <ChevronRight
-        size={15}
-        strokeWidth={1.4}
-        className="
-          text-[var(--color-text-secondary)]
-        "
-      />
-    </button>
   );
 }
 
@@ -1214,10 +625,10 @@ function GuestAccountPopup({
       className="
         absolute
         right-0
-        top-[calc(100%+14px)]
+        top-[calc(100%+12px)]
         z-[100]
-        w-[340px]
-        max-w-[calc(100vw-32px)]
+        w-[320px]
+        max-w-[calc(100vw-24px)]
       "
     >
       <div
@@ -1229,8 +640,6 @@ function GuestAccountPopup({
           shadow-[var(--shadow-lg)]
         "
       >
-        {/* HEADER */}
-
         <div
           className="
             relative
@@ -1247,17 +656,14 @@ function GuestAccountPopup({
             aria-label="Close account menu"
             className="
               absolute
-              right-4
-              top-4
+              right-3
+              top-3
               flex
               h-8
               w-8
               items-center
               justify-center
               text-[var(--color-text-secondary)]
-              transition-colors
-              duration-[var(--duration-base)]
-              hover:bg-[var(--color-bg-soft)]
               hover:text-[var(--color-text)]
             "
           >
@@ -1267,53 +673,48 @@ function GuestAccountPopup({
             />
           </button>
 
-          <div className="pr-8">
-            <p
-              className="
-                eyebrow
-                text-[var(--color-accent)]
-              "
-            >
-              Your Account
-            </p>
+          <p
+            className="
+              eyebrow
+              text-[var(--color-accent)]
+            "
+          >
+            Your Account
+          </p>
 
-            <h3
-              className="
-                mt-2.5
-                font-display
-                text-3xl
-                leading-none
-                tracking-[-0.025em]
-                text-[var(--color-text)]
-              "
-            >
-              Welcome to Aayesha
-            </h3>
+          <h3
+            className="
+              mt-2
+              font-display
+              text-2xl
+              leading-tight
+              tracking-[-0.025em]
+              text-[var(--color-text)]
+            "
+          >
+            Welcome to Aayesha
+          </h3>
 
-            <p
-              className="
-                mt-4
-                max-w-[270px]
-                font-body
-                text-xs
-                leading-6
-                text-[var(--color-text-secondary)]
-              "
-            >
-              Sign in to manage your orders,
-              addresses and account details, or
-              create a new account to get started.
-            </p>
-          </div>
+          <p
+            className="
+              mt-3
+              max-w-[270px]
+              font-body
+              text-xs
+              leading-5
+              text-[var(--color-text-secondary)]
+            "
+          >
+            Sign in or create an account
+            to manage your orders and
+            details.
+          </p>
         </div>
-
-        {/* AUTH ACTIONS */}
 
         <div
           className="
             border-b
             border-[var(--color-border)]
-            bg-[var(--color-surface)]
             p-4
           "
         >
@@ -1323,21 +724,16 @@ function GuestAccountPopup({
               onClick={onClose}
               className="
                 flex
-                h-11
+                h-10
                 items-center
                 justify-center
-                border
-                border-[var(--color-text)]
                 bg-[var(--color-text)]
                 font-body
                 text-[9px]
                 font-medium
                 uppercase
-                tracking-[0.17em]
+                tracking-[0.16em]
                 text-[var(--color-text-inverse)]
-                transition-opacity
-                duration-[var(--duration-base)]
-                hover:opacity-90
               "
             >
               Sign In
@@ -1348,21 +744,17 @@ function GuestAccountPopup({
               onClick={onClose}
               className="
                 flex
-                h-11
+                h-10
                 items-center
                 justify-center
                 border
                 border-[var(--color-border)]
-                bg-[var(--color-bg)]
                 font-body
                 text-[9px]
                 font-medium
                 uppercase
-                tracking-[0.17em]
+                tracking-[0.16em]
                 text-[var(--color-text)]
-                transition-colors
-                duration-[var(--duration-base)]
-                hover:bg-[var(--color-bg-soft)]
               "
             >
               Sign Up
@@ -1370,15 +762,7 @@ function GuestAccountPopup({
           </div>
         </div>
 
-        {/* ACCOUNT BENEFITS */}
-
-        <div
-          className="
-            bg-[var(--color-bg)]
-            px-5
-            py-5
-          "
-        >
+        <div className="px-5 py-5">
           <p
             className="
               eyebrow
