@@ -913,139 +913,150 @@ export function MobileMenu({
                 QUICK LINKS
             ================================================= */}
 
-            <div className="mt-7 px-5 sm:px-7">
-              <p className="eyebrow mb-3">
-                Quick Access
-              </p>
+            {/* =================================================
+    QUICK ACCESS
+================================================= */}
 
-              <div className="grid grid-cols-2 gap-2">
-                {/* SEARCH */}
+<div className="mt-7 px-5 sm:px-7">
+  <p className="eyebrow mb-3">
+    Quick Access
+  </p>
 
-                <Link
-                  href="/search"
-                  onClick={onClose}
-                  className="
-                    group
-                    flex
-                    items-center
-                    gap-3
-                    border
-                    border-[var(--color-border)]
-                    bg-[var(--color-surface)]
-                    px-3.5
-                    py-3.5
-                    font-body
-                    text-[10px]
-                    font-medium
-                    text-[var(--color-text)]
-                    transition-all
-                    duration-[var(--duration-base)]
-                    hover:border-[var(--color-text)]
-                    hover:bg-[var(--color-bg-soft)]
-                  "
-                >
-                  <Search
-                    size={15}
-                    strokeWidth={1.25}
-                    className="
-                      text-[var(--color-text-secondary)]
-                      transition-colors
-                      duration-[var(--duration-base)]
-                      group-hover:text-[var(--color-accent)]
-                    "
-                  />
+  <div className="grid grid-cols-2 gap-2">
+    {/* SEARCH */}
 
-                  Search
-                </Link>
+    <Link
+      href="/search"
+      onClick={onClose}
+      className="
+        group
+        flex
+        items-center
+        gap-3
+        border
+        border-[var(--color-border)]
+        bg-[var(--color-surface)]
+        px-3.5
+        py-3.5
+        font-body
+        text-[10px]
+        font-medium
+        text-[var(--color-text)]
+        transition-all
+        duration-[var(--duration-base)]
+        hover:border-[var(--color-text)]
+        hover:bg-[var(--color-bg-soft)]
+      "
+    >
+      <Search
+        size={15}
+        strokeWidth={1.25}
+        className="
+          text-[var(--color-text-secondary)]
+          transition-colors
+          duration-[var(--duration-base)]
+          group-hover:text-[var(--color-accent)]
+        "
+      />
 
-                {/* WISHLIST */}
+      Search
+    </Link>
 
-                <Link
-                  href="/wishlist"
-                  onClick={onClose}
-                  className="
-                    group
-                    flex
-                    items-center
-                    gap-3
-                    border
-                    border-[var(--color-border)]
-                    bg-[var(--color-surface)]
-                    px-3.5
-                    py-3.5
-                    font-body
-                    text-[10px]
-                    font-medium
-                    text-[var(--color-text)]
-                    transition-all
-                    duration-[var(--duration-base)]
-                    hover:border-[var(--color-text)]
-                    hover:bg-[var(--color-bg-soft)]
-                  "
-                >
-                  <Heart
-                    size={15}
-                    strokeWidth={1.25}
-                    className="
-                      text-[var(--color-text-secondary)]
-                      transition-colors
-                      duration-[var(--duration-base)]
-                      group-hover:text-[var(--color-accent)]
-                    "
-                  />
+    {/* WISHLIST */}
 
-                  Wishlist
-                </Link>
+    <Link
+      href="/wishlist"
+      onClick={onClose}
+      className="
+        group
+        flex
+        items-center
+        gap-3
+        border
+        border-[var(--color-border)]
+        bg-[var(--color-surface)]
+        px-3.5
+        py-3.5
+        font-body
+        text-[10px]
+        font-medium
+        text-[var(--color-text)]
+        transition-all
+        duration-[var(--duration-base)]
+        hover:border-[var(--color-text)]
+        hover:bg-[var(--color-bg-soft)]
+      "
+    >
+      <Heart
+        size={15}
+        strokeWidth={1.25}
+        className="
+          text-[var(--color-text-secondary)]
+          transition-colors
+          duration-[var(--duration-base)]
+          group-hover:text-[var(--color-accent)]
+        "
+      />
 
-                {/* SHOPPING BAG */}
+      Wishlist
+    </Link>
 
-                <Link
-                  href="/cart"
-                  onClick={onClose}
-                  className="
-                    group
-                    col-span-2
-                    flex
-                    items-center
-                    justify-between
-                    border
-                    border-[var(--color-text)]
-                    bg-[var(--color-text)]
-                    px-4
-                    py-3.5
-                    font-body
-                    text-[10px]
-                    font-semibold
-                    uppercase
-                    tracking-[0.14em]
-                    text-[var(--color-text-inverse)]
-                    transition-all
-                    duration-[var(--duration-base)]
-                    hover:border-[var(--color-accent-dark)]
-                    hover:bg-[var(--color-accent-dark)]
-                  "
-                >
-                  <span className="flex items-center gap-3">
-                    <ShoppingBag
-                      size={15}
-                      strokeWidth={1.25}
-                    />
+    {/* MY ACCOUNT */}
 
-                    Shopping Bag
-                  </span>
+    <Link
+      href={isLoggedIn ? "/account" : "/login"}
+      onClick={onClose}
+      className="
+        group
+        col-span-2
+        flex
+        items-center
+        justify-between
+        border
+        border-[var(--color-border)]
+        bg-[var(--color-surface)]
+        px-4
+        py-3.5
+        font-body
+        text-[10px]
+        font-medium
+        text-[var(--color-text)]
+        transition-all
+        duration-[var(--duration-base)]
+        hover:border-[var(--color-text)]
+        hover:bg-[var(--color-bg-soft)]
+      "
+    >
+      <span className="flex items-center gap-3">
+        <UserRound
+          size={15}
+          strokeWidth={1.25}
+          className="
+            text-[var(--color-text-secondary)]
+            transition-colors
+            duration-[var(--duration-base)]
+            group-hover:text-[var(--color-accent)]
+          "
+        />
 
-                  <ChevronRight
-                    size={15}
-                    strokeWidth={1.25}
-                    className="
-                      transition-transform
-                      duration-[var(--duration-base)]
-                      group-hover:translate-x-0.5
-                    "
-                  />
-                </Link>
-              </div>
-            </div>
+        {isLoggedIn
+          ? "My Account"
+          : "Sign In / Account"}
+      </span>
+
+      <ChevronRight
+        size={15}
+        strokeWidth={1.25}
+        className="
+          text-[var(--color-text-muted)]
+          transition-transform
+          duration-[var(--duration-base)]
+          group-hover:translate-x-0.5
+        "
+      />
+    </Link>
+  </div>
+</div>
 
             {/* =================================================
                 EDITORIAL NOTE

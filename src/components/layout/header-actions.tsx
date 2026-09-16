@@ -3,7 +3,6 @@
 import Link from "next/link";
 import {
   ArrowUpRight,
-  ChevronRight,
   Heart,
   Search,
   ShoppingBag,
@@ -94,10 +93,7 @@ export function HeaderActions() {
   ======================================================= */
 
   useEffect(() => {
-    if (
-      !searchOpen &&
-      !accountOpen
-    ) {
+    if (!searchOpen && !accountOpen) {
       return;
     }
 
@@ -123,10 +119,7 @@ export function HeaderActions() {
         handleKeyDown,
       );
     };
-  }, [
-    searchOpen,
-    accountOpen,
-  ]);
+  }, [searchOpen, accountOpen]);
 
   /* =======================================================
      ACCOUNT OUTSIDE CLICK
@@ -221,8 +214,7 @@ export function HeaderActions() {
   const accountLabel =
     isInitialized && loggedIn
       ? `Account for ${
-          user?.name ??
-          "customer"
+          user?.name ?? "customer"
         }`
       : "Sign in or account";
 
@@ -236,11 +228,11 @@ export function HeaderActions() {
         className="
           flex
           items-center
-          gap-0
         "
       >
         {/* =================================================
             SEARCH
+            Desktop only
         ================================================= */}
 
         <button
@@ -249,17 +241,16 @@ export function HeaderActions() {
           aria-label="Search"
           aria-expanded={searchOpen}
           className="
-            flex
-            h-9
-            w-9
+            hidden
+            h-10
+            w-10
             items-center
             justify-center
             text-current
             transition-colors
             duration-300
             hover:text-[var(--color-accent)]
-            sm:h-10
-            sm:w-10
+            lg:flex
           "
         >
           <Search
@@ -270,6 +261,7 @@ export function HeaderActions() {
 
         {/* =================================================
             ACCOUNT
+            Desktop only
         ================================================= */}
 
         <div
@@ -277,17 +269,13 @@ export function HeaderActions() {
           className="
             relative
             hidden
-            sm:block
+            lg:block
           "
         >
           <button
             type="button"
-            onClick={
-              handleAccountClick
-            }
-            aria-label={
-              accountLabel
-            }
+            onClick={handleAccountClick}
+            aria-label={accountLabel}
             aria-expanded={
               isInitialized
                 ? accountOpen
@@ -300,16 +288,14 @@ export function HeaderActions() {
             }
             className="
               flex
-              h-9
-              w-9
+              h-10
+              w-10
               items-center
               justify-center
               text-current
               transition-colors
               duration-300
               hover:text-[var(--color-accent)]
-              sm:h-10
-              sm:w-10
             "
           >
             <UserRound
@@ -337,13 +323,9 @@ export function HeaderActions() {
           {isInitialized &&
             loggedIn && (
               <AccountPopup
-                isOpen={
-                  accountOpen
-                }
+                isOpen={accountOpen}
                 onClose={() =>
-                  setAccountOpen(
-                    false,
-                  )
+                  setAccountOpen(false)
                 }
               />
             )}
@@ -353,9 +335,7 @@ export function HeaderActions() {
             accountOpen && (
               <GuestAccountPopup
                 onClose={() =>
-                  setAccountOpen(
-                    false,
-                  )
+                  setAccountOpen(false)
                 }
               />
             )}
@@ -363,6 +343,7 @@ export function HeaderActions() {
 
         {/* =================================================
             WISHLIST
+            Desktop only
         ================================================= */}
 
         <Link
@@ -373,17 +354,16 @@ export function HeaderActions() {
           }
           className="
             relative
-            flex
-            h-9
-            w-9
+            hidden
+            h-10
+            w-10
             items-center
             justify-center
             text-current
             transition-colors
             duration-300
             hover:text-[var(--color-accent)]
-            sm:h-10
-            sm:w-10
+            lg:flex
           "
         >
           <Heart
@@ -396,6 +376,7 @@ export function HeaderActions() {
 
         {/* =================================================
             SHOPPING BAG
+            Mobile + Desktop
         ================================================= */}
 
         <Link
@@ -451,14 +432,14 @@ export function HeaderActions() {
             className="
               fixed
               inset-x-0
-              top-[64px]
+              top-[72px]
               z-[70]
               border-b
               border-[var(--color-border)]
               bg-[var(--color-bg)]
               shadow-[var(--shadow-md)]
-              sm:top-[68px]
-              md:top-[72px]
+              sm:top-[76px]
+              md:top-[80px]
               lg:absolute
               lg:top-full
             "
@@ -517,12 +498,9 @@ export function HeaderActions() {
                         ref={inputRef}
                         type="search"
                         value={query}
-                        onChange={(
-                          event,
-                        ) =>
+                        onChange={(event) =>
                           setQuery(
-                            event.target
-                              .value,
+                            event.target.value,
                           )
                         }
                         placeholder="Search products"
@@ -581,9 +559,7 @@ export function HeaderActions() {
 
                   <button
                     type="button"
-                    onClick={
-                      closeSearch
-                    }
+                    onClick={closeSearch}
                     aria-label="Close search"
                     className="
                       flex
@@ -787,6 +763,7 @@ function GuestAccountPopup({
               title="Manage your profile"
               description="Keep your account information updated."
             />
+
           </div>
         </div>
       </div>
