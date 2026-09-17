@@ -23,47 +23,39 @@ export async function BestSellers() {
       className="bg-[var(--color-cream)]"
     >
       <Container>
-        <div className="pt-16 pb-16 sm:pt-20 sm:pb-20 lg:pt-24 lg:pb-24">
-          {/* =====================================================
-              SECTION HEADER
-          ===================================================== */}
+        <div className="py-8 sm:py-10 lg:py-12">
 
-          <div className="border-t border-[var(--color-border)] pt-5 sm:pt-6">
+          {/* Section Header */}
+          <div className="border-t border-[var(--color-border)] pt-4 sm:pt-5">
+
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <span className="h-px w-9 bg-[var(--color-rose-dark)]" />
+              <div className="flex items-center gap-3">
+                <span className="h-px w-7 bg-[var(--color-rose-dark)]" />
 
-                <p className="text-[8px] font-semibold uppercase tracking-[0.3em] text-[var(--color-text-secondary)] sm:text-[9px]">
+                <p className="text-[8px] font-semibold uppercase tracking-[0.28em] text-[var(--color-text-secondary)] sm:text-[9px]">
                   Most Loved
                 </p>
               </div>
 
-              <span className="font-display text-lg text-[var(--color-text-muted)] sm:text-xl">
-                {String(bestSellers.length).padStart(
-                  2,
-                  "0",
-                )}
+              <span className="font-display text-base text-[var(--color-text-muted)] sm:text-lg">
+                {String(bestSellers.length).padStart(2, "0")}
               </span>
             </div>
 
-            {/* ===================================================
-                TITLE
-            =================================================== */}
-
-            <div className="mt-8 flex justify-center text-center sm:mt-10">
+            {/* Title */}
+            <div className="mt-6 text-center sm:mt-7">
               <h2
                 className="
-                  whitespace-nowrap
                   font-display
-                  text-[2.4rem]
+                  text-[2.7rem]
                   font-medium
-                  leading-none
+                  leading-[0.95]
                   tracking-[-0.045em]
                   text-[var(--color-charcoal)]
-                  sm:text-[3.4rem]
-                  md:text-[4.4rem]
-                  lg:text-[5.2rem]
-                  xl:text-[5.8rem]
+                  sm:text-[3.5rem]
+                  md:text-[4.3rem]
+                  lg:text-[5rem]
+                  xl:text-[5.5rem]
                 "
               >
                 Best{" "}
@@ -73,47 +65,41 @@ export async function BestSellers() {
               </h2>
             </div>
 
-            <p className="mx-auto mt-4 max-w-xl text-center text-sm leading-7 text-[var(--color-text-secondary)] sm:text-[15px] sm:leading-8">
+            <p className="mx-auto mt-3 max-w-lg text-center text-[13px] leading-6 text-[var(--color-text-secondary)] sm:mt-4 sm:text-sm sm:leading-7">
               Discover the silhouettes our customers return
               to time and again.
             </p>
           </div>
 
-          {/* =====================================================
-              PRODUCT CAROUSEL
-          ===================================================== */}
-
+          {/* Product Carousel */}
           {bestSellers.length > 0 ? (
-            <div className="mt-12 sm:mt-14 lg:mt-16">
+            <div className="mt-8 sm:mt-10 lg:mt-12">
               <ProductCarousel
                 products={bestSellers}
                 ariaLabel="Best selling products"
               />
             </div>
           ) : (
-            <div className="mt-12 border-y border-[var(--color-border)] py-16 text-center">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
+            <div className="mt-8 border-y border-[var(--color-border)] py-10 text-center sm:py-12">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
                 Coming soon
               </p>
 
-              <p className="mt-3 font-display text-2xl text-[var(--color-charcoal)]">
+              <p className="mt-2 font-display text-xl text-[var(--color-charcoal)] sm:text-2xl">
                 Our most-loved edit is being curated.
               </p>
             </div>
           )}
 
-          {/* =====================================================
-              CTA
-          ===================================================== */}
-
-          <div className="mt-8 flex justify-center border-t border-[var(--color-border)] pt-6 sm:mt-10 sm:pt-7">
+          {/* CTA */}
+          <div className="mt-7 flex justify-center border-t border-[var(--color-border)] pt-5 sm:mt-8 sm:pt-6">
             <LinkButton
               href="/collections/best-sellers"
               variant="secondary"
               size="md"
               icon={
                 <ArrowUpRight
-                  size={16}
+                  size={15}
                   strokeWidth={1.4}
                 />
               }
@@ -121,6 +107,7 @@ export async function BestSellers() {
               View All Best Sellers
             </LinkButton>
           </div>
+
         </div>
       </Container>
     </section>
