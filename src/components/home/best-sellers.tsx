@@ -23,39 +23,24 @@ export async function BestSellers() {
       className="bg-[var(--color-cream)]"
     >
       <Container>
-        <div className="py-8 sm:py-10 lg:py-12">
+        <div className="py-5 sm:py-6 lg:py-8">
 
           {/* Section Header */}
-          <div className="border-t border-[var(--color-border)] pt-4 sm:pt-5">
+          <div className="border-t border-[var(--color-border)] pt-3 sm:pt-4">
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="h-px w-7 bg-[var(--color-rose-dark)]" />
-
-                <p className="text-[8px] font-semibold uppercase tracking-[0.28em] text-[var(--color-text-secondary)] sm:text-[9px]">
-                  Most Loved
-                </p>
-              </div>
-
-              <span className="font-display text-base text-[var(--color-text-muted)] sm:text-lg">
-                {String(bestSellers.length).padStart(2, "0")}
-              </span>
-            </div>
-
-            {/* Title */}
-            <div className="mt-6 text-center sm:mt-7">
+            <div className="text-center">
               <h2
                 className="
                   font-display
-                  text-[2.7rem]
+                  text-[2.5rem]
                   font-medium
                   leading-[0.95]
                   tracking-[-0.045em]
                   text-[var(--color-charcoal)]
-                  sm:text-[3.5rem]
-                  md:text-[4.3rem]
-                  lg:text-[5rem]
-                  xl:text-[5.5rem]
+                  sm:text-[3.3rem]
+                  md:text-[4rem]
+                  lg:text-[4.7rem]
+                  xl:text-[5.2rem]
                 "
               >
                 Best{" "}
@@ -63,36 +48,36 @@ export async function BestSellers() {
                   Sellers.
                 </span>
               </h2>
-            </div>
 
-            <p className="mx-auto mt-3 max-w-lg text-center text-[13px] leading-6 text-[var(--color-text-secondary)] sm:mt-4 sm:text-sm sm:leading-7">
-              Discover the silhouettes our customers return
-              to time and again.
-            </p>
+              <p className="mx-auto mt-2 max-w-lg text-[12px] leading-5 text-[var(--color-text-secondary)] sm:mt-3 sm:text-sm sm:leading-6">
+                Discover the silhouettes our customers return
+                to time and again.
+              </p>
+            </div>
           </div>
 
           {/* Product Carousel */}
           {bestSellers.length > 0 ? (
-            <div className="mt-8 sm:mt-10 lg:mt-12">
+            <div className="mt-6 sm:mt-8 lg:mt-9">
               <ProductCarousel
                 products={bestSellers}
                 ariaLabel="Best selling products"
               />
             </div>
           ) : (
-            <div className="mt-8 border-y border-[var(--color-border)] py-10 text-center sm:py-12">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
+            <div className="mt-6 border-y border-[var(--color-border)] py-8 text-center sm:py-10">
+              <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
                 Coming soon
               </p>
 
-              <p className="mt-2 font-display text-xl text-[var(--color-charcoal)] sm:text-2xl">
+              <p className="mt-2 font-display text-lg text-[var(--color-charcoal)] sm:text-xl">
                 Our most-loved edit is being curated.
               </p>
             </div>
           )}
 
           {/* CTA */}
-          <div className="mt-7 flex justify-center border-t border-[var(--color-border)] pt-5 sm:mt-8 sm:pt-6">
+          <div className="mt-5 flex justify-center sm:mt-6">
             <LinkButton
               href="/collections/best-sellers"
               variant="secondary"
