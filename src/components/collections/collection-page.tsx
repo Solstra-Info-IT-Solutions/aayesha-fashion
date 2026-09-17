@@ -1,18 +1,13 @@
-"use client";
-
 import Link from "next/link";
 import {
   ArrowRight,
   ArrowUpRight,
-  Sparkles,
 } from "lucide-react";
 
 import type {
   Product,
   ProductSort,
 } from "@/types/product";
-
-import type { Category } from "@/types/category";
 
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-json-ld";
 import { ShopFilters } from "@/components/shop/shop-filters";
@@ -30,8 +25,22 @@ type CollectionPageProps = {
   products: Product[];
   sort: ProductSort;
   mood?: string;
-  categories: Category[];
 };
+
+/* =========================================================
+   COLLECTION LINKS
+========================================================= */
+
+const collectionLinks = [
+  {
+    label: "New Arrivals",
+    href: "/collections/new-arrivals",
+  },
+  {
+    label: "Best Sellers",
+    href: "/collections/best-sellers",
+  },
+] as const;
 
 /* =========================================================
    COMPONENT
@@ -44,17 +53,12 @@ export function CollectionPage({
   categoryId,
   products,
   sort,
-  mood = "Considered silhouettes. Effortless presence.",
-  categories,
+  mood,
 }: CollectionPageProps) {
-  const activeCategorySlug =
-    categories.find(
-      (category) => category.id === categoryId
-    )?.slug ??
-    title
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, "-");
+  const currentSlug = title
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-");
 
   return (
     <>
@@ -74,7 +78,7 @@ export function CollectionPage({
           },
           {
             name: title,
-            url: `/collections/${activeCategorySlug}`,
+            url: `/collections/${currentSlug}`,
           },
         ]}
       />
@@ -87,7 +91,7 @@ export function CollectionPage({
         <section className="bg-[var(--color-bg)]">
           <div className="mx-auto max-w-[1500px] px-4 sm:px-6 lg:px-8">
             <div className="py-8 sm:py-10 lg:py-12">
-              <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-end xl:grid-cols-[minmax(0,1fr)_320px]">
+              <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_250px] lg:items-end xl:grid-cols-[minmax(0,1fr)_280px]">
                 {/* HERO COPY */}
 
                 <div className="max-w-3xl">
@@ -103,14 +107,14 @@ export function CollectionPage({
                     className="
                       mt-4
                       font-display
-                      text-[2.8rem]
+                      text-[2.7rem]
                       font-medium
                       leading-[0.92]
                       tracking-[-0.04em]
                       text-[var(--color-text)]
-                      sm:text-[3.6rem]
-                      md:text-[4.2rem]
-                      lg:text-[4.7rem]
+                      sm:text-[3.4rem]
+                      md:text-[3.9rem]
+                      lg:text-[4.3rem]
                     "
                   >
                     {title}
@@ -118,7 +122,7 @@ export function CollectionPage({
 
                   <p
                     className="
-                      mt-5
+                      mt-4
                       max-w-2xl
                       font-body
                       text-[13px]
@@ -131,31 +135,10 @@ export function CollectionPage({
                     {description}
                   </p>
 
-                  <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
-                    <div
-                      className="
-                        inline-flex
-                        items-center
-                        gap-2
-                        font-body
-                        text-[9px]
-                        font-semibold
-                        uppercase
-                        tracking-[0.18em]
-                        text-[var(--color-text)]
-                      "
-                    >
-                      <Sparkles
-                        size={13}
-                        strokeWidth={1.25}
-                        className="text-[var(--color-accent)]"
-                      />
-
-                      Curated for modern Indian dressing
-                    </div>
-
+                  {mood && (
                     <p
                       className="
+                        mt-4
                         font-display
                         text-xs
                         italic
@@ -164,70 +147,50 @@ export function CollectionPage({
                     >
                       {mood}
                     </p>
-                  </div>
+                  )}
                 </div>
 
-                {/* CATEGORY NAVIGATION */}
+                {/* COLLECTION NAVIGATION */}
 
-                {categories.length > 0 && (
-                  <div className="lg:pl-6">
-                    <div className="mb-3">
-                      <p className="font-body text-[9px] font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
-                        Browse categories
-                      </p>
-                    </div>
+                <div>
+                  <p className="mb-2 font-body text-[9px] font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
+                    Explore collections
+                  </p>
 
-                    <div className="space-y-0.5">
-                      {categories.map((category) => {
-                        const isActive =
-                          category.id === categoryId;
+                  <div className="flex flex-wrap gap-2">
+                    {collectionLinks.map((item) => {
+                      const isActive =
+                        item.href ===
+                        `/collections/${currentSlug}`;
 
-                        return (
-                          <Link
-                            key={category.id}
-                            href={`/collections/${category.slug}`}
-                            aria-current={
-                              isActive
-                                ? "page"
-                                : undefined
-                            }
-                            className="
-                              group
-                              flex
-                              items-center
-                              justify-between
-                              py-2
-                              font-body
-                              text-sm
-                              transition-colors
-                              duration-200
-                            "
-                          >
-                            <span
-                              className={
-                                isActive
-                                  ? "font-semibold text-[var(--color-text)]"
-                                  : "font-medium text-[var(--color-text-secondary)] group-hover:text-[var(--color-text)]"
-                              }
-                            >
-                              {category.name}
-                            </span>
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          aria-current={
+                            isActive
+                              ? "page"
+                              : undefined
+                          }
+                          className={[
+                            "group inline-flex items-center gap-1.5 border px-3.5 py-2.5 font-body text-[9px] font-semibold uppercase tracking-[0.16em] transition-colors duration-200",
+                            isActive
+                              ? "border-[var(--color-text)] bg-[var(--color-text)] text-[var(--color-text-inverse)]"
+                              : "border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-text)] hover:text-[var(--color-text)]",
+                          ].join(" ")}
+                        >
+                          {item.label}
 
-                            <ArrowUpRight
-                              size={14}
-                              strokeWidth={1.3}
-                              className={
-                                isActive
-                                  ? "text-[var(--color-accent)]"
-                                  : "text-[var(--color-text-muted)] transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                              }
-                            />
-                          </Link>
-                        );
-                      })}
-                    </div>
+                          <ArrowUpRight
+                            size={13}
+                            strokeWidth={1.3}
+                            className="transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                          />
+                        </Link>
+                      );
+                    })}
                   </div>
-                )}
+                </div>
               </div>
             </div>
           </div>
@@ -327,69 +290,99 @@ export function CollectionPage({
 
         <section className="bg-[var(--color-bg-soft)]">
           <div className="mx-auto max-w-[1500px] px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-              <div className="max-w-xl">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
                 <p className="eyebrow text-[var(--color-accent)]">
                   Continue exploring
                 </p>
 
                 <h2
                   className="
-                    mt-2
+                    mt-1.5
                     font-display
-                    text-[1.7rem]
+                    text-[1.6rem]
                     font-medium
-                    leading-[1]
+                    leading-none
                     tracking-[-0.03em]
                     text-[var(--color-text)]
-                    sm:text-[2rem]
-                    lg:text-[2.3rem]
+                    sm:text-[1.9rem]
+                    lg:text-[2.1rem]
                   "
                 >
-                  Find pieces that become part of your story.
+                  Discover more from Ayesha Fashion.
                 </h2>
               </div>
 
-              <Link
-                href="/collections/new-arrivals"
-                className="
-                  group
-                  inline-flex
-                  min-h-10
-                  w-fit
-                  items-center
-                  justify-center
-                  gap-2
-                  border
-                  border-[var(--color-text)]
-                  bg-[var(--color-text)]
-                  px-5
-                  py-2.5
-                  font-body
-                  text-[9px]
-                  font-semibold
-                  uppercase
-                  tracking-[0.18em]
-                  text-[var(--color-text-inverse)]
-                  transition-colors
-                  duration-200
-                  hover:bg-[var(--color-accent-dark)]
-                  hover:border-[var(--color-accent-dark)]
-                  focus:outline-none
-                  focus:ring-2
-                  focus:ring-[var(--color-accent)]
-                  focus:ring-offset-2
-                  focus:ring-offset-[var(--color-bg-soft)]
-                "
-              >
-                New arrivals
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href="/collections/new-arrivals"
+                  className="
+                    group
+                    inline-flex
+                    min-h-10
+                    items-center
+                    justify-center
+                    gap-2
+                    border
+                    border-[var(--color-text)]
+                    bg-[var(--color-text)]
+                    px-4
+                    py-2.5
+                    font-body
+                    text-[9px]
+                    font-semibold
+                    uppercase
+                    tracking-[0.16em]
+                    text-[var(--color-text-inverse)]
+                    transition-colors
+                    duration-200
+                    hover:bg-[var(--color-accent-dark)]
+                    hover:border-[var(--color-accent-dark)]
+                  "
+                >
+                  New Arrivals
 
-                <ArrowUpRight
-                  size={14}
-                  strokeWidth={1.3}
-                  className="transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                />
-              </Link>
+                  <ArrowUpRight
+                    size={13}
+                    strokeWidth={1.3}
+                    className="transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                  />
+                </Link>
+
+                <Link
+                  href="/collections/best-sellers"
+                  className="
+                    group
+                    inline-flex
+                    min-h-10
+                    items-center
+                    justify-center
+                    gap-2
+                    border
+                    border-[var(--color-border)]
+                    bg-transparent
+                    px-4
+                    py-2.5
+                    font-body
+                    text-[9px]
+                    font-semibold
+                    uppercase
+                    tracking-[0.16em]
+                    text-[var(--color-text)]
+                    transition-colors
+                    duration-200
+                    hover:border-[var(--color-text)]
+                  "
+                >
+                  Best Sellers
+
+                  <ArrowUpRight
+                    size={13}
+                    strokeWidth={1.3}
+                    className="transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                  />
+                </Link>
+              </div>
             </div>
           </div>
         </section>
