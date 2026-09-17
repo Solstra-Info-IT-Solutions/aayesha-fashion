@@ -39,20 +39,6 @@ export function Newsletter({
     >
       <Container>
         <div className="py-7 sm:py-9 lg:py-11">
-          {/* HEADER */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="h-px w-7 bg-[var(--color-rose-dark)]" />
-
-              <p className="text-[8px] font-semibold uppercase tracking-[0.28em] text-[var(--color-text-secondary)] sm:text-[9px]">
-                {data.eyebrow}
-              </p>
-            </div>
-
-            <span className="font-display text-sm text-[var(--color-text-muted)] sm:text-base">
-              13
-            </span>
-          </div>
 
           {/* INTRO */}
           <div className="mx-auto mt-7 max-w-3xl text-center sm:mt-9">
