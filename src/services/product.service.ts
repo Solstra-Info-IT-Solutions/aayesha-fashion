@@ -179,29 +179,9 @@ export async function getProducts(
 }
 
 /* =========================================================
-   GET PRODUCT BY SLUG
-========================================================= */
-
-export async function getProductBySlug(
-  slug: string,
-): Promise<Product> {
-  return apiFetch<Product>(
-    `/products/slug/${encodeURIComponent(
-      slug,
-    )}`,
-  );
-}
-
-/* =========================================================
    GET PRODUCT BY ID
 ========================================================= */
 
-export async function getProductById(
-  id: string,
-): Promise<Product> {
-  return apiFetch<Product>(
-    `/products/id/${encodeURIComponent(
-      id,
-    )}`,
-  );
+export async function getProductById(id: string): Promise<Product> {
+  return apiFetch<Product>(`/products/${encodeURIComponent(id)}`);
 }

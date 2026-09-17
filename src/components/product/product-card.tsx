@@ -317,7 +317,7 @@ export function ProductCard({
             "
           >
             <WishlistButton
-              productId={product.id}
+              productId={product._id}
               productName={product.name}
             />
           </div>

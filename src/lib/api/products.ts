@@ -176,20 +176,6 @@ export async function getProducts(
 }
 
 /* ============================================================
-   GET PRODUCT BY SLUG
-============================================================ */
-
-export async function getProductBySlug(
-  slug: string,
-): Promise<Product> {
-  return apiFetch<Product>(
-    `/products/slug/${encodeURIComponent(
-      slug,
-    )}`,
-  );
-}
-
-/* ============================================================
    GET PRODUCT BY ID
 ============================================================ */
 

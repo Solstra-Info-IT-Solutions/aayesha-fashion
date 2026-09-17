@@ -494,7 +494,7 @@ export function CartContent() {
                     {/* IMAGE */}
 
                     <Link
-                      href={`/products/${product.slug}`}
+                      href={`/products/${product._id}`}
                       className="
                         group
                         relative
@@ -537,7 +537,7 @@ export function CartContent() {
                           </p>
 
                           <Link
-                            href={`/products/${product.slug}`}
+                            href={`/products/${product._id}`}
                             className="
                               mt-1
                               block

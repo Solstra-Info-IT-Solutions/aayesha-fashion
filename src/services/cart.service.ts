@@ -20,6 +20,7 @@ export interface CartProductInventory {
 }
 
 export interface CartProduct {
+  _id: string;
   id: string;
   slug: string;
   name: string;
