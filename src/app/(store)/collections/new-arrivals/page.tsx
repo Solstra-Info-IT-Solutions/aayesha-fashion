@@ -123,14 +123,7 @@ export default async function NewArrivalsPage({
             </h1>
           </div>
 
-          {/* Toolbar */}
-          <div className="border-t border-[var(--color-border-light)]">
-            <ShopHeader
-              products={response.products}
-              selectedCategory={categoryId}
-              selectedSort={sort}
-            />
-          </div>
+          
         </div>
       </section>
 
