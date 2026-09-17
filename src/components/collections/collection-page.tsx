@@ -12,6 +12,8 @@ import type {
   ProductSort,
 } from "@/types/product";
 
+import type { Category } from "@/types/category";
+
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-json-ld";
 import { ShopFilters } from "@/components/shop/shop-filters";
 import { ShopProductGrid } from "@/components/shop/shop-product-grid";
@@ -28,26 +30,8 @@ type CollectionPageProps = {
   products: Product[];
   sort: ProductSort;
   mood?: string;
+  categories: Category[];
 };
-
-/* =========================================================
-   COLLECTION CONFIG
-========================================================= */
-
-const collectionLinks = [
-  {
-    label: "Festive",
-    href: "/collections/festive",
-  },
-  {
-    label: "Ethnic",
-    href: "/collections/ethnic",
-  },
-  {
-    label: "Contemporary",
-    href: "/collections/contemporary",
-  },
-] as const;
 
 /* =========================================================
    COMPONENT
@@ -61,11 +45,21 @@ export function CollectionPage({
   products,
   sort,
   mood = "Considered silhouettes. Effortless presence.",
+  categories,
 }: CollectionPageProps) {
+  const activeCategorySlug =
+    categories.find(
+      (category) => category.id === categoryId
+    )?.slug ??
+    title
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "-");
+
   return (
     <>
       {/* =====================================================
-          COLLECTION BREADCRUMB JSON-LD
+          BREADCRUMB JSON-LD
       ===================================================== */}
 
       <BreadcrumbJsonLd
@@ -80,42 +74,43 @@ export function CollectionPage({
           },
           {
             name: title,
-            url: `/collections/${title
-              .toLowerCase()
-              .replace(/\s+/g, "-")}`,
+            url: `/collections/${activeCategorySlug}`,
           },
         ]}
       />
 
       <main className="min-h-screen bg-[var(--color-bg)]">
         {/* =====================================================
-            EDITORIAL HERO
+            COLLECTION HERO
         ===================================================== */}
 
-        <section className="border-b border-[var(--color-border-light)] bg-[var(--color-bg)]">
-          <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
-            <div className="py-14 sm:py-18 lg:py-24 xl:py-28">
-              <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end xl:grid-cols-[minmax(0,1fr)_360px]">
-                {/* =================================================
-                    HERO COPY
-                ================================================= */}
+        <section className="bg-[var(--color-bg)]">
+          <div className="mx-auto max-w-[1500px] px-4 sm:px-6 lg:px-8">
+            <div className="py-8 sm:py-10 lg:py-12">
+              <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-end xl:grid-cols-[minmax(0,1fr)_320px]">
+                {/* HERO COPY */}
 
-                <div className="max-w-4xl">
-                  <div className="eyebrow flex items-center gap-3">
-                    <span className="h-px w-8 bg-[var(--color-accent)]" />
+                <div className="max-w-3xl">
+                  <div className="flex items-center gap-3">
+                    <span className="h-px w-7 bg-[var(--color-accent)]" />
 
-                    <span>{eyebrow}</span>
+                    <span className="eyebrow">
+                      {eyebrow}
+                    </span>
                   </div>
 
                   <h1
                     className="
-                      mt-6
+                      mt-4
                       font-display
-                      text-[clamp(3.5rem,8vw,7rem)]
+                      text-[2.8rem]
                       font-medium
-                      leading-[0.86]
-                      tracking-[var(--tracking-tight)]
+                      leading-[0.92]
+                      tracking-[-0.04em]
                       text-[var(--color-text)]
+                      sm:text-[3.6rem]
+                      md:text-[4.2rem]
+                      lg:text-[4.7rem]
                     "
                   >
                     {title}
@@ -123,35 +118,35 @@ export function CollectionPage({
 
                   <p
                     className="
-                      mt-8
+                      mt-5
                       max-w-2xl
                       font-body
-                      text-[var(--text-body)]
-                      leading-7
+                      text-[13px]
+                      leading-6
                       text-[var(--color-text-secondary)]
-                      sm:text-[1.0625rem]
-                      sm:leading-8
+                      sm:text-sm
+                      sm:leading-7
                     "
                   >
                     {description}
                   </p>
 
-                  <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-4">
+                  <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
                     <div
                       className="
                         inline-flex
                         items-center
-                        gap-2.5
+                        gap-2
                         font-body
-                        text-[10px]
+                        text-[9px]
                         font-semibold
                         uppercase
-                        tracking-[var(--tracking-wider)]
+                        tracking-[0.18em]
                         text-[var(--color-text)]
                       "
                     >
                       <Sparkles
-                        size={14}
+                        size={13}
                         strokeWidth={1.25}
                         className="text-[var(--color-accent)]"
                       />
@@ -159,15 +154,10 @@ export function CollectionPage({
                       Curated for modern Indian dressing
                     </div>
 
-                    <span
-                      aria-hidden="true"
-                      className="hidden h-4 w-px bg-[var(--color-border)] sm:block"
-                    />
-
                     <p
                       className="
                         font-display
-                        text-sm
+                        text-xs
                         italic
                         text-[var(--color-text-secondary)]
                       "
@@ -177,79 +167,67 @@ export function CollectionPage({
                   </div>
                 </div>
 
-                {/* =================================================
-                    COLLECTION INDEX
-                ================================================= */}
+                {/* CATEGORY NAVIGATION */}
 
-                <div
-                  className="
-                    border-t
-                    border-[var(--color-border)]
-                    pt-7
-                    lg:border-l
-                    lg:border-t-0
-                    lg:pl-8
-                    lg:pt-0
-                  "
-                >
-                  <p className="font-body text-[10px] font-semibold uppercase tracking-[var(--tracking-luxury)] text-[var(--color-text-muted)]">
-                    Browse the edits
-                  </p>
+                {categories.length > 0 && (
+                  <div className="lg:pl-6">
+                    <div className="mb-3">
+                      <p className="font-body text-[9px] font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
+                        Browse categories
+                      </p>
+                    </div>
 
-                  <div className="mt-5">
-                    {collectionLinks.map((item) => {
-                      const isActive =
-                        item.href ===
-                        `/collections/${title
-                          .toLowerCase()
-                          .replace(/\s+/g, "-")}`;
+                    <div className="space-y-0.5">
+                      {categories.map((category) => {
+                        const isActive =
+                          category.id === categoryId;
 
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          aria-current={
-                            isActive ? "page" : undefined
-                          }
-                          className="
-                            group
-                            flex
-                            min-h-12
-                            items-center
-                            justify-between
-                            border-b
-                            border-[var(--color-border-light)]
-                            py-3
-                            font-body
-                            text-sm
-                            transition-colors
-                            duration-[var(--duration-base)]
-                          "
-                        >
-                          <span
-                            className={
+                        return (
+                          <Link
+                            key={category.id}
+                            href={`/collections/${category.slug}`}
+                            aria-current={
                               isActive
-                                ? "font-semibold text-[var(--color-text)]"
-                                : "font-medium text-[var(--color-text-secondary)] group-hover:text-[var(--color-text)]"
+                                ? "page"
+                                : undefined
                             }
+                            className="
+                              group
+                              flex
+                              items-center
+                              justify-between
+                              py-2
+                              font-body
+                              text-sm
+                              transition-colors
+                              duration-200
+                            "
                           >
-                            {item.label}
-                          </span>
+                            <span
+                              className={
+                                isActive
+                                  ? "font-semibold text-[var(--color-text)]"
+                                  : "font-medium text-[var(--color-text-secondary)] group-hover:text-[var(--color-text)]"
+                              }
+                            >
+                              {category.name}
+                            </span>
 
-                          <ArrowUpRight
-                            size={15}
-                            strokeWidth={1.3}
-                            className={
-                              isActive
-                                ? "text-[var(--color-accent)]"
-                                : "text-[var(--color-text-muted)] transition-transform duration-[var(--duration-base)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                            }
-                          />
-                        </Link>
-                      );
-                    })}
+                            <ArrowUpRight
+                              size={14}
+                              strokeWidth={1.3}
+                              className={
+                                isActive
+                                  ? "text-[var(--color-accent)]"
+                                  : "text-[var(--color-text-muted)] transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                              }
+                            />
+                          </Link>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
@@ -264,52 +242,50 @@ export function CollectionPage({
             sticky
             top-0
             z-[var(--z-header)]
-            border-b
-            border-[var(--color-border-light)]
             bg-[var(--color-bg)]/95
             backdrop-blur-md
           "
         >
-          <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
-            <div className="flex min-h-16 items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <span className="font-body text-[10px] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text-muted)]">
-                  Collection
+          <div className="mx-auto max-w-[1500px] px-4 sm:px-6 lg:px-8">
+            <div className="flex min-h-12 items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <span className="font-body text-[9px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
+                  {title}
                 </span>
 
-                <span
-                  aria-hidden="true"
-                  className="h-3 w-px bg-[var(--color-border)]"
-                />
+                <span className="text-[var(--color-text-muted)]">
+                  /
+                </span>
 
-                <span className="font-body text-xs font-medium text-[var(--color-text)]">
+                <span className="font-body text-[11px] font-medium text-[var(--color-text)]">
                   {products.length}{" "}
-                  {products.length === 1 ? "piece" : "pieces"}
+                  {products.length === 1
+                    ? "piece"
+                    : "pieces"}
                 </span>
               </div>
 
               <Link
                 href="/shop"
                 className="
-                  link-luxury
                   group
                   inline-flex
                   items-center
-                  gap-2
+                  gap-1.5
                   font-body
-                  text-[10px]
+                  text-[9px]
                   font-semibold
                   uppercase
-                  tracking-[var(--tracking-wider)]
+                  tracking-[0.18em]
                   text-[var(--color-text)]
                 "
               >
                 Shop all
 
                 <ArrowRight
-                  size={14}
+                  size={13}
                   strokeWidth={1.3}
-                  className="transition-transform duration-[var(--duration-base)] group-hover:translate-x-1"
+                  className="transition-transform duration-200 group-hover:translate-x-1"
                 />
               </Link>
             </div>
@@ -320,14 +296,12 @@ export function CollectionPage({
             PRODUCT AREA
         ===================================================== */}
 
-        <section className="mx-auto max-w-[1600px] px-4 py-9 sm:px-6 sm:py-12 lg:px-8 lg:py-14">
-          <div className="grid gap-10 lg:grid-cols-[235px_minmax(0,1fr)] xl:gap-12">
-            {/* =================================================
-                FILTERS
-            ================================================= */}
+        <section className="mx-auto max-w-[1500px] px-4 py-7 sm:px-6 sm:py-9 lg:px-8 lg:py-10">
+          <div className="grid gap-8 lg:grid-cols-[220px_minmax(0,1fr)] xl:gap-10">
+            {/* FILTERS */}
 
             <aside className="hidden lg:block">
-              <div className="sticky top-24">
+              <div className="sticky top-20">
                 <ShopFilters
                   products={products}
                   selectedCategory={categoryId}
@@ -335,9 +309,7 @@ export function CollectionPage({
               </div>
             </aside>
 
-            {/* =================================================
-                PRODUCT GRID
-            ================================================= */}
+            {/* PRODUCT GRID */}
 
             <div className="min-w-0">
               <ShopProductGrid
@@ -350,29 +322,31 @@ export function CollectionPage({
         </section>
 
         {/* =====================================================
-            EDIT NAVIGATION
+            CONTINUE EXPLORING
         ===================================================== */}
 
-        <section className="border-t border-[var(--color-border-light)] bg-[var(--color-bg-soft)]">
-          <div className="mx-auto max-w-[1600px] px-4 py-14 sm:px-6 sm:py-18 lg:px-8 lg:py-20">
-            <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
-              <div className="max-w-2xl">
+        <section className="bg-[var(--color-bg-soft)]">
+          <div className="mx-auto max-w-[1500px] px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="max-w-xl">
                 <p className="eyebrow text-[var(--color-accent)]">
                   Continue exploring
                 </p>
 
                 <h2
                   className="
-                    mt-4
+                    mt-2
                     font-display
-                    text-[var(--text-heading-lg)]
+                    text-[1.7rem]
                     font-medium
-                    leading-[0.95]
-                    tracking-[var(--tracking-tight)]
+                    leading-[1]
+                    tracking-[-0.03em]
                     text-[var(--color-text)]
+                    sm:text-[2rem]
+                    lg:text-[2.3rem]
                   "
                 >
-                  Find the pieces that become part of your story.
+                  Find pieces that become part of your story.
                 </h2>
               </div>
 
@@ -381,23 +355,24 @@ export function CollectionPage({
                 className="
                   group
                   inline-flex
-                  min-h-12
+                  min-h-10
+                  w-fit
                   items-center
                   justify-center
-                  gap-3
+                  gap-2
                   border
                   border-[var(--color-text)]
                   bg-[var(--color-text)]
-                  px-6
-                  py-3.5
+                  px-5
+                  py-2.5
                   font-body
-                  text-[10px]
+                  text-[9px]
                   font-semibold
                   uppercase
-                  tracking-[var(--tracking-wider)]
+                  tracking-[0.18em]
                   text-[var(--color-text-inverse)]
-                  transition-all
-                  duration-[var(--duration-base)]
+                  transition-colors
+                  duration-200
                   hover:bg-[var(--color-accent-dark)]
                   hover:border-[var(--color-accent-dark)]
                   focus:outline-none
@@ -407,12 +382,12 @@ export function CollectionPage({
                   focus:ring-offset-[var(--color-bg-soft)]
                 "
               >
-                Discover new arrivals
+                New arrivals
 
                 <ArrowUpRight
-                  size={15}
+                  size={14}
                   strokeWidth={1.3}
-                  className="transition-transform duration-[var(--duration-base)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                  className="transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
                 />
               </Link>
             </div>
