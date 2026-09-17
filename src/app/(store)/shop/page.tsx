@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import { getProducts } from "@/lib/api/products";
 
+import { getProducts } from "@/lib/api/products";
 import type { ProductSort } from "@/types/product";
 
 import { ShopHeader } from "@/components/shop/shop-header";
-import { ShopFilters } from "@/components/shop/shop-filters";
 import { ShopProductGrid } from "@/components/shop/shop-product-grid";
 
 type ShopPageProps = {
@@ -86,34 +85,30 @@ export default async function ShopPage({
 
   return (
     <main className="min-h-screen bg-[var(--color-ivory)]">
-      <section className="border-b border-[var(--color-border)] bg-[var(--color-ivory)]">
+      {/* =====================================================
+          SHOP HEADER
+      ===================================================== */}
+
+      <section className="bg-[var(--color-ivory)]">
         <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
           <ShopHeader
             products={response.products}
-            selectedCategory={categoryId}
             selectedSort={sort}
           />
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1600px] px-4 py-7 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-        <div className="grid gap-8 lg:grid-cols-[235px_minmax(0,1fr)] xl:gap-10">
-          <aside className="hidden lg:block">
-            <div className="sticky top-28">
-              <ShopFilters
-                products={response.products}
-                selectedCategory={categoryId}
-              />
-            </div>
-          </aside>
+      {/* =====================================================
+          PRODUCT GRID
+      ===================================================== */}
 
-          <div className="min-w-0">
-            <ShopProductGrid
-              products={response.products}
-              category={categoryId}
-              sort={sort}
-            />
-          </div>
+      <section className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+        <div className="min-w-0">
+          <ShopProductGrid
+            products={response.products}
+            category={categoryId}
+            sort={sort}
+          />
         </div>
       </section>
     </main>

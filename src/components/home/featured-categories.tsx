@@ -529,7 +529,7 @@ function ComingSoon() {
           "
         >
           <LinkButton
-            href="/collections"
+            href="/categories"
             variant="secondary"
             size="md"
             icon={
@@ -538,7 +538,7 @@ function ComingSoon() {
               />
             }
           >
-            View Collections
+            View All Categories
           </LinkButton>
         </div>
       </div>
