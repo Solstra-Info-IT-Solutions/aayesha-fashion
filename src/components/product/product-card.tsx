@@ -175,7 +175,7 @@ export function ProductCard({
           "
         >
           <Link
-            href={`/products/${product.slug}`}
+            href={`/products/${product._id}`}
             aria-label={`View ${product.name}`}
             className="
               relative
@@ -394,7 +394,7 @@ export function ProductCard({
           {/* PRODUCT NAME */}
 
           <Link
-            href={`/products/${product.slug}`}
+            href={`/products/${product._id}`}
             className="group/title block"
           >
             <h3
