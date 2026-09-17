@@ -107,7 +107,7 @@ export function ProductQuickAdd({
       setAdding(true);
 
       await addToCart(
-        product.id,
+        product._id,
         1,
       );
 
