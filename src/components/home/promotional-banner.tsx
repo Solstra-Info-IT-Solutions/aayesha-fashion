@@ -11,10 +11,6 @@ export async function PromotionalBanner() {
   const campaign =
     await getPromotionalBanner();
 
-  /*
-   * No active promotional campaign:
-   * Do not render an empty homepage section.
-   */
   if (!campaign) {
     return null;
   }
@@ -27,6 +23,7 @@ export async function PromotionalBanner() {
       className="relative overflow-hidden bg-[var(--color-cream)]"
     >
       <div className="relative">
+
         <Image
           src={data.image}
           alt={data.imageAlt}
@@ -37,19 +34,13 @@ export async function PromotionalBanner() {
           priority={false}
         />
 
-        {/* ===================================================
-            OVERLAY
-        =================================================== */}
+        {/* Subtle overlay */}
+        <div className="absolute inset-0 bg-black/[0.02]" />
 
-        <div className="absolute inset-0 bg-black/[0.03]" />
-
-        {/* ===================================================
-            LIVE CONTENT
-        =================================================== */}
-
+        {/* CTA */}
         {data.href && data.ctaLabel && (
           <Container className="pointer-events-none absolute inset-0">
-            <div className="flex h-full items-end pb-8 sm:pb-10 lg:pb-14">
+            <div className="flex h-full items-end pb-5 sm:pb-6 lg:pb-8">
               <LinkButton
                 href={data.href}
                 variant="secondary"
@@ -59,7 +50,11 @@ export async function PromotionalBanner() {
                     ↗
                   </span>
                 }
-                className="pointer-events-auto bg-[var(--color-ivory)]/95"
+                className="
+                  pointer-events-auto
+                  bg-[var(--color-ivory)]/95
+                  backdrop-blur-sm
+                "
               >
                 {data.ctaLabel}
               </LinkButton>

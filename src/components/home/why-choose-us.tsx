@@ -23,7 +23,7 @@ const iconMap = {
 } as const;
 
 function getIcon(
-  icon: HomepageWhyChooseUsValue["icon"]
+  icon: HomepageWhyChooseUsValue["icon"],
 ) {
   return iconMap[icon];
 }
@@ -34,7 +34,7 @@ export function WhyChooseUs({
   const values = data.values
     .filter((value) => value.isActive)
     .sort(
-      (a, b) => a.sortOrder - b.sortOrder
+      (a, b) => a.sortOrder - b.sortOrder,
     );
 
   return (
@@ -43,139 +43,113 @@ export function WhyChooseUs({
       className="bg-[var(--color-ivory)]"
     >
       <Container>
-        <div className="py-16 sm:py-20 lg:py-24 xl:py-28">
-          {/* =====================================================
-              HEADER
-          ===================================================== */}
+        <div className="py-6 sm:py-8 lg:py-10">
 
-          <div className="border-t border-[var(--color-border)] pt-5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <span className="h-px w-9 bg-[var(--color-rose-dark)]" />
+          {/* Header */}
+          <div className="border-t border-[var(--color-border)] pt-3 sm:pt-4">
 
-                <p className="text-[8px] font-semibold uppercase tracking-[0.3em] text-[var(--color-text-secondary)] sm:text-[9px]">
-                  {data.eyebrow}
-                </p>
-              </div>
-
-              <span className="font-display text-lg text-[var(--color-text-muted)] sm:text-xl">
-                {data.number}
-              </span>
-            </div>
-
-            <div className="mt-9 text-center sm:mt-11">
+            <div className="text-center">
               <h2
                 className="
                   font-display
-                  text-[3.1rem]
+                  text-[2.7rem]
                   font-medium
-                  leading-[0.9]
-                  tracking-[-0.045em]
+                  leading-[0.95]
+                  tracking-[-0.04em]
                   text-[var(--color-charcoal)]
-                  sm:text-[4rem]
-                  md:text-[4.7rem]
-                  lg:text-[5.3rem]
-                  xl:text-[5.8rem]
+                  sm:text-[3.5rem]
+                  md:text-[4.2rem]
+                  lg:text-[4.8rem]
+                  xl:text-[5.2rem]
                 "
               >
                 {data.title}
               </h2>
 
-              <p className="mx-auto mt-5 max-w-[560px] text-sm leading-7 text-[var(--color-text-secondary)] sm:text-[15px] sm:leading-8">
+              <p className="mx-auto mt-3 max-w-[520px] text-[13px] leading-6 text-[var(--color-text-secondary)] sm:mt-4 sm:text-sm sm:leading-7">
                 {data.description}
               </p>
             </div>
           </div>
 
-          {/* =====================================================
-              VALUES
-          ===================================================== */}
-
+          {/* Values */}
           {values.length > 0 && (
-            <div className="mt-14 grid border-y border-[var(--color-border)] sm:mt-16 sm:grid-cols-2 lg:grid-cols-4 lg:border-y">
-              {values.map(
-                (value, index) => {
-                  const Icon = getIcon(
-                    value.icon
-                  );
+            <div className="mt-7 grid border-y border-[var(--color-border)] sm:mt-9 sm:grid-cols-2 lg:grid-cols-4">
 
-                  return (
-                    <div
-                      key={value.id}
-                      className={`
-                        flex
-                        flex-col
-                        items-center
-                        px-6
-                        py-9
-                        text-center
-                        sm:px-8
-                        sm:py-10
-                        lg:px-7
-                        lg:py-12
-                        xl:px-9
-                        ${
-                          index !==
-                          values.length - 1
-                            ? "border-b border-[var(--color-border)] sm:odd:border-r lg:border-b-0 lg:border-r"
-                            : ""
-                        }
-                        ${
-                          index === 2
-                            ? "sm:border-b-0"
-                            : ""
-                        }
-                      `}
+              {values.map((value, index) => {
+                const Icon = getIcon(value.icon);
+
+                return (
+                  <div
+                    key={value.id}
+                    className={`
+                      flex
+                      flex-col
+                      items-center
+                      px-5
+                      py-7
+                      text-center
+                      sm:px-7
+                      sm:py-8
+                      lg:px-5
+                      lg:py-9
+                      xl:px-7
+                      ${
+                        index !==
+                        values.length - 1
+                          ? "border-b border-[var(--color-border)] sm:odd:border-r lg:border-b-0 lg:border-r"
+                          : ""
+                      }
+                      ${
+                        index === 2
+                          ? "sm:border-b-0"
+                          : ""
+                      }
+                    `}
+                  >
+                    {/* Icon */}
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-rose-dark)]">
+                      <Icon
+                        size={16}
+                        strokeWidth={1.2}
+                      />
+                    </span>
+
+                    {/* Title */}
+                    <h3
+                      className="
+                        mt-4
+                        font-display
+                        text-[1.3rem]
+                        font-medium
+                        leading-none
+                        tracking-[-0.02em]
+                        text-[var(--color-charcoal)]
+                        sm:text-[1.45rem]
+                      "
                     >
-                      {/* ICON */}
+                      {value.title}
+                    </h3>
 
-                      <span className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-rose-dark)]">
-                        <Icon
-                          size={17}
-                          strokeWidth={1.2}
-                        />
-                      </span>
-
-                      {/* TITLE */}
-
-                      <h3
-                        className="
-                          mt-5
-                          font-display
-                          text-[1.45rem]
-                          font-medium
-                          leading-none
-                          tracking-[-0.02em]
-                          text-[var(--color-charcoal)]
-                          sm:text-[1.6rem]
-                        "
-                      >
-                        {value.title}
-                      </h3>
-
-                      {/* DESCRIPTION */}
-
-                      <p className="mt-4 max-w-[250px] text-[12px] leading-6 text-[var(--color-text-secondary)]">
-                        {value.description}
-                      </p>
-                    </div>
-                  );
-                }
-              )}
+                    {/* Description */}
+                    <p className="mt-3 max-w-[230px] text-[11px] leading-5 text-[var(--color-text-secondary)] sm:text-[12px] sm:leading-6">
+                      {value.description}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           )}
 
-          {/* =====================================================
-              CLOSING STATEMENT
-          ===================================================== */}
-
+          {/* Closing Statement */}
           {data.closingStatement && (
-            <div className="mt-10 text-center sm:mt-12">
-              <p className="font-display text-[1.5rem] italic leading-none tracking-[-0.02em] text-[var(--color-charcoal)] sm:text-[1.8rem]">
+            <div className="mt-7 text-center sm:mt-9">
+              <p className="font-display text-[1.25rem] italic leading-[1.1] tracking-[-0.02em] text-[var(--color-charcoal)] sm:text-[1.6rem]">
                 {data.closingStatement}
               </p>
             </div>
           )}
+
         </div>
       </Container>
     </section>
