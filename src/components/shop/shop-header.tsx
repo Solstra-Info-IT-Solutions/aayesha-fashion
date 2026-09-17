@@ -15,7 +15,6 @@ import {
 
 import type {
   Product,
-  ProductCategory,
   ProductSort,
 } from "@/types/product";
 
@@ -23,7 +22,7 @@ import { ShopFilters } from "@/components/shop/shop-filters";
 
 interface ShopHeaderProps {
   products?: Product[];
-  selectedCategory?: ProductCategory;
+  selectedCategory?: string;
   selectedSort?: ProductSort;
 }
 
@@ -70,21 +69,18 @@ function getCollectionContext() {
     };
   }
 
-  const pathname =
-    window.location.pathname;
+  const pathname = window.location.pathname;
 
   const params = new URLSearchParams(
     window.location.search,
   );
 
   const isNew =
-    pathname ===
-      "/collections/new-arrivals" ||
+    pathname === "/collections/new-arrivals" ||
     params.get("isNew") === "true";
 
   const isBestSeller =
-    pathname ===
-      "/collections/best-sellers" ||
+    pathname === "/collections/best-sellers" ||
     params.get("isBestSeller") === "true";
 
   return {
@@ -319,9 +315,7 @@ export function ShopHeader({
               lg:grid-cols-[minmax(0,1fr)_280px]
             "
           >
-            {/* -------------------------------------------------
-                TITLE
-            ------------------------------------------------- */}
+            {/* TITLE */}
 
             <div>
               <div
@@ -385,9 +379,7 @@ export function ShopHeader({
               </p>
             </div>
 
-            {/* -------------------------------------------------
-                EDITORIAL NOTE
-            ------------------------------------------------- */}
+            {/* EDITORIAL NOTE */}
 
             <div
               className="
@@ -464,9 +456,7 @@ export function ShopHeader({
             xl:px-20
           "
         >
-          {/* -------------------------------------------------
-              LEFT
-          ------------------------------------------------- */}
+          {/* LEFT */}
 
           <div
             className="
@@ -478,9 +468,7 @@ export function ShopHeader({
             <button
               type="button"
               onClick={() =>
-                setMobileFiltersOpen(
-                  true,
-                )
+                setMobileFiltersOpen(true)
               }
               className="
                 group
@@ -542,9 +530,7 @@ export function ShopHeader({
             </div>
           </div>
 
-          {/* -------------------------------------------------
-              SORT
-          ------------------------------------------------- */}
+          {/* SORT */}
 
           <div
             ref={sortRef}
@@ -556,8 +542,7 @@ export function ShopHeader({
               aria-expanded={sortOpen}
               onClick={() =>
                 setSortOpen(
-                  (current) =>
-                    !current,
+                  (current) => !current,
                 )
               }
               className="
@@ -680,9 +665,7 @@ export function ShopHeader({
 
                       return (
                         <button
-                          key={
-                            option.value
-                          }
+                          key={option.value}
                           type="button"
                           role="menuitem"
                           onClick={() =>
@@ -718,9 +701,7 @@ export function ShopHeader({
                                 : "text-[11px]"
                             }
                           >
-                            {
-                              option.label
-                            }
+                            {option.label}
                           </span>
 
                           <span
@@ -765,15 +746,11 @@ export function ShopHeader({
           aria-modal="true"
           aria-label="Product filters"
         >
-          {/* Backdrop */}
-
           <button
             type="button"
             aria-label="Close filters"
             onClick={() =>
-              setMobileFiltersOpen(
-                false,
-              )
+              setMobileFiltersOpen(false)
             }
             className="
               absolute
@@ -782,8 +759,6 @@ export function ShopHeader({
               backdrop-blur-[2px]
             "
           />
-
-          {/* Drawer */}
 
           <div
             className="
@@ -799,8 +774,6 @@ export function ShopHeader({
               shadow-[var(--shadow-lg)]
             "
           >
-            {/* Drawer header */}
-
             <div
               className="
                 flex
@@ -845,9 +818,7 @@ export function ShopHeader({
                 type="button"
                 aria-label="Close filters"
                 onClick={() =>
-                  setMobileFiltersOpen(
-                    false,
-                  )
+                  setMobileFiltersOpen(false)
                 }
                 className="
                   flex
@@ -874,8 +845,6 @@ export function ShopHeader({
               </button>
             </div>
 
-            {/* Filter content */}
-
             <div
               className="
                 min-h-0
@@ -891,14 +860,10 @@ export function ShopHeader({
                 }
                 mobile
                 onClose={() =>
-                  setMobileFiltersOpen(
-                    false,
-                  )
+                  setMobileFiltersOpen(false)
                 }
               />
             </div>
-
-            {/* Drawer footer */}
 
             <div
               className="
@@ -912,9 +877,7 @@ export function ShopHeader({
               <button
                 type="button"
                 onClick={() =>
-                  setMobileFiltersOpen(
-                    false,
-                  )
+                  setMobileFiltersOpen(false)
                 }
                 className="
                   flex

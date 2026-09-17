@@ -1,38 +1,21 @@
-import type { ProductVariant } from "@/types/product";
+import type { Product } from "@/types/product";
 
 interface ProductPriceProps {
-  variant: ProductVariant | null;
+  product: Product;
 }
 
 export function ProductPrice({
-  variant,
+  product,
 }: ProductPriceProps) {
-  if (!variant) {
-    return (
-      <div
-        className="
-          font-body
-          text-sm
-          font-medium
-          text-[var(--color-text-secondary)]
-        "
-      >
-        Select a variant
-      </div>
-    );
-  }
-
   const {
     mrp,
     sellingPrice,
-  } = variant.pricing;
+  } = product.pricing;
 
   const discount =
     mrp > sellingPrice
       ? Math.round(
-          ((mrp - sellingPrice) /
-            mrp) *
-            100,
+          ((mrp - sellingPrice) / mrp) * 100,
         )
       : 0;
 

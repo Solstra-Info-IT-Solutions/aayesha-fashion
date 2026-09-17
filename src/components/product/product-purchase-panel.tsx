@@ -8,20 +8,17 @@ import {
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
-import type {
-  Product,
-  ProductVariant,
-} from "@/types/product";
+import type { Product } from "@/types/product";
 
 import {
-  getVariantInventoryStatus,
+  getAvailableStock,
+  getInventoryStatus,
 } from "@/types/product";
 
 import { useCartStore } from "@/store/cart-store";
 
 interface ProductPurchasePanelProps {
   product: Product;
-  variant: ProductVariant | null;
   quantity: number;
   onQuantityChange: (
     quantity: number,
@@ -30,7 +27,6 @@ interface ProductPurchasePanelProps {
 
 export function ProductPurchasePanel({
   product,
-  variant,
   quantity,
   onQuantityChange,
 }: ProductPurchasePanelProps) {
@@ -40,36 +36,19 @@ export function ProductPurchasePanel({
 
   const router = useRouter();
 
-  const stock = variant
-    ? Math.max(
-        0,
-        variant.inventory.stock -
-          variant.inventory.reserved,
-      )
-    : 0;
+  const stock = getAvailableStock(product);
 
-  const status = variant
-    ? getVariantInventoryStatus(
-        variant,
-      )
-    : "out-of-stock";
+  const status =
+    getInventoryStatus(product);
 
   const canBuy =
-    !!variant &&
     status !== "out-of-stock" &&
     stock > 0;
 
   const addToBag = () => {
-    if (!variant) {
-      toast.error(
-        "Please select color and size.",
-      );
-      return;
-    }
-
     if (!canBuy) {
       toast.error(
-        "This variant is currently unavailable.",
+        "This product is currently unavailable.",
       );
       return;
     }
@@ -77,7 +56,6 @@ export function ProductPurchasePanel({
     addItem(
       product.id,
       quantity,
-      variant.id,
     );
 
     toast.success(
@@ -86,16 +64,9 @@ export function ProductPurchasePanel({
   };
 
   const buyNow = () => {
-    if (!variant) {
-      toast.error(
-        "Please select color and size.",
-      );
-      return;
-    }
-
     if (!canBuy) {
       toast.error(
-        "This variant is currently unavailable.",
+        "This product is currently unavailable.",
       );
       return;
     }
@@ -103,7 +74,6 @@ export function ProductPurchasePanel({
     addItem(
       product.id,
       quantity,
-      variant.id,
     );
 
     router.push("/cart");
@@ -139,21 +109,19 @@ export function ProductPurchasePanel({
           Quantity
         </p>
 
-        {variant && (
-          <span
-            className="
-              font-body
-              text-[9px]
-              uppercase
-              tracking-[0.12em]
-              text-[var(--color-text-muted)]
-            "
-          >
-            {stock > 0
-              ? `${stock} available`
-              : "Unavailable"}
-          </span>
-        )}
+        <span
+          className="
+            font-body
+            text-[9px]
+            uppercase
+            tracking-[0.12em]
+            text-[var(--color-text-muted)]
+          "
+        >
+          {stock > 0
+            ? `${stock} available`
+            : "Unavailable"}
+        </span>
       </div>
 
       {/* =====================================================
@@ -247,7 +215,7 @@ export function ProductPurchasePanel({
               )
             }
             disabled={
-              !variant ||
+              !canBuy ||
               quantity >= stock
             }
             aria-label="Increase quantity"
@@ -372,75 +340,71 @@ export function ProductPurchasePanel({
           INVENTORY MESSAGE
       ===================================================== */}
 
-      {variant && (
-        <div
-          className="
-            mt-4
-            flex
-            items-center
-            gap-2
-          "
-          aria-live="polite"
-        >
-          <span
-            aria-hidden="true"
-            className={[
-              "h-1.5 w-1.5 rounded-full",
-              status === "low-stock"
-                ? "bg-[var(--color-warning)]"
-                : status ===
-                    "in-stock"
-                  ? "bg-[var(--color-success)]"
-                  : "bg-[var(--color-error)]",
-            ].join(" ")}
-          />
+      <div
+        className="
+          mt-4
+          flex
+          items-center
+          gap-2
+        "
+        aria-live="polite"
+      >
+        <span
+          aria-hidden="true"
+          className={[
+            "h-1.5 w-1.5 rounded-full",
+            status === "low-stock"
+              ? "bg-[var(--color-warning)]"
+              : status === "in-stock"
+                ? "bg-[var(--color-success)]"
+                : "bg-[var(--color-error)]",
+          ].join(" ")}
+        />
 
-          {status ===
-          "low-stock" ? (
-            <p
-              className="
-                font-body
-                text-[10px]
-                font-semibold
-                uppercase
-                tracking-[0.08em]
-                text-[var(--color-warning)]
-              "
-            >
-              Only {stock} left
-              in stock
-            </p>
-          ) : status ===
-            "in-stock" ? (
-            <p
-              className="
-                font-body
-                text-[10px]
-                font-medium
-                uppercase
-                tracking-[0.08em]
-                text-[var(--color-success)]
-              "
-            >
-              In stock ·
-              Ready to ship
-            </p>
-          ) : (
-            <p
-              className="
-                font-body
-                text-[10px]
-                font-semibold
-                uppercase
-                tracking-[0.08em]
-                text-[var(--color-error)]
-              "
-            >
-              Sold out
-            </p>
-          )}
-        </div>
-      )}
+        {status ===
+        "low-stock" ? (
+          <p
+            className="
+              font-body
+              text-[10px]
+              font-semibold
+              uppercase
+              tracking-[0.08em]
+              text-[var(--color-warning)]
+            "
+          >
+            Only {stock} left
+            in stock
+          </p>
+        ) : status ===
+          "in-stock" ? (
+          <p
+            className="
+              font-body
+              text-[10px]
+              font-medium
+              uppercase
+              tracking-[0.08em]
+              text-[var(--color-success)]
+            "
+          >
+            In stock · Ready to ship
+          </p>
+        ) : (
+          <p
+            className="
+              font-body
+              text-[10px]
+              font-semibold
+              uppercase
+              tracking-[0.08em]
+              text-[var(--color-error)]
+            "
+          >
+            Sold out
+          </p>
+        )}
+      </div>
 
       {/* =====================================================
           PURCHASE REASSURANCE

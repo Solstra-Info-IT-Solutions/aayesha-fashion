@@ -11,7 +11,6 @@ export type CustomerCouponDiscountType =
 
 export interface CustomerCouponItem {
   productId: string;
-  variantId: string;
   quantity: number;
 }
 

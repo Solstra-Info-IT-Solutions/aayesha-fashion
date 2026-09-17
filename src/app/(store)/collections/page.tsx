@@ -4,7 +4,8 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-import { products } from "@/data/products";
+import { getProducts } from "@/services/product.service";
+import type { Product } from "@/types/product";
 import { ProductCard } from "@/components/product/product-card";
 
 const collectionLinks = [
@@ -38,12 +39,22 @@ const collectionLinks = [
   },
 ] as const;
 
-export default function CollectionsPage() {
-  const featured = products.filter(
-    (product) =>
-      product.status === "active" &&
-      product.merchandising.isFeatured,
-  );
+export default async function CollectionsPage() {
+  let featured: Product[] = [];
+
+  try {
+    const response = await getProducts({
+      page: 1,
+      limit: 6,
+      isFeatured: true,
+      status: "active",
+      sort: "featured",
+    });
+
+    featured = response.products ?? [];
+  } catch {
+    featured = [];
+  }
 
   return (
     <main className="min-h-screen bg-[var(--color-bg)]">

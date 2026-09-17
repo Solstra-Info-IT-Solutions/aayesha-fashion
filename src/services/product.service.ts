@@ -10,14 +10,7 @@ export interface ProductListParams {
   page?: number;
   limit?: number;
 
-  category?: string;
-  productType?: string;
-  collection?: string;
-
-  color?: string;
-  size?: string;
-
-  badge?: string;
+  categoryId?: string;
 
   minPrice?: number;
   maxPrice?: number;
@@ -59,6 +52,10 @@ export async function getProducts(
   const searchParams =
     new URLSearchParams();
 
+  /* -------------------------------------------------------
+     PAGINATION
+  ------------------------------------------------------- */
+
   if (params.page !== undefined) {
     searchParams.set(
       "page",
@@ -73,47 +70,20 @@ export async function getProducts(
     );
   }
 
-  if (params.category) {
+  /* -------------------------------------------------------
+     CATEGORY
+  ------------------------------------------------------- */
+
+  if (params.categoryId) {
     searchParams.set(
-      "category",
-      params.category,
+      "categoryId",
+      params.categoryId,
     );
   }
 
-  if (params.productType) {
-    searchParams.set(
-      "productType",
-      params.productType,
-    );
-  }
-
-  if (params.collection) {
-    searchParams.set(
-      "collection",
-      params.collection,
-    );
-  }
-
-  if (params.color) {
-    searchParams.set(
-      "color",
-      params.color,
-    );
-  }
-
-  if (params.size) {
-    searchParams.set(
-      "size",
-      params.size,
-    );
-  }
-
-  if (params.badge) {
-    searchParams.set(
-      "badge",
-      params.badge,
-    );
-  }
+  /* -------------------------------------------------------
+     PRICE
+  ------------------------------------------------------- */
 
   if (params.minPrice !== undefined) {
     searchParams.set(
@@ -129,12 +99,20 @@ export async function getProducts(
     );
   }
 
+  /* -------------------------------------------------------
+     STOCK
+  ------------------------------------------------------- */
+
   if (params.inStockOnly !== undefined) {
     searchParams.set(
       "inStockOnly",
       String(params.inStockOnly),
     );
   }
+
+  /* -------------------------------------------------------
+     MERCHANDISING
+  ------------------------------------------------------- */
 
   if (params.isNew !== undefined) {
     searchParams.set(
@@ -157,12 +135,20 @@ export async function getProducts(
     );
   }
 
-  if (params.search) {
+  /* -------------------------------------------------------
+     SEARCH
+  ------------------------------------------------------- */
+
+  if (params.search?.trim()) {
     searchParams.set(
       "search",
-      params.search,
+      params.search.trim(),
     );
   }
+
+  /* -------------------------------------------------------
+     STATUS
+  ------------------------------------------------------- */
 
   if (params.status) {
     searchParams.set(
@@ -170,6 +156,10 @@ export async function getProducts(
       params.status,
     );
   }
+
+  /* -------------------------------------------------------
+     SORT
+  ------------------------------------------------------- */
 
   if (params.sort) {
     searchParams.set(
@@ -210,6 +200,8 @@ export async function getProductById(
   id: string,
 ): Promise<Product> {
   return apiFetch<Product>(
-    `/products/id/${encodeURIComponent(id)}`,
+    `/products/id/${encodeURIComponent(
+      id,
+    )}`,
   );
 }

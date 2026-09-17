@@ -6,6 +6,8 @@ import {
   getProducts,
 } from "@/lib/api/products";
 
+import { getCategories } from "@/services/category.service";
+
 import { ProductJsonLd } from "@/components/seo/product-json-ld";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-json-ld";
 import { ProductDetail } from "@/components/product/product-detail";
@@ -20,9 +22,9 @@ interface ProductPageProps {
    DYNAMIC PRODUCT METADATA
 ============================================================ */
 
-export async function generateMetadata(
-  { params }: ProductPageProps,
-): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
 
   try {
@@ -60,9 +62,7 @@ export async function generateMetadata(
       keywords:
         product.seo?.keywords?.length
           ? product.seo.keywords
-          : product.tags?.length
-            ? product.tags
-            : undefined,
+          : undefined,
 
       alternates: {
         canonical,
@@ -146,45 +146,50 @@ export default async function ProductPage({
   }
 
   /* ----------------------------------------------------------
-     LOAD RECOMMENDATIONS
-     
-     We intentionally fetch both:
-     - same category
-     - same product type
-     
-     Then merge + deduplicate the results.
+     LOAD CATEGORY
   ---------------------------------------------------------- */
 
-  const [
-    categoryResponse,
-    productTypeResponse,
-  ] = await Promise.all([
-    getProducts({
-      page: 1,
-      limit: 8,
-      category: product.category,
-      status: "active",
-      sort: "featured",
-    }),
+  let categoryName: string | undefined;
 
-    getProducts({
-      page: 1,
-      limit: 8,
-      productType: product.productType,
-      status: "active",
-      sort: "featured",
-    }),
-  ]);
+  try {
+    const categories = await getCategories();
+
+    const category = categories.find(
+      (item) => item.id === product.categoryId,
+    );
+
+    categoryName = category?.name;
+  } catch (error) {
+    console.error(
+      "Failed to load product category:",
+      error,
+    );
+  }
+
+  /* ----------------------------------------------------------
+     LOAD RECOMMENDATIONS
+
+     Products are now independent products.
+     Recommendations are based on the same category.
+  ---------------------------------------------------------- */
+
+  const categoryResponse = await getProducts({
+    page: 1,
+    limit: 8,
+    categoryId: product.categoryId,
+    status: "active",
+    sort: "featured",
+  });
 
   /* ----------------------------------------------------------
      MERGE + DEDUPLICATE RECOMMENDATIONS
   ---------------------------------------------------------- */
 
   const recommendationMap = new Map(
-    [
-      ...categoryResponse.products,
-      ...productTypeResponse.products,
-    ].map((item) => [item.id, item]),
+    categoryResponse.products.map((item) => [
+      item.id,
+      item,
+    ]),
   );
 
   const recommendations = Array.from(
@@ -194,9 +199,7 @@ export default async function ProductPage({
       (item) =>
         item.id !== product.id &&
         item.status === "active" &&
-        (item.category === product.category ||
-          item.productType ===
-            product.productType),
+        item.categoryId === product.categoryId,
     )
     .slice(0, 4);
 
@@ -210,7 +213,10 @@ export default async function ProductPage({
           PRODUCT STRUCTURED DATA
       ====================================================== */}
 
-      <ProductJsonLd product={product} />
+      <ProductJsonLd
+        product={product}
+        categoryName={categoryName}
+      />
 
       {/* ======================================================
           BREADCRUMB STRUCTURED DATA
@@ -226,6 +232,14 @@ export default async function ProductPage({
             name: "Shop",
             url: "/shop",
           },
+          ...(categoryName
+            ? [
+                {
+                  name: categoryName,
+                  url: `/shop?category=${product.categoryId}`,
+                },
+              ]
+            : []),
           {
             name: product.name,
             url: `/products/${product.slug}`,

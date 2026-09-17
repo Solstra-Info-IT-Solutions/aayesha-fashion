@@ -29,7 +29,6 @@ import type {
 
 type ResolvedCouponItem = {
   product: Product;
-  variantId: string;
   productId: string;
   quantity: number;
   sellingPrice: number;
@@ -176,28 +175,15 @@ export function CheckoutCoupon() {
             continue;
           }
 
-          const variant =
-            product.variants.find(
-              (item) =>
-                item.id ===
-                cartItem.variantId,
-            );
-
-          if (!variant) {
-            continue;
-          }
-
           resolved.push({
             product,
             productId:
               cartItem.productId,
-            variantId:
-              cartItem.variantId,
             quantity:
               cartItem.quantity,
             sellingPrice:
               Number(
-                variant.pricing.sellingPrice,
+                product.pricing.sellingPrice,
               ),
           });
         }
@@ -303,8 +289,6 @@ export function CheckoutCoupon() {
             (item) => ({
               productId:
                 item.productId,
-              variantId:
-                item.variantId,
               quantity:
                 item.quantity,
             }),

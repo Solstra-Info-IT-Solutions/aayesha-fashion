@@ -1,9 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { Product } from "@/types/product";
-import { getVariantInventoryStatus } from "@/types/product";
+import { getAvailableStock } from "@/types/product";
+
+import { getCategories } from "@/services/category.service";
 
 import { ProductMediaGallery } from "@/components/product/product-media-gallery";
 import { ProductInfo } from "@/components/product/product-info";
@@ -23,88 +25,52 @@ export function ProductDetail({
   product,
   recommendations = [],
 }: ProductDetailProps) {
-  const firstAvailableVariant = useMemo(() => {
-    return (
-      product.variants.find(
-        (variant) =>
-          variant.status === "active" &&
-          getVariantInventoryStatus(variant) !==
-            "out-of-stock",
-      ) ?? product.variants[0]
-    );
-  }, [product.variants]);
-
-  const [selectedColorId, setSelectedColorId] =
-    useState(
-      firstAvailableVariant?.color.id ?? "",
-    );
-
-  const [selectedSizeCode, setSelectedSizeCode] =
-    useState(
-      firstAvailableVariant?.size.code ?? "",
-    );
-
   const [quantity, setQuantity] = useState(1);
+  const [categoryLabel, setCategoryLabel] = useState("");
 
-  const [sizeGuideOpen, setSizeGuideOpen] =
-    useState(false);
-
-  const selectedVariant = useMemo(() => {
-    return (
-      product.variants.find(
-        (variant) =>
-          variant.color.id === selectedColorId &&
-          variant.size.code === selectedSizeCode &&
-          variant.status === "active",
-      ) ?? null
-    );
-  }, [
-    product.variants,
-    selectedColorId,
-    selectedSizeCode,
-  ]);
-
-  const handleColorChange = (
-    colorId: string,
-  ) => {
-    setSelectedColorId(colorId);
-
-    const availableVariant =
-      product.variants.find(
-        (variant) =>
-          variant.color.id === colorId &&
-          variant.status === "active" &&
-          getVariantInventoryStatus(
-            variant,
-          ) !== "out-of-stock",
-      );
-
-    setSelectedSizeCode(
-      availableVariant?.size.code ?? "",
-    );
-
-    setQuantity(1);
-  };
-
-  const handleSizeChange = (
-    sizeCode: string,
-  ) => {
-    setSelectedSizeCode(sizeCode);
-    setQuantity(1);
-  };
-
-  const maxStock = selectedVariant
-    ? Math.max(
-        0,
-        selectedVariant.inventory.stock -
-          selectedVariant.inventory.reserved,
-      )
-    : 0;
+  const maxStock = getAvailableStock(product);
 
   const safeQuantity = Math.min(
     Math.max(quantity, 1),
     Math.max(maxStock, 1),
   );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadCategory() {
+      try {
+        const categories = await getCategories();
+
+        const category = categories.find(
+          (item) => item.id === product.categoryId,
+        );
+
+        if (!cancelled) {
+          setCategoryLabel(category?.name ?? "");
+        }
+      } catch (error) {
+        console.error(
+          "Failed to load product category:",
+          error,
+        );
+
+        if (!cancelled) {
+          setCategoryLabel("");
+        }
+      }
+    }
+
+    if (product.categoryId) {
+      loadCategory();
+    } else {
+      setCategoryLabel("");
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [product.categoryId]);
 
   return (
     <main className="bg-[var(--color-bg)]">
@@ -165,11 +131,7 @@ export function ProductDetail({
             </span>
 
             <span className="truncate text-[var(--color-text-secondary)]">
-              {product.category
-                .replace(/-/g, " ")
-                .replace(/\b\w/g, (letter) =>
-                  letter.toUpperCase(),
-                )}
+              {categoryLabel}
             </span>
           </div>
 
@@ -206,40 +168,14 @@ export function ProductDetail({
             >
               <ProductInfo
                 product={product}
-                selectedColorId={
-                  selectedColorId
-                }
-                selectedSizeCode={
-                  selectedSizeCode
-                }
-                selectedVariant={
-                  selectedVariant
-                }
                 quantity={safeQuantity}
-                sizeGuideOpen={
-                  sizeGuideOpen
-                }
-                onColorChange={
-                  handleColorChange
-                }
-                onSizeChange={
-                  handleSizeChange
-                }
-                onQuantityChange={(
-                  value,
-                ) =>
+                onQuantityChange={(value) =>
                   setQuantity(
                     Math.min(
                       Math.max(value, 1),
-                      Math.max(
-                        maxStock,
-                        1,
-                      ),
+                      Math.max(maxStock, 1),
                     ),
                   )
-                }
-                onSizeGuideChange={
-                  setSizeGuideOpen
                 }
               />
             </div>
@@ -309,6 +245,8 @@ export function ProductDetail({
                 </h2>
               </div>
 
+              {/* DESCRIPTION */}
+
               <ProductAccordion
                 title="Description"
                 defaultOpen
@@ -317,6 +255,8 @@ export function ProductDetail({
                   product={product}
                 />
               </ProductAccordion>
+
+              {/* MATERIALS & CARE */}
 
               <ProductAccordion title="Materials & Care">
                 <div
@@ -329,75 +269,29 @@ export function ProductDetail({
                     text-[var(--color-text-secondary)]
                   "
                 >
-                  {product.attributes
-                    .fabric && (
+                  {product.content.description ? (
+                    <div
+                      className="
+                        prose
+                        prose-sm
+                        max-w-none
+                        text-[var(--color-text-secondary)]
+                      "
+                      dangerouslySetInnerHTML={{
+                        __html:
+                          product.content.description,
+                      }}
+                    />
+                  ) : (
                     <p>
-                      <strong className="font-semibold text-[var(--color-text)]">
-                        Fabric:
-                      </strong>{" "}
-                      {
-                        product.attributes
-                          .fabric
-                      }
+                      Product care information
+                      will be updated soon.
                     </p>
                   )}
-
-                  {product.attributes
-                    .composition && (
-                    <p>
-                      <strong className="font-semibold text-[var(--color-text)]">
-                        Composition:
-                      </strong>{" "}
-                      {
-                        product.attributes
-                          .composition
-                      }
-                    </p>
-                  )}
-
-                  {product.attributes
-                    .careInstructions
-                    ?.length ? (
-                    <div>
-                      <p className="mb-3 font-semibold text-[var(--color-text)]">
-                        Care Instructions
-                      </p>
-
-                      <ul className="space-y-2">
-                        {product.attributes.careInstructions.map(
-                          (
-                            instruction,
-                          ) => (
-                            <li
-                              key={
-                                instruction
-                              }
-                              className="relative pl-4"
-                            >
-                              <span
-                                aria-hidden="true"
-                                className="
-                                  absolute
-                                  left-0
-                                  top-[11px]
-                                  h-1
-                                  w-1
-                                  rounded-full
-                                  bg-[var(--color-accent)]
-                                "
-                              />
-
-                              {
-                                instruction
-                              }
-                            </li>
-                          ),
-                        )}
-                      </ul>
-                    </div>
-                  ) : null}
                 </div>
               </ProductAccordion>
+
+              {/* SIZE & FIT */}
 
               <ProductAccordion title="Size & Fit">
                 <div
@@ -409,43 +303,16 @@ export function ProductDetail({
                     text-[var(--color-text-secondary)]
                   "
                 >
-                  {product.attributes
-                    .fit && (
-                    <p>
-                      <strong className="font-semibold text-[var(--color-text)]">
-                        Fit:
-                      </strong>{" "}
-                      {
-                        product.attributes
-                          .fit
-                      }
-                    </p>
-                  )}
-
-                  {product.attributes
-                    .silhouette && (
-                    <p className="mt-3">
-                      <strong className="font-semibold text-[var(--color-text)]">
-                        Silhouette:
-                      </strong>{" "}
-                      {
-                        product.attributes
-                          .silhouette
-                      }
-                    </p>
-                  )}
-
-                  {product.content
-                    .fitNote && (
-                    <p className="mt-5">
-                      {
-                        product.content
-                          .fitNote
-                      }
-                    </p>
-                  )}
+                  <p>
+                    Please refer to the product
+                    description and available
+                    product information for sizing
+                    details.
+                  </p>
                 </div>
               </ProductAccordion>
+
+              {/* PRODUCT DETAILS */}
 
               <ProductAccordion title="Product Details">
                 <ProductSpecifications
@@ -453,87 +320,41 @@ export function ProductDetail({
                 />
               </ProductAccordion>
 
-              {product.content
-                .shippingContent && (
-                <ProductAccordion title="Shipping & Delivery">
-                  <p
-                    className="
-                      max-w-2xl
-                      font-body
-                      text-sm
-                      leading-7
-                      text-[var(--color-text-secondary)]
-                    "
-                  >
-                    {
-                      product.content
-                        .shippingContent
-                    }
-                  </p>
-                </ProductAccordion>
-              )}
+              {/* SHIPPING */}
 
-              {product.content
-                .returnContent && (
-                <ProductAccordion title="Returns & Exchange">
-                  <p
-                    className="
-                      max-w-2xl
-                      font-body
-                      text-sm
-                      leading-7
-                      text-[var(--color-text-secondary)]
-                    "
-                  >
-                    {
-                      product.content
-                        .returnContent
-                    }
-                  </p>
-                </ProductAccordion>
-              )}
+              <ProductAccordion title="Shipping & Delivery">
+                <p
+                  className="
+                    max-w-2xl
+                    font-body
+                    text-sm
+                    leading-7
+                    text-[var(--color-text-secondary)]
+                  "
+                >
+                  Shipping and delivery information
+                  will be provided during checkout
+                  based on the delivery address.
+                </p>
+              </ProductAccordion>
 
-              {product.faqs?.length ? (
-                <ProductAccordion title="Frequently Asked Questions">
-                  <div className="max-w-2xl space-y-7">
-                    {product.faqs.map(
-                      (faq) => (
-                        <div
-                          key={faq.id}
-                          className="border-b border-[var(--color-border-light)] pb-6 last:border-0"
-                        >
-                          <p
-                            className="
-                              font-body
-                              text-sm
-                              font-semibold
-                              text-[var(--color-text)]
-                            "
-                          >
-                            {
-                              faq.question
-                            }
-                          </p>
+              {/* RETURNS */}
 
-                          <p
-                            className="
-                              mt-2
-                              font-body
-                              text-sm
-                              leading-7
-                              text-[var(--color-text-secondary)]
-                            "
-                          >
-                            {
-                              faq.answer
-                            }
-                          </p>
-                        </div>
-                      ),
-                    )}
-                  </div>
-                </ProductAccordion>
-              ) : null}
+              <ProductAccordion title="Returns & Exchange">
+                <p
+                  className="
+                    max-w-2xl
+                    font-body
+                    text-sm
+                    leading-7
+                    text-[var(--color-text-secondary)]
+                  "
+                >
+                  Please refer to the store return
+                  and exchange policy applicable to
+                  this product.
+                </p>
+              </ProductAccordion>
 
               {/* =================================================
                   REVIEWS
@@ -612,7 +433,7 @@ export function ProductDetail({
                 <div className="space-y-6">
                   <div>
                     <p className="eyebrow">
-                      Fabric
+                      Price
                     </p>
 
                     <p
@@ -623,17 +444,16 @@ export function ProductDetail({
                         text-[var(--color-text-secondary)]
                       "
                     >
-                      {
-                        product.attributes
-                          .fabric ??
-                        "Premium materials"
-                      }
+                      ₹
+                      {product.pricing.sellingPrice.toLocaleString(
+                        "en-IN",
+                      )}
                     </p>
                   </div>
 
                   <div>
                     <p className="eyebrow">
-                      Occasion
+                      Availability
                     </p>
 
                     <p
@@ -644,11 +464,9 @@ export function ProductDetail({
                         text-[var(--color-text-secondary)]
                       "
                     >
-                      {product.attributes
-                        .occasion?.join(
-                          ", ",
-                        ) ??
-                        "Versatile styling"}
+                      {maxStock > 0
+                        ? `${maxStock} available`
+                        : "Currently unavailable"}
                     </p>
                   </div>
                 </div>
@@ -684,9 +502,7 @@ export function ProductDetail({
       ===================================================== */}
 
       <ProductRecommendations
-        recommendations={
-          recommendations
-        }
+        recommendations={recommendations}
         product={product}
       />
 
@@ -696,7 +512,6 @@ export function ProductDetail({
 
       <ProductStickyBuyBar
         product={product}
-        variant={selectedVariant}
       />
     </main>
   );

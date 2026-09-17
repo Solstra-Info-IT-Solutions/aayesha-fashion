@@ -10,30 +10,25 @@ import {
 
 import type {
   Product,
-  ProductCategory,
   ProductSort,
 } from "@/types/product";
 
 import {
   getProductStartingPrice,
-  getProductColors,
-  getProductSizes,
+  getInventoryStatus,
 } from "@/types/product";
 
 import { ProductCard } from "@/components/product/product-card";
 
 interface ShopProductGridProps {
   products: Product[];
-  category?: ProductCategory;
+  category?: string;
   sort?: ProductSort;
 }
 
 function getUrlParams() {
   if (typeof window === "undefined") {
     return {
-      type: null,
-      color: null,
-      size: null,
       availability: null,
     };
   }
@@ -44,9 +39,6 @@ function getUrlParams() {
     );
 
   return {
-    type: params.get("type"),
-    color: params.get("color"),
-    size: params.get("size"),
     availability:
       params.get("availability"),
   };
@@ -112,7 +104,7 @@ export function ShopProductGrid({
       if (category) {
         result = result.filter(
           (product) =>
-            product.category ===
+            product.categoryId ===
             category,
         );
       }
@@ -140,78 +132,15 @@ export function ShopProductGrid({
       }
 
       /* =====================================================
-         PRODUCT TYPE
-      ===================================================== */
-
-      if (urlParams.type) {
-        result = result.filter(
-          (product) =>
-            product.productType ===
-            urlParams.type,
-        );
-      }
-
-      /* =====================================================
-         COLOR
-      ===================================================== */
-
-      if (urlParams.color) {
-        result = result.filter(
-          (product) =>
-            getProductColors(
-              product,
-            ).some(
-              (item) =>
-                item.id ===
-                urlParams.color,
-            ),
-        );
-      }
-
-      /* =====================================================
-         SIZE
-      ===================================================== */
-
-      if (urlParams.size) {
-        result = result.filter(
-          (product) =>
-            getProductSizes(
-              product,
-            ).some(
-              (item) =>
-                item.code ===
-                urlParams.size,
-            ),
-        );
-      }
-
-      /* =====================================================
          AVAILABILITY
       ===================================================== */
 
       if (urlParams.availability) {
         result = result.filter(
           (product) => {
-            const activeVariants =
-              product.variants.filter(
-                (variant) =>
-                  variant.status ===
-                  "active",
-              );
-
-            const availableVariants =
-              activeVariants.filter(
-                (variant) => {
-                  const availableStock =
-                    variant.inventory
-                      .stock -
-                    variant.inventory
-                      .reserved;
-
-                  return (
-                    availableStock > 0
-                  );
-                },
+            const inventoryStatus =
+              getInventoryStatus(
+                product,
               );
 
             if (
@@ -219,8 +148,8 @@ export function ShopProductGrid({
               "out-of-stock"
             ) {
               return (
-                availableVariants.length ===
-                0
+                inventoryStatus ===
+                "out-of-stock"
               );
             }
 
@@ -228,20 +157,11 @@ export function ShopProductGrid({
               urlParams.availability ===
               "in-stock"
             ) {
-              return availableVariants.some(
-                (variant) => {
-                  const availableStock =
-                    variant.inventory
-                      .stock -
-                    variant.inventory
-                      .reserved;
-
-                  return (
-                    availableStock >
-                    variant.inventory
-                      .lowStockThreshold
-                  );
-                },
+              return (
+                inventoryStatus ===
+                  "in-stock" ||
+                inventoryStatus ===
+                  "low-stock"
               );
             }
 
@@ -249,21 +169,9 @@ export function ShopProductGrid({
               urlParams.availability ===
               "low"
             ) {
-              return availableVariants.some(
-                (variant) => {
-                  const availableStock =
-                    variant.inventory
-                      .stock -
-                    variant.inventory
-                      .reserved;
-
-                  return (
-                    availableStock > 0 &&
-                    availableStock <=
-                      variant.inventory
-                        .lowStockThreshold
-                  );
-                },
+              return (
+                inventoryStatus ===
+                "low-stock"
               );
             }
 
@@ -280,24 +188,16 @@ export function ShopProductGrid({
         case "price-low":
           result.sort(
             (a, b) =>
-              getProductStartingPrice(
-                a,
-              ) -
-              getProductStartingPrice(
-                b,
-              ),
+              getProductStartingPrice(a) -
+              getProductStartingPrice(b),
           );
           break;
 
         case "price-high":
           result.sort(
             (a, b) =>
-              getProductStartingPrice(
-                b,
-              ) -
-              getProductStartingPrice(
-                a,
-              ),
+              getProductStartingPrice(b) -
+              getProductStartingPrice(a),
           );
           break;
 
@@ -368,9 +268,6 @@ export function ShopProductGrid({
       products,
       category,
       sort,
-      urlParams.type,
-      urlParams.color,
-      urlParams.size,
       urlParams.availability,
       collectionContext.isNew,
       collectionContext.isBestSeller,

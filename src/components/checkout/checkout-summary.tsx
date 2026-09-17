@@ -5,10 +5,7 @@ import { useEffect, useState } from "react";
 
 import { getProductById } from "@/lib/api/products";
 
-import type {
-  Product,
-  ProductVariant,
-} from "@/types/product";
+import type { Product } from "@/types/product";
 
 import { useCartStore } from "@/store/cart-store";
 import { useCheckoutStore } from "@/store/checkout-store";
@@ -16,13 +13,10 @@ import { useCheckoutStore } from "@/store/checkout-store";
 type ResolvedCheckoutItem = {
   cartItem: {
     productId: string;
-    variantId: string;
     quantity: number;
   };
 
   product: Product;
-
-  variant: ProductVariant;
 
   image?: Product["media"][number];
 };
@@ -137,24 +131,7 @@ export function CheckoutSummary() {
             continue;
           }
 
-          const variant =
-            product.variants.find(
-              (item) =>
-                item.id ===
-                cartItem.variantId,
-            );
-
-          if (!variant) {
-            continue;
-          }
-
           const image =
-            product.media.find(
-              (media) =>
-                variant.mediaIds?.includes(
-                  media.id,
-                ),
-            ) ??
             product.media.find(
               (media) =>
                 media.isPrimary,
@@ -166,9 +143,13 @@ export function CheckoutSummary() {
             );
 
           resolved.push({
-            cartItem,
+            cartItem: {
+              productId:
+                cartItem.productId,
+              quantity:
+                cartItem.quantity,
+            },
             product,
-            variant,
             image,
           });
         }
@@ -200,12 +181,16 @@ export function CheckoutSummary() {
     const item of items
   ) {
     subtotal +=
-      item.variant.pricing
-        .sellingPrice *
+      Number(
+        item.product.pricing
+          .sellingPrice,
+      ) *
       item.cartItem.quantity;
 
     mrpTotal +=
-      item.variant.pricing.mrp *
+      Number(
+        item.product.pricing.mrp,
+      ) *
       item.cartItem.quantity;
   }
 
@@ -285,12 +270,16 @@ export function CheckoutSummary() {
               ({
                 cartItem,
                 product,
-                variant,
                 image,
               }) => {
+                const {
+                  sellingPrice,
+                  mrp,
+                } = product.pricing;
+
                 return (
                   <div
-                    key={`${cartItem.productId}-${cartItem.variantId}`}
+                    key={cartItem.productId}
                     className="flex gap-4 border-b border-[var(--color-border-light)] px-5 py-4 sm:px-6"
                   >
                     {/* IMAGE */}
@@ -330,24 +319,28 @@ export function CheckoutSummary() {
                       </p>
 
                       <p className="mt-2 text-[10px] uppercase tracking-[0.06em] text-[var(--color-text-muted)]">
-                        {variant.color.name}{" "}
-                        ·{" "}
-                        {variant.size.label}
+                        Product
                       </p>
 
                       <div className="mt-3 flex items-center justify-between gap-3">
                         <p className="text-xs font-semibold text-[var(--color-text)]">
                           ₹
-                          {variant.pricing.sellingPrice.toLocaleString(
+                          {Number(
+                            sellingPrice,
+                          ).toLocaleString(
                             "en-IN",
                           )}
                         </p>
 
-                        {variant.pricing.mrp >
-                        variant.pricing.sellingPrice ? (
+                        {Number(mrp) >
+                        Number(
+                          sellingPrice,
+                        ) ? (
                           <p className="text-[10px] text-[var(--color-text-muted)] line-through">
                             ₹
-                            {variant.pricing.mrp.toLocaleString(
+                            {Number(
+                              mrp,
+                            ).toLocaleString(
                               "en-IN",
                             )}
                           </p>

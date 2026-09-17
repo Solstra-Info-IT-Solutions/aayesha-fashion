@@ -7,7 +7,6 @@ import {
   ArrowUpRight,
   CalendarDays,
   Check,
-  CheckCircle2,
   ChevronRight,
   Circle,
   CreditCard,
@@ -446,7 +445,7 @@ export default function PublicOrderPage({
                 {order.items.map(
                   (item) => (
                     <div
-                      key={`${item.productId}-${item.variantId}`}
+                      key={item.productId}
                       className="flex gap-4 p-5 sm:p-6"
                     >
                       <div className="h-28 w-24 shrink-0 overflow-hidden bg-[var(--color-cream)] sm:h-32 sm:w-28">
@@ -474,15 +473,6 @@ export default function PublicOrderPage({
                           <div className="min-w-0">
                             <p className="break-words text-sm font-semibold text-[var(--color-charcoal)] sm:text-base">
                               {item.name}
-                            </p>
-
-                            <p className="mt-1 break-words text-[10px] uppercase tracking-[0.12em] text-[var(--color-text-muted)]">
-                              {item.colorName}
-                              {item.colorName &&
-                              item.sizeLabel
-                                ? " · "
-                                : ""}
-                              {item.sizeLabel}
                             </p>
 
                             <p className="mt-2 text-xs text-[var(--color-text-secondary)]">

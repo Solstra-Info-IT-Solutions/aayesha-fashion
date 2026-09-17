@@ -10,15 +10,11 @@ import { persist } from "zustand/middleware";
 export interface CartItem {
   /**
    * Product-level identifier.
+   *
+   * Every color/style is now a separate product,
+   * so productId uniquely identifies the cart item.
    */
   productId: string;
-
-  /**
-   * Exact selected variant.
-   * Example:
-   * rose-garden-rose-m
-   */
-  variantId: string;
 
   /**
    * Quantity currently in the cart.
@@ -36,32 +32,27 @@ interface CartState {
   addItem: (
     productId: string,
     quantity?: number,
-    variantId?: string,
   ) => void;
 
   removeItem: (
     productId: string,
-    variantId?: string,
   ) => void;
 
   updateQuantity: (
     productId: string,
     quantity: number,
-    variantId?: string,
   ) => void;
 
   clearCart: () => void;
 
   getItemQuantity: (
     productId: string,
-    variantId?: string,
   ) => number;
 
   getTotalItems: () => number;
 
   hasItem: (
     productId: string,
-    variantId?: string,
   ) => boolean;
 }
 
@@ -69,224 +60,209 @@ interface CartState {
    STORE
 ============================================================ */
 
-export const useCartStore = create<CartState>()(
-  persist(
-    (set, get) => ({
-      items: [],
+export const useCartStore =
+  create<CartState>()(
+    persist(
+      (set, get) => ({
+        items: [],
 
-      /* --------------------------------------------------------
-         ADD ITEM
-      -------------------------------------------------------- */
+        /* ------------------------------------------------------
+           ADD ITEM
+        ------------------------------------------------------ */
 
-      addItem: (
-        productId,
-        quantity = 1,
-        variantId,
-      ) => {
-        /**
-         * Variant is mandatory for the advanced
-         * product architecture.
-         */
-        if (!variantId) {
-          return;
-        }
-
-        if (quantity <= 0) {
-          return;
-        }
-
-        set((state) => {
-          const existingItem = state.items.find(
-            (item) =>
-              item.productId === productId &&
-              item.variantId === variantId,
-          );
-
-          /* ----------------------------------------------
-             EXISTING VARIANT
-          ---------------------------------------------- */
-
-          if (existingItem) {
-            return {
-              items: state.items.map((item) =>
-                item.productId === productId &&
-                item.variantId === variantId
-                  ? {
-                      ...item,
-                      quantity:
-                        item.quantity +
-                        quantity,
-                    }
-                  : item,
-              ),
-            };
+        addItem: (
+          productId,
+          quantity = 1,
+        ) => {
+          if (!productId) {
+            return;
           }
 
-          /* ----------------------------------------------
-             NEW VARIANT
-          ---------------------------------------------- */
+          if (quantity <= 0) {
+            return;
+          }
 
-          return {
-            items: [
-              ...state.items,
-              {
-                productId,
-                variantId,
-                quantity,
-              },
-            ],
-          };
-        });
-      },
+          set((state) => {
+            const existingItem =
+              state.items.find(
+                (item) =>
+                  item.productId ===
+                  productId,
+              );
 
-      /* --------------------------------------------------------
-         REMOVE ITEM
-      -------------------------------------------------------- */
+            /* ----------------------------------------------
+               EXISTING PRODUCT
+            ---------------------------------------------- */
 
-      removeItem: (
-        productId,
-        variantId,
-      ) => {
-        if (!variantId) {
-          return;
-        }
+            if (existingItem) {
+              return {
+                items: state.items.map(
+                  (item) =>
+                    item.productId ===
+                    productId
+                      ? {
+                          ...item,
+                          quantity:
+                            item.quantity +
+                            quantity,
+                        }
+                      : item,
+                ),
+              };
+            }
 
-        set((state) => ({
-          items: state.items.filter(
-            (item) =>
-              !(
-                item.productId ===
-                  productId &&
-                item.variantId ===
-                  variantId
-              ),
-          ),
-        }));
-      },
+            /* ----------------------------------------------
+               NEW PRODUCT
+            ---------------------------------------------- */
 
-      /* --------------------------------------------------------
-         UPDATE QUANTITY
-      -------------------------------------------------------- */
+            return {
+              items: [
+                ...state.items,
+                {
+                  productId,
+                  quantity,
+                },
+              ],
+            };
+          });
+        },
 
-      updateQuantity: (
-        productId,
-        quantity,
-        variantId,
-      ) => {
-        if (!variantId) {
-          return;
-        }
+        /* ------------------------------------------------------
+           REMOVE ITEM
+        ------------------------------------------------------ */
 
-        /**
-         * Quantity 0 means remove the item.
-         */
-        if (quantity <= 0) {
+        removeItem: (
+          productId,
+        ) => {
+          if (!productId) {
+            return;
+          }
+
           set((state) => ({
             items: state.items.filter(
               (item) =>
-                !(
-                  item.productId ===
-                    productId &&
-                  item.variantId ===
-                    variantId
-                ),
+                item.productId !==
+                productId,
             ),
           }));
+        },
 
-          return;
-        }
+        /* ------------------------------------------------------
+           UPDATE QUANTITY
+        ------------------------------------------------------ */
 
-        set((state) => ({
-          items: state.items.map((item) =>
-            item.productId === productId &&
-            item.variantId === variantId
-              ? {
-                  ...item,
-                  quantity,
-                }
-              : item,
-          ),
-        }));
-      },
+        updateQuantity: (
+          productId,
+          quantity,
+        ) => {
+          if (!productId) {
+            return;
+          }
 
-      /* --------------------------------------------------------
-         CLEAR CART
-      -------------------------------------------------------- */
+          /**
+           * Quantity 0 or below means
+           * remove the product from cart.
+           */
+          if (quantity <= 0) {
+            set((state) => ({
+              items: state.items.filter(
+                (item) =>
+                  item.productId !==
+                  productId,
+              ),
+            }));
 
-      clearCart: () => {
-        set({
-          items: [],
-        });
-      },
+            return;
+          }
 
-      /* --------------------------------------------------------
-         GET ITEM QUANTITY
-      -------------------------------------------------------- */
+          set((state) => ({
+            items: state.items.map(
+              (item) =>
+                item.productId ===
+                productId
+                  ? {
+                      ...item,
+                      quantity,
+                    }
+                  : item,
+            ),
+          }));
+        },
 
-      getItemQuantity: (
-        productId,
-        variantId,
-      ) => {
-        if (!variantId) {
-          return 0;
-        }
+        /* ------------------------------------------------------
+           CLEAR CART
+        ------------------------------------------------------ */
 
-        return (
-          get().items.find(
+        clearCart: () => {
+          set({
+            items: [],
+          });
+        },
+
+        /* ------------------------------------------------------
+           GET ITEM QUANTITY
+        ------------------------------------------------------ */
+
+        getItemQuantity: (
+          productId,
+        ) => {
+          if (!productId) {
+            return 0;
+          }
+
+          return (
+            get().items.find(
+              (item) =>
+                item.productId ===
+                productId,
+            )?.quantity ?? 0
+          );
+        },
+
+        /* ------------------------------------------------------
+           TOTAL ITEMS
+        ------------------------------------------------------ */
+
+        getTotalItems: () => {
+          return get().items.reduce(
+            (total, item) =>
+              total + item.quantity,
+            0,
+          );
+        },
+
+        /* ------------------------------------------------------
+           HAS ITEM
+        ------------------------------------------------------ */
+
+        hasItem: (
+          productId,
+        ) => {
+          if (!productId) {
+            return false;
+          }
+
+          return get().items.some(
             (item) =>
               item.productId ===
-                productId &&
-              item.variantId ===
-                variantId,
-          )?.quantity ?? 0
-        );
-      },
-
-      /* --------------------------------------------------------
-         TOTAL ITEMS
-      -------------------------------------------------------- */
-
-      getTotalItems: () => {
-        return get().items.reduce(
-          (total, item) =>
-            total + item.quantity,
-          0,
-        );
-      },
-
-      /* --------------------------------------------------------
-         HAS ITEM
-      -------------------------------------------------------- */
-
-      hasItem: (
-        productId,
-        variantId,
-      ) => {
-        if (!variantId) {
-          return false;
-        }
-
-        return get().items.some(
-          (item) =>
-            item.productId === productId &&
-            item.variantId === variantId,
-        );
-      },
-    }),
-
-    /* ==========================================================
-       PERSISTENCE
-    ========================================================== */
-
-    {
-      name: "aayesha-cart",
-
-      /**
-       * Only cart data is persisted.
-       */
-      partialize: (state) => ({
-        items: state.items,
+              productId,
+          );
+        },
       }),
-    },
-  ),
-);
+
+      /* ========================================================
+         PERSISTENCE
+      ======================================================== */
+
+      {
+        name: "aayesha-cart",
+
+        /**
+         * Only cart data is persisted.
+         */
+        partialize: (state) => ({
+          items: state.items,
+        }),
+      },
+    ),
+  );

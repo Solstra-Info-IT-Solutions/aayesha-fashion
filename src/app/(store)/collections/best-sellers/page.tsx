@@ -1,12 +1,7 @@
 import type { Metadata } from "next";
 
 import { getProducts } from "@/lib/api/products";
-
-import type {
-  ProductCategory,
-  ProductSort,
-  ProductType,
-} from "@/types/product";
+import type { ProductSort } from "@/types/product";
 
 import { ShopHeader } from "@/components/shop/shop-header";
 import { ShopFilters } from "@/components/shop/shop-filters";
@@ -16,24 +11,12 @@ type BestSellersPageProps = {
   searchParams: Promise<{
     category?: string;
     sort?: string;
-    type?: string;
-    collection?: string;
-    color?: string;
-    size?: string;
-    availability?: string;
-    badge?: string;
     minPrice?: string;
     maxPrice?: string;
+    availability?: string;
     search?: string;
   }>;
 };
-
-const validCategories: ProductCategory[] = [
-  "festive",
-  "ethnic",
-  "contemporary",
-  "new-arrival",
-];
 
 const validSorts: ProductSort[] = [
   "relevance",
@@ -43,22 +26,6 @@ const validSorts: ProductSort[] = [
   "rating",
   "best-selling",
   "featured",
-];
-
-const validProductTypes: ProductType[] = [
-  "anarkali",
-  "kurta",
-  "kurta-set",
-  "suit-set",
-  "lehenga",
-  "saree",
-  "dress",
-  "top",
-  "bottom",
-  "co-ord",
-  "jacket",
-  "dupatta",
-  "other",
 ];
 
 function parseNumber(value?: string) {
@@ -80,8 +47,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Best Sellers | Aayesha Fashion",
-    description:
-      "Discover the pieces our customers love most.",
+    description: "Discover the pieces our customers love most.",
     url: "/collections/best-sellers",
     type: "website",
   },
@@ -92,23 +58,13 @@ export default async function BestSellersPage({
 }: BestSellersPageProps) {
   const params = await searchParams;
 
-  const category =
-    params.category &&
-    validCategories.includes(params.category as ProductCategory)
-      ? (params.category as ProductCategory)
-      : undefined;
+  const categoryId = params.category || undefined;
 
   const sort =
     params.sort &&
     validSorts.includes(params.sort as ProductSort)
       ? (params.sort as ProductSort)
       : "best-selling";
-
-  const productType =
-    params.type &&
-    validProductTypes.includes(params.type as ProductType)
-      ? (params.type as ProductType)
-      : undefined;
 
   const minPrice = parseNumber(params.minPrice);
   const maxPrice = parseNumber(params.maxPrice);
@@ -125,12 +81,7 @@ export default async function BestSellersPage({
     // Best Sellers collection
     isBestSeller: true,
 
-    category,
-    productType,
-    collection: params.collection,
-    color: params.color,
-    size: params.size,
-    badge: params.badge,
+    categoryId,
     minPrice,
     maxPrice,
     inStockOnly,
@@ -143,11 +94,12 @@ export default async function BestSellersPage({
       {/* =====================================================
           COLLECTION HEADER + TOOLBAR
       ===================================================== */}
+
       <section className="border-b border-[var(--color-border-light)] bg-[var(--color-bg)]">
         <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
           <ShopHeader
             products={response.products}
-            selectedCategory={category}
+            selectedCategory={categoryId}
             selectedSort={sort}
           />
         </div>
@@ -156,16 +108,18 @@ export default async function BestSellersPage({
       {/* =====================================================
           COLLECTION CONTENT
       ===================================================== */}
+
       <section className="mx-auto max-w-[1600px] px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
         <div className="grid gap-10 lg:grid-cols-[235px_minmax(0,1fr)] xl:gap-12">
           {/* =================================================
               DESKTOP FILTERS
           ================================================= */}
+
           <aside className="hidden lg:block">
             <div className="sticky top-28">
               <ShopFilters
                 products={response.products}
-                selectedCategory={category}
+                selectedCategory={categoryId}
               />
             </div>
           </aside>
@@ -173,10 +127,11 @@ export default async function BestSellersPage({
           {/* =================================================
               PRODUCT GRID
           ================================================= */}
+
           <div className="min-w-0">
             <ShopProductGrid
               products={response.products}
-              category={category}
+              category={categoryId}
               sort={sort}
             />
           </div>

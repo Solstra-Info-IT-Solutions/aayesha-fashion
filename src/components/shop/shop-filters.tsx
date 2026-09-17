@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -12,64 +13,26 @@ import {
   RotateCcw,
 } from "lucide-react";
 
-import type {
-  Product,
-  ProductCategory,
-  ProductType,
-} from "@/types/product";
+import type { Product } from "@/types/product";
+import { getInventoryStatus } from "@/types/product";
 
-import {
-  getProductColors,
-  getProductSizes,
-} from "@/types/product";
+import { getCategories } from "@/services/category.service";
+import type { Category } from "@/types/category";
 
 interface ShopFiltersProps {
   products: Product[];
-  selectedCategory?: ProductCategory;
+  selectedCategory?: string;
   mobile?: boolean;
   onClose?: () => void;
 }
 
 type FilterSection =
   | "category"
-  | "type"
-  | "color"
-  | "size"
   | "price"
   | "availability";
 
-const categoryLabels: Record<
-  ProductCategory,
-  string
-> = {
-  festive: "Festive",
-  ethnic: "Ethnic",
-  contemporary: "Contemporary",
-  "new-arrival": "New Arrivals",
-};
-
-const productTypeLabels: Record<
-  ProductType,
-  string
-> = {
-  anarkali: "Anarkali",
-  kurta: "Kurta",
-  "kurta-set": "Kurta Set",
-  "suit-set": "Suit Set",
-  lehenga: "Lehenga",
-  saree: "Saree",
-  dress: "Dress",
-  top: "Top",
-  bottom: "Bottom",
-  "co-ord": "Co-ord",
-  jacket: "Jacket",
-  dupatta: "Dupatta",
-  other: "Other",
-};
-
 const availabilityLabels = {
   "in-stock": "In Stock",
-  low: "Low Stock",
   "out-of-stock": "Out of Stock",
 } as const;
 
@@ -101,9 +64,6 @@ const sectionLabels: Record<
   string
 > = {
   category: "Category",
-  type: "Product Type",
-  color: "Color",
-  size: "Size",
   price: "Price",
   availability: "Availability",
 };
@@ -148,28 +108,18 @@ function buildFilterHref(
     params.delete(key);
   }
 
-  if (
-    getCollectionBasePath() ===
-    "/collections/new-arrivals"
-  ) {
-    params.delete("isNew");
-    params.delete("isBestSeller");
-  }
-
-  if (
-    getCollectionBasePath() ===
-    "/collections/best-sellers"
-  ) {
-    params.delete("isNew");
-    params.delete("isBestSeller");
-  }
-
   const query =
     params.toString();
 
   return query
     ? `${getCollectionBasePath()}?${query}`
     : getCollectionBasePath();
+}
+
+function formatCategoryName(
+  category: Category,
+): string {
+  return category.name;
 }
 
 export function ShopFilters({
@@ -181,12 +131,12 @@ export function ShopFilters({
   const [openSections, setOpenSections] =
     useState<FilterSection[]>([
       "category",
-      "type",
-      "color",
-      "size",
       "price",
       "availability",
     ]);
+
+  const [categories, setCategories] =
+    useState<Category[]>([]);
 
   const initialPrice =
     typeof window !== "undefined"
@@ -219,128 +169,70 @@ export function ShopFilters({
     initialPrice,
   );
 
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadCategories() {
+      try {
+        const result =
+          await getCategories();
+
+        if (mounted) {
+          setCategories(result);
+        }
+      } catch {
+        if (mounted) {
+          setCategories([]);
+        }
+      }
+    }
+
+    loadCategories();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const categoryOptions =
     useMemo(() => {
-      const values =
-        new Set<ProductCategory>();
+      if (categories.length > 0) {
+        return categories;
+      }
+
+      const ids = new Set<string>();
 
       products.forEach((product) => {
-        values.add(product.category);
+        if (product.categoryId) {
+          ids.add(product.categoryId);
+        }
       });
 
-      return Array.from(values);
-    }, [products]);
-
-  const typeOptions =
-    useMemo(() => {
-      const values =
-        new Set<ProductType>();
-
-      products.forEach((product) => {
-        values.add(product.productType);
-      });
-
-      return Array.from(values);
-    }, [products]);
-
-  const colorOptions =
-    useMemo(() => {
-      const map =
-        new Map<
-          string,
-          {
-            id: string;
-            name: string;
-            hex?: string;
-          }
-        >();
-
-      products.forEach((product) => {
-        getProductColors(product).forEach(
-          (color) => {
-            if (!map.has(color.id)) {
-              map.set(color.id, {
-                id: color.id,
-                name: color.name,
-                hex: color.hex,
-              });
-            }
-          },
-        );
-      });
-
-      return Array.from(map.values());
-    }, [products]);
-
-  const sizeOptions =
-    useMemo(() => {
-      const map =
-        new Map<
-          string,
-          {
-            code: string;
-            label: string;
-          }
-        >();
-
-      products.forEach((product) => {
-        getProductSizes(product).forEach(
-          (size) => {
-            if (!map.has(size.code)) {
-              map.set(size.code, {
-                code: size.code,
-                label: size.label,
-              });
-            }
-          },
-        );
-      });
-
-      return Array.from(map.values());
-    }, [products]);
+      return Array.from(ids).map(
+        (id) =>
+          ({
+            id,
+            name: id,
+            slug: id,
+          }) as Category,
+      );
+    }, [categories, products]);
 
   const availabilityOptions =
     useMemo(() => {
       const values =
         new Set<
-          | "in-stock"
-          | "low"
-          | "out-of-stock"
+          "in-stock" | "out-of-stock"
         >();
 
       products.forEach((product) => {
-        const availableVariants =
-          product.variants.filter(
-            (variant) =>
-              variant.status === "active" &&
-              variant.inventory.stock >
-                variant.inventory.reserved,
-          );
+        const status =
+          getInventoryStatus(product);
 
         if (
-          availableVariants.length === 0
+          status === "out-of-stock"
         ) {
           values.add("out-of-stock");
-          return;
-        }
-
-        const hasLowStock =
-          availableVariants.some(
-            (variant) => {
-              const available =
-                variant.inventory.stock -
-                variant.inventory.reserved;
-
-              return (
-                available <=
-                variant.inventory
-                  .lowStockThreshold
-              );
-            },
-          );
-
-        if (hasLowStock) {
-          values.add("low");
         } else {
           values.add("in-stock");
         }
@@ -500,7 +392,9 @@ export function ShopFilters({
           border-[var(--color-border)]
         "
       >
-        {/* CATEGORY */}
+        {/* =================================================
+            CATEGORY
+        ================================================= */}
 
         <FilterSectionUI
           title={sectionLabels.category}
@@ -516,21 +410,21 @@ export function ShopFilters({
               (category) => {
                 const active =
                   selectedCategory ===
-                  category;
+                  category.id;
 
                 const count =
                   products.filter(
                     (product) =>
-                      product.category ===
-                      category,
+                      product.categoryId ===
+                      category.id,
                   ).length;
 
                 return (
                   <Link
-                    key={category}
+                    key={category.id}
                     href={buildFilterHref(
                       "category",
-                      category,
+                      category.id,
                     )}
                     onClick={onClose}
                     className={`
@@ -568,11 +462,9 @@ export function ShopFilters({
                         aria-hidden="true"
                       />
 
-                      {
-                        categoryLabels[
-                          category
-                        ]
-                      }
+                      {formatCategoryName(
+                        category,
+                      )}
                     </span>
 
                     <span
@@ -591,171 +483,9 @@ export function ShopFilters({
           </div>
         </FilterSectionUI>
 
-        {/* PRODUCT TYPE */}
-
-        <FilterSectionUI
-          title={sectionLabels.type}
-          open={openSections.includes(
-            "type",
-          )}
-          onToggle={() =>
-            toggleSection("type")
-          }
-        >
-          <div className="space-y-0.5">
-            {typeOptions.map(
-              (type) => (
-                <Link
-                  key={type}
-                  href={buildFilterHref(
-                    "type",
-                    type,
-                  )}
-                  onClick={onClose}
-                  className="
-                    flex
-                    min-h-10
-                    items-center
-                    py-2
-                    font-body
-                    text-[11px]
-                    text-[var(--color-text-secondary)]
-                    transition-colors
-                    duration-[var(--duration-fast)]
-                    hover:text-[var(--color-text)]
-                  "
-                >
-                  {
-                    productTypeLabels[
-                      type
-                    ]
-                  }
-                </Link>
-              ),
-            )}
-          </div>
-        </FilterSectionUI>
-
-        {/* COLOR */}
-
-        <FilterSectionUI
-          title={sectionLabels.color}
-          open={openSections.includes(
-            "color",
-          )}
-          onToggle={() =>
-            toggleSection("color")
-          }
-        >
-          <div className="grid grid-cols-2 gap-x-3 gap-y-1">
-            {colorOptions.map(
-              (color) => (
-                <Link
-                  key={color.id}
-                  href={buildFilterHref(
-                    "color",
-                    color.id,
-                  )}
-                  onClick={onClose}
-                  className="
-                    group
-                    flex
-                    min-h-10
-                    min-w-0
-                    items-center
-                    gap-2.5
-                    py-2
-                    font-body
-                    text-[10px]
-                    text-[var(--color-text-secondary)]
-                    transition-colors
-                    duration-[var(--duration-fast)]
-                    hover:text-[var(--color-text)]
-                  "
-                >
-                  <span
-                    className="
-                      relative
-                      h-5
-                      w-5
-                      shrink-0
-                      overflow-hidden
-                      rounded-full
-                      border
-                      border-[var(--color-border-dark)]
-                      transition-transform
-                      duration-[var(--duration-fast)]
-                      group-hover:scale-105
-                    "
-                    style={{
-                      backgroundColor:
-                        color.hex ??
-                        "#e8e3de",
-                    }}
-                    aria-hidden="true"
-                  />
-
-                  <span className="truncate">
-                    {color.name}
-                  </span>
-                </Link>
-              ),
-            )}
-          </div>
-        </FilterSectionUI>
-
-        {/* SIZE */}
-
-        <FilterSectionUI
-          title={sectionLabels.size}
-          open={openSections.includes(
-            "size",
-          )}
-          onToggle={() =>
-            toggleSection("size")
-          }
-        >
-          <div className="flex flex-wrap gap-1.5">
-            {sizeOptions.map(
-              (size) => (
-                <Link
-                  key={size.code}
-                  href={buildFilterHref(
-                    "size",
-                    size.code,
-                  )}
-                  onClick={onClose}
-                  className="
-                    flex
-                    min-h-9
-                    min-w-10
-                    items-center
-                    justify-center
-                    border
-                    border-[var(--color-border)]
-                    bg-[var(--color-surface)]
-                    px-2.5
-                    font-body
-                    text-[10px]
-                    font-medium
-                    text-[var(--color-text)]
-                    transition-all
-                    duration-[var(--duration-fast)]
-                    hover:border-[var(--color-text)]
-                    hover:bg-[var(--color-bg-soft)]
-                    focus-visible:outline-none
-                    focus-visible:ring-1
-                    focus-visible:ring-[var(--color-text)]
-                  "
-                >
-                  {size.label}
-                </Link>
-              ),
-            )}
-          </div>
-        </FilterSectionUI>
-
-        {/* PRICE */}
+        {/* =================================================
+            PRICE
+        ================================================= */}
 
         <FilterSectionUI
           title={sectionLabels.price}
@@ -828,7 +558,9 @@ export function ShopFilters({
           </div>
         </FilterSectionUI>
 
-        {/* AVAILABILITY */}
+        {/* =================================================
+            AVAILABILITY
+        ================================================= */}
 
         <FilterSectionUI
           title={
@@ -848,10 +580,17 @@ export function ShopFilters({
               (status) => (
                 <Link
                   key={status}
-                  href={buildFilterHref(
-                    "availability",
-                    status,
-                  )}
+                  href={
+                    status === "in-stock"
+                      ? buildFilterHref(
+                          "availability",
+                          status,
+                        )
+                      : buildFilterHref(
+                          "availability",
+                          "",
+                        )
+                  }
                   onClick={onClose}
                   className="
                     flex
@@ -876,9 +615,7 @@ export function ShopFilters({
                         status ===
                         "in-stock"
                           ? "bg-[var(--color-success)]"
-                          : status === "low"
-                            ? "bg-[var(--color-warning)]"
-                            : "bg-[var(--color-text-muted)]"
+                          : "bg-[var(--color-text-muted)]"
                       }
                     `}
                     aria-hidden="true"

@@ -2,19 +2,21 @@ import Link from "next/link";
 
 import { ArrowUpRight } from "lucide-react";
 
-import { getCollectionProducts } from "@/lib/api/products";
+import { getProducts } from "@/lib/api/products";
 
 import { Container } from "@/components/shared/container";
 import { ProductCard } from "@/components/product/product-card";
 
 export async function SignatureEdit() {
-  const response = await getCollectionProducts(
-    "signature-edit",
-    8,
-  );
+  const response = await getProducts({
+    page: 1,
+    limit: 8,
+    isFeatured: true,
+    status: "active",
+    sort: "featured",
+  });
 
-  const signatureProducts =
-    response.products;
+  const signatureProducts = response.products;
 
   return (
     <section className="bg-[var(--color-ivory)]">
@@ -35,10 +37,7 @@ export async function SignatureEdit() {
               </div>
 
               <span className="text-[9px] uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
-                {String(
-                  signatureProducts.length,
-                ).padStart(2, "0")}{" "}
-                Pieces
+                {String(signatureProducts.length).padStart(2, "0")} Pieces
               </span>
             </div>
           </div>
@@ -71,17 +70,13 @@ export async function SignatureEdit() {
 
           {signatureProducts.length > 0 ? (
             <div className="mt-14 grid grid-cols-1 gap-12 sm:grid-cols-2 sm:gap-x-7 sm:gap-y-14 lg:mt-20 lg:grid-cols-3 lg:gap-8 xl:gap-10">
-              {signatureProducts.map(
-                (product, index) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    priority={
-                      index === 0
-                    }
-                  />
-                ),
-              )}
+              {signatureProducts.map((product, index) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  priority={index === 0}
+                />
+              ))}
             </div>
           ) : (
             <div className="mt-14 border-y border-[var(--color-border)] py-16 text-center lg:mt-20">
@@ -101,7 +96,7 @@ export async function SignatureEdit() {
 
           <div className="mt-16 flex justify-center border-t border-[var(--color-border)] pt-8 sm:mt-20">
             <Link
-              href="/shop?collection=signature-edit"
+              href="/shop?featured=true"
               className="group inline-flex items-center gap-4 text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--color-charcoal)] transition-colors duration-300 hover:text-[var(--color-rose-dark)]"
             >
               Explore the complete collection

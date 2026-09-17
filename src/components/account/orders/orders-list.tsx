@@ -492,26 +492,6 @@ export function OrdersList() {
                               : "items"}
                           </p>
                         )}
-
-                      {firstItem && (
-                        <div className="mt-4 flex flex-wrap gap-2">
-                          {firstItem.colorName && (
-                            <span className="border border-[var(--color-border)] px-2.5 py-1 text-[9px] uppercase tracking-[0.08em] text-[var(--color-text-secondary)]">
-                              {
-                                firstItem.colorName
-                              }
-                            </span>
-                          )}
-
-                          {firstItem.sizeLabel && (
-                            <span className="border border-[var(--color-border)] px-2.5 py-1 text-[9px] uppercase tracking-[0.08em] text-[var(--color-text-secondary)]">
-                              {
-                                firstItem.sizeLabel
-                              }
-                            </span>
-                          )}
-                        </div>
-                      )}
                     </div>
                   </div>
 

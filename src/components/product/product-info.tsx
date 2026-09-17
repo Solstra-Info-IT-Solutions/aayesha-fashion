@@ -1,53 +1,63 @@
 "use client";
 
-import { Star } from "lucide-react";
+import { useEffect, useState } from "react";
 
-import type {
-  Product,
-  ProductVariant,
-} from "@/types/product";
-
+import { WishlistButton } from "@/components/product/wishlist-button";
 import { ProductPrice } from "@/components/product/product-price";
-import { ProductVariantSelector } from "@/components/product/product-variant-selector";
-import { ProductSizeSelector } from "@/components/product/product-size-selector";
 import { ProductPurchasePanel } from "@/components/product/product-purchase-panel";
 import { ProductDeliveryChecker } from "@/components/product/product-delivery-checker";
 import { ProductTrustBadges } from "@/components/product/product-trust-badges";
-import { WishlistButton } from "@/components/product/wishlist-button";
-import { SizeGuide } from "@/components/product/size-guide";
+
+import { getCategories } from "@/services/category.service";
+
+import type { Product } from "@/types/product";
 
 interface ProductInfoProps {
   product: Product;
-  selectedColorId: string;
-  selectedSizeCode: string;
-  selectedVariant: ProductVariant | null;
   quantity: number;
-  sizeGuideOpen: boolean;
-  onColorChange: (colorId: string) => void;
-  onSizeChange: (sizeCode: string) => void;
   onQuantityChange: (quantity: number) => void;
-  onSizeGuideChange: (open: boolean) => void;
 }
 
 export function ProductInfo({
   product,
-  selectedColorId,
-  selectedSizeCode,
-  selectedVariant,
   quantity,
-  sizeGuideOpen,
-  onColorChange,
-  onSizeChange,
   onQuantityChange,
-  onSizeGuideChange,
 }: ProductInfoProps) {
-  const categoryLabel = [
-    product.category,
-    product.subcategory,
-  ]
-    .filter(Boolean)
-    .join(" · ")
-    .replace(/-/g, " ");
+  const [categoryLabel, setCategoryLabel] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadCategory() {
+      try {
+        const categories = await getCategories();
+
+        const category = categories.find(
+          (item) => item.id === product.categoryId,
+        );
+
+        if (!cancelled) {
+          setCategoryLabel(category?.name ?? "");
+        }
+      } catch (error) {
+        console.error("Failed to load product category:", error);
+
+        if (!cancelled) {
+          setCategoryLabel("");
+        }
+      }
+    }
+
+    if (product.categoryId) {
+      loadCategory();
+    } else {
+      setCategoryLabel("");
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [product.categoryId]);
 
   return (
     <div
@@ -80,15 +90,17 @@ export function ProductInfo({
           <div className="min-w-0">
             {/* CATEGORY */}
 
-            <p
-              className="
-                eyebrow
-                mb-3
-                text-[var(--color-text-muted)]
-              "
-            >
-              {categoryLabel}
-            </p>
+            {categoryLabel && (
+              <p
+                className="
+                  eyebrow
+                  mb-3
+                  text-[var(--color-text-muted)]
+                "
+              >
+                {categoryLabel}
+              </p>
+            )}
 
             {/* PRODUCT NAME */}
 
@@ -105,63 +117,6 @@ export function ProductInfo({
             >
               {product.name}
             </h1>
-
-            {/* RATING */}
-
-            {product.reviews && (
-              <div
-                className="
-                  mt-5
-                  flex
-                  items-center
-                  gap-3
-                "
-              >
-                <div
-                  className="
-                    flex
-                    items-center
-                    gap-1.5
-                    border
-                    border-[var(--color-border-light)]
-                    px-2.5
-                    py-1.5
-                  "
-                >
-                  <Star
-                    size={12}
-                    strokeWidth={1.25}
-                    fill="currentColor"
-                    className="text-[var(--color-accent-dark)]"
-                  />
-
-                  <span
-                    className="
-                      font-body
-                      text-[10px]
-                      font-semibold
-                      tracking-[0.02em]
-                      text-[var(--color-text)]
-                    "
-                  >
-                    {product.reviews.averageRating.toFixed(
-                      1,
-                    )}
-                  </span>
-                </div>
-
-                <span
-                  className="
-                    font-body
-                    text-[10px]
-                    text-[var(--color-text-muted)]
-                  "
-                >
-                  {product.reviews.reviewCount}{" "}
-                  reviews
-                </span>
-              </div>
-            )}
           </div>
 
           {/* WISHLIST */}
@@ -187,9 +142,7 @@ export function ProductInfo({
           sm:py-7
         "
       >
-        <ProductPrice
-          variant={selectedVariant}
-        />
+        <ProductPrice product={product} />
 
         <p
           className="
@@ -217,7 +170,7 @@ export function ProductInfo({
             py-6
           "
         >
-          <p
+          <div
             className="
               max-w-xl
               font-body
@@ -228,71 +181,9 @@ export function ProductInfo({
             "
           >
             {product.content.description}
-          </p>
+          </div>
         </div>
       )}
-
-      {/* =====================================================
-          VARIANTS
-      ===================================================== */}
-
-      <div
-        className="
-          border-b
-          border-[var(--color-border)]
-          py-6
-        "
-      >
-        <ProductVariantSelector
-          product={product}
-          selectedColorId={
-            selectedColorId
-          }
-          onColorChange={
-            onColorChange
-          }
-        />
-      </div>
-
-      {/* =====================================================
-          SIZE
-      ===================================================== */}
-
-      <div
-        className="
-          border-b
-          border-[var(--color-border)]
-          py-6
-        "
-      >
-        <ProductSizeSelector
-          product={product}
-          selectedColorId={
-            selectedColorId
-          }
-          selectedSizeCode={
-            selectedSizeCode
-          }
-          onSizeChange={
-            onSizeChange
-          }
-          onOpenSizeGuide={() =>
-            onSizeGuideChange(true)
-          }
-        />
-      </div>
-
-      {/* =====================================================
-          SIZE GUIDE
-      ===================================================== */}
-
-      <SizeGuide
-        sizeChart={product.sizeChart}
-        open={sizeGuideOpen}
-        onOpenChange={
-          onSizeGuideChange
-        }
-      />
 
       {/* =====================================================
           PURCHASE
@@ -308,11 +199,8 @@ export function ProductInfo({
       >
         <ProductPurchasePanel
           product={product}
-          variant={selectedVariant}
           quantity={quantity}
-          onQuantityChange={
-            onQuantityChange
-          }
+          onQuantityChange={onQuantityChange}
         />
       </div>
 

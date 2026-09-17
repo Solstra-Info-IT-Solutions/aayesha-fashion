@@ -93,7 +93,9 @@ export function ProductRecommendations({
           </div>
 
           <Link
-            href={`/shop?category=${product.category}`}
+            href={`/shop?category=${encodeURIComponent(
+              product.categoryId,
+            )}`}
             className="
               link-luxury
               hidden
@@ -149,7 +151,9 @@ export function ProductRecommendations({
           "
         >
           <Link
-            href={`/shop?category=${product.category}`}
+            href={`/shop?category=${encodeURIComponent(
+              product.categoryId,
+            )}`}
             className="
               link-luxury
               font-body

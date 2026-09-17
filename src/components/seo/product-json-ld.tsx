@@ -1,12 +1,13 @@
 import type { Product } from "@/types/product";
 import {
+  getAvailableStock,
   getProductAvailability,
-  getVariantAvailableStock,
 } from "@/types/product";
 import { siteConfig } from "@/config/site";
 
 interface ProductJsonLdProps {
   product: Product;
+  categoryName?: string;
 }
 
 function absoluteUrl(value: string): string {
@@ -17,11 +18,8 @@ function absoluteUrl(value: string): string {
   }
 }
 
-function getAvailabilityUrl(
-  product: Product,
-): string {
-  const availability =
-    getProductAvailability(product);
+function getAvailabilityUrl(product: Product): string {
+  const availability = getProductAvailability(product);
 
   if (availability.isSoldOut) {
     return "https://schema.org/OutOfStock";
@@ -62,57 +60,14 @@ function getDescription(product: Product): string {
   );
 }
 
-function getVariantImage(
-  product: Product,
-  variant: Product["variants"][number],
-): string | undefined {
-  const media =
-    product.media.find(
-      (item) =>
-        variant.mediaIds?.includes(item.id) &&
-        item.type === "image",
-    ) ??
-    product.media.find(
-      (item) =>
-        item.colorId === variant.color.id &&
-        item.type === "image",
-    ) ??
-    product.media.find(
-      (item) =>
-        item.isPrimary &&
-        item.type === "image",
-    ) ??
-    product.media.find(
-      (item) => item.type === "image",
-    );
-
-  return media?.src
-    ? absoluteUrl(media.src)
-    : undefined;
-}
-
-function getVariantOffer(
-  product: Product,
-  variant: Product["variants"][number],
-) {
-  const availableStock =
-    getVariantAvailableStock(variant);
-
-  const available =
-    variant.status === "active" &&
-    availableStock > 0;
-
-  const availability = available
-    ? "https://schema.org/InStock"
-    : "https://schema.org/OutOfStock";
-
+function getOffer(product: Product) {
   return {
     "@type": "Offer",
     url: `${siteConfig.url}/products/${product.slug}`,
-    sku: variant.sku,
-    price: variant.pricing.sellingPrice,
-    priceCurrency: variant.pricing.currency,
-    availability,
+    sku: product.id,
+    price: product.pricing.sellingPrice,
+    priceCurrency: product.pricing.currency,
+    availability: getAvailabilityUrl(product),
     itemCondition:
       "https://schema.org/NewCondition",
     seller: {
@@ -125,27 +80,13 @@ function getVariantOffer(
 
 export function ProductJsonLd({
   product,
+  categoryName,
 }: ProductJsonLdProps) {
   const productUrl =
     `${siteConfig.url}/products/${product.slug}`;
 
   const images = getImages(product);
-
-  const activeVariants =
-    product.variants.filter(
-      (variant) =>
-        variant.status === "active",
-    );
-
-  const defaultVariant =
-    activeVariants.find(
-      (variant) =>
-        getVariantAvailableStock(variant) > 0,
-    ) ??
-    activeVariants[0] ??
-    product.variants[0];
-
-  const reviews = product.reviews;
+  const availableStock = getAvailableStock(product);
 
   const productNode: Record<string, unknown> = {
     "@type": "Product",
@@ -154,93 +95,32 @@ export function ProductJsonLd({
     description: getDescription(product),
     url: productUrl,
     image: images,
-    sku: defaultVariant?.sku,
-    category: product.category,
+    sku: product.id,
+
+    ...(categoryName
+      ? {
+          category: categoryName,
+        }
+      : {}),
+
     brand: {
       "@type": "Brand",
       name: siteConfig.name,
     },
-    offers: defaultVariant
-      ? getVariantOffer(product, defaultVariant)
-      : undefined,
+
+    offers: getOffer(product),
   };
 
-  if (product.attributes?.fabric) {
-    productNode.material =
-      product.attributes.fabric;
-  }
-
-  if (reviews?.reviewCount && reviews.averageRating) {
-    productNode.aggregateRating = {
-      "@type": "AggregateRating",
-      ratingValue: reviews.averageRating,
-      reviewCount: reviews.reviewCount,
-      bestRating: 5,
-      worstRating: 1,
+  if (availableStock >= 0) {
+    productNode.inventoryLevel = {
+      "@type": "QuantitativeValue",
+      value: availableStock,
     };
   }
 
-  const variantNodes = activeVariants.map(
-    (variant) => {
-      const variantImage =
-        getVariantImage(
-          product,
-          variant,
-        );
-
-      const node: Record<string, unknown> = {
-        "@type": "Product",
-        "@id": `${productUrl}#variant-${variant.id}`,
-        name: `${product.name} - ${variant.color.name} - ${variant.size.label}`,
-        isVariantOf: {
-          "@id": `${productUrl}#product-group`,
-        },
-        sku: variant.sku,
-        color: variant.color.name,
-        size: variant.size.label,
-        offers: getVariantOffer(
-          product,
-          variant,
-        ),
-      };
-
-      if (variantImage) {
-        node.image = variantImage;
-      }
-
-      return node;
-    },
-  );
-
-  const productGroup = {
-    "@type": "ProductGroup",
-    "@id": `${productUrl}#product-group`,
-    name: product.name,
-    description: getDescription(product),
-    url: productUrl,
-    productGroupID: product.id,
-    brand: {
-      "@type": "Brand",
-      name: siteConfig.name,
-    },
-    variesBy: [
-      "https://schema.org/color",
-      "https://schema.org/size",
-    ],
-    hasVariant: variantNodes.map(
-      (variant) => ({
-        "@id": variant["@id"],
-      }),
-    ),
-  };
-
   const jsonLd = {
     "@context": "https://schema.org",
-    "@graph": [
-      productGroup,
-      productNode,
-      ...variantNodes,
-    ],
+    "@graph": [productNode],
   };
 
   return (

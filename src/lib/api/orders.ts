@@ -6,7 +6,6 @@ import { apiFetch } from "@/lib/api";
 
 export interface CreateOrderItemPayload {
   productId: string;
-  variantId: string;
   quantity: number;
 }
 
@@ -80,16 +79,9 @@ export interface CreatedOrder {
 
 export interface OrderItem {
   productId: string;
-  variantId: string;
 
   name: string;
   sku: string;
-
-  colorId: string;
-  colorName: string;
-
-  sizeCode: string;
-  sizeLabel: string;
 
   image: string;
 
@@ -290,13 +282,18 @@ export async function getOrder(
   );
 }
 
+/* ============================================================
+   GET CUSTOMER ORDER
+============================================================ */
 
 export async function getCustomerOrder(
   accessToken: string,
   orderNumber: string,
 ) {
   return apiFetch<GetOrderResponse>(
-    `/orders/my-orders/${encodeURIComponent(orderNumber)}`,
+    `/orders/my-orders/${encodeURIComponent(
+      orderNumber,
+    )}`,
     {
       method: "GET",
       accessToken,

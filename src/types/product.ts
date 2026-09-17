@@ -1,6 +1,6 @@
 /* ============================================================
    AAYESHA FASHION — PRODUCT DOMAIN TYPES
-   API / CMS / ADMIN / STOREFRONT READY
+   PRODUCT-CENTRIC ARCHITECTURE
 ============================================================ */
 
 export const PRODUCT_CURRENCY = "INR" as const;
@@ -15,37 +15,14 @@ export type ProductStatus =
   | "archived"
   | "discontinued";
 
-export type VariantStatus =
-  | "active"
-  | "inactive"
-  | "discontinued";
+export type ProductMediaType =
+  | "image"
+  | "video";
 
-export type ProductType =
-  | "anarkali"
-  | "kurta"
-  | "kurta-set"
-  | "suit-set"
-  | "lehenga"
-  | "saree"
-  | "dress"
-  | "top"
-  | "bottom"
-  | "co-ord"
-  | "jacket"
-  | "dupatta"
-  | "other";
-
-export type ProductCategory =
-  | "festive"
-  | "ethnic"
-  | "contemporary"
-  | "new-arrival";
-
-export type InventoryStatus =
-  | "in-stock"
-  | "low-stock"
-  | "out-of-stock"
-  | "backorder";
+export type ProductContentFormat =
+  | "plain"
+  | "html"
+  | "rich";
 
 export type ProductBadge =
   | "new"
@@ -57,38 +34,10 @@ export type ProductBadge =
   | "trending"
   | "back-in-stock";
 
-export type ProductMediaType =
-  | "image"
-  | "video"
-  | "external-video"
-  | "360";
-
-export type ProductImageType =
-  | "model"
-  | "front"
-  | "back"
-  | "detail"
-  | "flat-lay"
-  | "lifestyle"
-  | "video-poster";
-
-export type ProductContentFormat =
-  | "plain"
-  | "html"
-  | "rich";
-
-export type ProductContentBlockType =
-  | "heading"
-  | "paragraph"
-  | "list"
-  | "quote"
-  | "image"
-  | "video"
-  | "divider";
-
-export type SizeChartUnit =
-  | "inch"
-  | "cm";
+export type InventoryStatus =
+  | "in-stock"
+  | "low-stock"
+  | "out-of-stock";
 
 export type ProductSort =
   | "relevance"
@@ -107,29 +56,6 @@ export interface ProductPricing {
   mrp: number;
   sellingPrice: number;
   currency: typeof PRODUCT_CURRENCY;
-  compareAtPrice?: number;
-}
-
-/* ============================================================
-   COLOR
-============================================================ */
-
-export interface ProductColor {
-  id: string;
-  name: string;
-  slug: string;
-  hex?: string;
-  swatchImage?: string;
-}
-
-/* ============================================================
-   SIZE
-============================================================ */
-
-export interface ProductSize {
-  code: string;
-  label: string;
-  sortOrder: number;
 }
 
 /* ============================================================
@@ -148,121 +74,28 @@ export interface ProductInventory {
 
 export interface ProductMedia {
   id: string;
+
   type: ProductMediaType;
+
   src: string;
 
   alt?: string;
 
   thumbnail?: string;
+
   poster?: string;
 
   mimeType?: string;
 
   width?: number;
+
   height?: number;
 
   duration?: number;
 
-  colorId?: string;
-
-  imageType?: ProductImageType;
-
   sortOrder: number;
 
-  isPrimary?: boolean;
-}
-
-/* ============================================================
-   VARIANT
-============================================================ */
-
-export interface ProductVariant {
-  id: string;
-  sku: string;
-
-  barcode?: string;
-
-  color: ProductColor;
-  size: ProductSize;
-
-  pricing: ProductPricing;
-
-  inventory: ProductInventory;
-
-  mediaIds?: string[];
-
-  weight?: number;
-
-  status: VariantStatus;
-}
-
-/* ============================================================
-   PRODUCT ATTRIBUTES
-============================================================ */
-
-export interface ProductAttributes {
-  fabric?: string;
-
-  composition?: string;
-
-  fit?: string;
-
-  occasion?: string[];
-
-  pattern?: string;
-
-  work?: string;
-
-  neckline?: string;
-
-  sleeve?: string;
-
-  silhouette?: string;
-
-  length?: string;
-
-  lining?: string;
-
-  transparency?: string;
-
-  careInstructions?: string[];
-}
-
-/* ============================================================
-   SIZE MEASUREMENTS
-============================================================ */
-
-export interface SizeMeasurement {
-  size: string;
-
-  bust?: number | string;
-  waist?: number | string;
-  hip?: number | string;
-
-  shoulder?: number | string;
-  armhole?: number | string;
-
-  sleeveLength?: number | string;
-
-  garmentLength?: number | string;
-
-  bottomLength?: number | string;
-
-  inseam?: number | string;
-
-  rise?: number | string;
-}
-
-/* ============================================================
-   SIZE CHART
-============================================================ */
-
-export interface ProductSizeChart {
-  unit: SizeChartUnit;
-
-  measurements: SizeMeasurement[];
-
-  fitNote?: string;
+  isPrimary: boolean;
 }
 
 /* ============================================================
@@ -270,7 +103,14 @@ export interface ProductSizeChart {
 ============================================================ */
 
 export interface ProductContentBlock {
-  type: ProductContentBlockType;
+  type:
+    | "heading"
+    | "paragraph"
+    | "list"
+    | "quote"
+    | "image"
+    | "video"
+    | "divider";
 
   content?: string | string[];
 
@@ -286,47 +126,11 @@ export interface ProductContentBlock {
 ============================================================ */
 
 export interface ProductContent {
-  description?: string;
+  description: string;
 
   descriptionFormat: ProductContentFormat;
 
-  /**
-   * For plain content:
-   * not required.
-   *
-   * For html:
-   * sanitized HTML string supplied by CMS/admin.
-   *
-   * For rich:
-   * structured content blocks.
-   */
   richContent?: string | ProductContentBlock[];
-
-  highlights?: string[];
-
-  stylingNotes?: string;
-
-  fitNote?: string;
-
-  materialsAndCare?: string | string[];
-
-  shippingContent?: string;
-
-  returnContent?: string;
-}
-
-/* ============================================================
-   FAQ
-============================================================ */
-
-export interface ProductFAQ {
-  id: string;
-
-  question: string;
-
-  answer: string;
-
-  answerFormat: "plain" | "html";
 }
 
 /* ============================================================
@@ -362,24 +166,6 @@ export interface ProductMerchandising {
 }
 
 /* ============================================================
-   REVIEWS
-============================================================ */
-
-export interface ProductReviewSummary {
-  averageRating: number;
-
-  reviewCount: number;
-
-  breakdown?: {
-    5?: number;
-    4?: number;
-    3?: number;
-    2?: number;
-    1?: number;
-  };
-}
-
-/* ============================================================
    AVAILABILITY
 ============================================================ */
 
@@ -390,9 +176,7 @@ export interface ProductAvailability {
 
   isLowStock: boolean;
 
-  availableVariants: number;
-
-  totalAvailableUnits: number;
+  availableQuantity: number;
 }
 
 /* ============================================================
@@ -406,29 +190,15 @@ export interface Product {
 
   name: string;
 
-  productType: ProductType;
+  categoryId: string;
 
-  category: ProductCategory;
+  pricing: ProductPricing;
 
-  subcategory?: string;
-
-  collectionIds?: string[];
-
-  tags: string[];
+  inventory: ProductInventory;
 
   content: ProductContent;
 
-  attributes: ProductAttributes;
-
   media: ProductMedia[];
-
-  sizeChart?: ProductSizeChart;
-
-  variants: ProductVariant[];
-
-  faqs?: ProductFAQ[];
-
-  reviews?: ProductReviewSummary;
 
   merchandising: ProductMerchandising;
 
@@ -444,23 +214,11 @@ export interface Product {
 }
 
 /* ============================================================
-   FILTERS
+   PRODUCT FILTERS
 ============================================================ */
 
 export interface ProductFilters {
-  category?: ProductCategory[];
-
-  subcategory?: string[];
-
-  productType?: ProductType[];
-
-  collectionIds?: string[];
-
-  colors?: string[];
-
-  sizes?: string[];
-
-  badges?: ProductBadge[];
+  categoryId?: string[];
 
   minPrice?: number;
 
@@ -476,11 +234,11 @@ export interface ProductFilters {
 
   search?: string;
 
-  tags?: string[];
+  status?: ProductStatus;
 }
 
 /* ============================================================
-   QUERY
+   PRODUCT QUERY
 ============================================================ */
 
 export interface ProductQuery {
@@ -494,51 +252,31 @@ export interface ProductQuery {
 }
 
 /* ============================================================
-   CART VARIANT SNAPSHOT
-============================================================ */
-
-export interface ProductVariantSnapshot {
-  variantId: string;
-
-  sku: string;
-
-  color: ProductColor;
-
-  size: ProductSize;
-
-  pricing: ProductPricing;
-
-  mediaIds?: string[];
-}
-
-/* ============================================================
    HELPER FUNCTIONS
 ============================================================ */
 
-export function getVariantAvailableStock(
-  variant: ProductVariant,
+/**
+ * Available stock after reserved quantity.
+ */
+export function getAvailableStock(
+  product: Product,
 ): number {
   return Math.max(
     0,
-    variant.inventory.stock - variant.inventory.reserved,
+    product.inventory.stock -
+      product.inventory.reserved,
   );
 }
 
 /* ------------------------------------------------------------
-   VARIANT INVENTORY STATUS
+   INVENTORY STATUS
 ------------------------------------------------------------ */
 
-export function getVariantInventoryStatus(
-  variant: ProductVariant,
+export function getInventoryStatus(
+  product: Product,
 ): InventoryStatus {
-  const availableStock = getVariantAvailableStock(variant);
-
-  if (
-    variant.status === "discontinued" ||
-    variant.status === "inactive"
-  ) {
-    return "out-of-stock";
-  }
+  const availableStock =
+    getAvailableStock(product);
 
   if (availableStock <= 0) {
     return "out-of-stock";
@@ -546,7 +284,10 @@ export function getVariantInventoryStatus(
 
   if (
     availableStock <=
-    Math.max(0, variant.inventory.lowStockThreshold)
+    Math.max(
+      0,
+      product.inventory.lowStockThreshold,
+    )
   ) {
     return "low-stock";
   }
@@ -561,40 +302,25 @@ export function getVariantInventoryStatus(
 export function getProductAvailability(
   product: Product,
 ): ProductAvailability {
-  const activeVariants = product.variants.filter(
-    (variant) => variant.status === "active",
-  );
-
-  const availableVariants = activeVariants.filter(
-    (variant) =>
-      getVariantAvailableStock(variant) > 0,
-  );
-
-  const totalAvailableUnits = availableVariants.reduce(
-    (total, variant) =>
-      total + getVariantAvailableStock(variant),
-    0,
-  );
-
-  const lowStockVariants = availableVariants.filter(
-    (variant) =>
-      getVariantInventoryStatus(variant) === "low-stock",
-  );
+  const availableQuantity =
+    getAvailableStock(product);
 
   return {
     isSoldOut:
-      availableVariants.length === 0,
+      availableQuantity <= 0,
 
     isInStock:
-      availableVariants.length > 0,
+      availableQuantity > 0,
 
     isLowStock:
-      lowStockVariants.length > 0,
+      availableQuantity > 0 &&
+      availableQuantity <=
+        Math.max(
+          0,
+          product.inventory.lowStockThreshold,
+        ),
 
-    availableVariants:
-      availableVariants.length,
-
-    totalAvailableUnits,
+    availableQuantity,
   };
 }
 
@@ -607,7 +333,8 @@ export function getDiscountAmount(
 ): number {
   return Math.max(
     0,
-    pricing.mrp - pricing.sellingPrice,
+    pricing.mrp -
+      pricing.sellingPrice,
   );
 }
 
@@ -626,7 +353,8 @@ export function getDiscountPercentage(
   }
 
   return Math.round(
-    ((pricing.mrp - pricing.sellingPrice) /
+    ((pricing.mrp -
+      pricing.sellingPrice) /
       pricing.mrp) *
       100,
   );
@@ -639,21 +367,10 @@ export function getDiscountPercentage(
 export function getProductStartingPrice(
   product: Product,
 ): number {
-  const prices = product.variants
-    .filter(
-      (variant) =>
-        variant.status === "active",
-    )
-    .map(
-      (variant) =>
-        variant.pricing.sellingPrice,
-    );
-
-  if (!prices.length) {
-    return 0;
-  }
-
-  return Math.min(...prices);
+  return Math.max(
+    0,
+    product.pricing.sellingPrice,
+  );
 }
 
 /* ------------------------------------------------------------
@@ -663,21 +380,10 @@ export function getProductStartingPrice(
 export function getProductStartingMrp(
   product: Product,
 ): number {
-  const prices = product.variants
-    .filter(
-      (variant) =>
-        variant.status === "active",
-    )
-    .map(
-      (variant) =>
-        variant.pricing.mrp,
-    );
-
-  if (!prices.length) {
-    return 0;
-  }
-
-  return Math.min(...prices);
+  return Math.max(
+    0,
+    product.pricing.mrp,
+  );
 }
 
 /* ------------------------------------------------------------
@@ -702,181 +408,25 @@ export function getPrimaryProductMedia(
 }
 
 /* ------------------------------------------------------------
-   VARIANT LOOKUP
+   PRODUCT ACTIVE CHECK
 ------------------------------------------------------------ */
 
-export function getVariantById(
+export function isProductActive(
   product: Product,
-  variantId: string,
-): ProductVariant | undefined {
-  return product.variants.find(
-    (variant) =>
-      variant.id === variantId,
-  );
-}
-
-/* ------------------------------------------------------------
-   COLOR VARIANTS
------------------------------------------------------------- */
-
-export function getVariantsByColor(
-  product: Product,
-  colorId: string,
-): ProductVariant[] {
-  return product.variants.filter(
-    (variant) =>
-      variant.color.id === colorId &&
-      variant.status === "active",
-  );
-}
-
-/* ------------------------------------------------------------
-   SIZE VARIANT
------------------------------------------------------------- */
-
-export function getVariantBySelection(
-  product: Product,
-  colorId: string,
-  sizeCode: string,
-): ProductVariant | undefined {
-  return product.variants.find(
-    (variant) =>
-      variant.color.id === colorId &&
-      variant.size.code === sizeCode &&
-      variant.status === "active",
-  );
-}
-
-/* ------------------------------------------------------------
-   ACTIVE VARIANTS
------------------------------------------------------------- */
-
-export function getActiveVariants(
-  product: Product,
-): ProductVariant[] {
-  return product.variants.filter(
-    (variant) =>
-      variant.status === "active",
-  );
-}
-
-/* ------------------------------------------------------------
-   AVAILABLE VARIANTS
------------------------------------------------------------- */
-
-export function getAvailableVariants(
-  product: Product,
-): ProductVariant[] {
-  return product.variants.filter(
-    (variant) =>
-      variant.status === "active" &&
-      getVariantAvailableStock(variant) > 0,
-  );
-}
-
-/* ------------------------------------------------------------
-   UNIQUE COLORS
------------------------------------------------------------- */
-
-export function getProductColors(
-  product: Product,
-): ProductColor[] {
-  const map = new Map<
-    string,
-    ProductColor
-  >();
-
-  product.variants.forEach((variant) => {
-    if (
-      variant.status !== "active"
-    ) {
-      return;
-    }
-
-    if (!map.has(variant.color.id)) {
-      map.set(
-        variant.color.id,
-        variant.color,
-      );
-    }
-  });
-
-  return Array.from(map.values());
-}
-
-/* ------------------------------------------------------------
-   UNIQUE SIZES
------------------------------------------------------------- */
-
-export function getProductSizes(
-  product: Product,
-): ProductSize[] {
-  const map = new Map<
-    string,
-    ProductSize
-  >();
-
-  product.variants.forEach((variant) => {
-    if (
-      variant.status !== "active"
-    ) {
-      return;
-    }
-
-    if (!map.has(variant.size.code)) {
-      map.set(
-        variant.size.code,
-        variant.size,
-      );
-    }
-  });
-
-  return Array.from(
-    map.values(),
-  ).sort(
-    (a, b) =>
-      a.sortOrder -
-      b.sortOrder,
-  );
-}
-
-/* ------------------------------------------------------------
-   SIZE AVAILABILITY
------------------------------------------------------------- */
-
-export function isSizeAvailableForColor(
-  product: Product,
-  colorId: string,
-  sizeCode: string,
 ): boolean {
-  const variant =
-    getVariantBySelection(
-      product,
-      colorId,
-      sizeCode,
-    );
-
-  return !!variant &&
-    getVariantAvailableStock(
-      variant,
-    ) > 0;
+  return product.status === "active";
 }
 
 /* ------------------------------------------------------------
-   COLOR AVAILABILITY
+   PRODUCT AVAILABLE CHECK
 ------------------------------------------------------------ */
 
-export function isColorAvailable(
+export function isProductAvailable(
   product: Product,
-  colorId: string,
 ): boolean {
-  return product.variants.some(
-    (variant) =>
-      variant.color.id === colorId &&
-      variant.status === "active" &&
-      getVariantAvailableStock(
-        variant,
-      ) > 0,
+  return (
+    product.status === "active" &&
+    getAvailableStock(product) > 0
   );
 }
 
@@ -894,27 +444,6 @@ export function formatProductBadge(
       (char) =>
         char.toUpperCase(),
     );
-}
-
-/* ============================================================
-   TYPE GUARDS
-============================================================ */
-
-export function isProductActive(
-  product: Product,
-): boolean {
-  return product.status === "active";
-}
-
-export function isVariantAvailable(
-  variant: ProductVariant,
-): boolean {
-  return (
-    variant.status === "active" &&
-    getVariantAvailableStock(
-      variant,
-    ) > 0
-  );
 }
 
 /* ============================================================
@@ -944,15 +473,9 @@ export function validateProduct(
     );
   }
 
-  if (!product.productType) {
+  if (!product.categoryId) {
     errors.push(
-      "Product type is required.",
-    );
-  }
-
-  if (!product.category) {
-    errors.push(
-      "Product category is required.",
+      "Product categoryId is required.",
     );
   }
 
@@ -968,54 +491,60 @@ export function validateProduct(
     );
   }
 
-  if (!product.variants.length) {
+  if (!product.pricing) {
     errors.push(
-      "At least one product variant is required.",
+      "Product pricing is required.",
     );
+  } else {
+    if (
+      product.pricing.mrp < 0 ||
+      product.pricing.sellingPrice < 0
+    ) {
+      errors.push(
+        "Product pricing cannot be negative.",
+      );
+    }
+
+    if (
+      product.pricing.sellingPrice >
+      product.pricing.mrp
+    ) {
+      errors.push(
+        "Selling price cannot exceed MRP.",
+      );
+    }
   }
 
-  const variantIds = new Set<string>();
-  const skus = new Set<string>();
-
-  product.variants.forEach(
-    (variant) => {
-      if (variantIds.has(variant.id)) {
-        errors.push(
-          `Duplicate variant id: ${variant.id}`,
-        );
-      }
-
-      variantIds.add(
-        variant.id,
+  if (!product.inventory) {
+    errors.push(
+      "Product inventory is required.",
+    );
+  } else {
+    if (
+      product.inventory.stock < 0
+    ) {
+      errors.push(
+        "Product stock cannot be negative.",
       );
+    }
 
-      if (skus.has(variant.sku)) {
-        errors.push(
-          `Duplicate SKU: ${variant.sku}`,
-        );
-      }
+    if (
+      product.inventory.reserved < 0
+    ) {
+      errors.push(
+        "Reserved stock cannot be negative.",
+      );
+    }
 
-      skus.add(variant.sku);
-
-      if (
-        variant.pricing.mrp < 0 ||
-        variant.pricing.sellingPrice < 0
-      ) {
-        errors.push(
-          `Invalid pricing for variant ${variant.id}`,
-        );
-      }
-
-      if (
-        variant.inventory.stock < 0 ||
-        variant.inventory.reserved < 0
-      ) {
-        errors.push(
-          `Invalid inventory for variant ${variant.id}`,
-        );
-      }
-    },
-  );
+    if (
+      product.inventory.reserved >
+      product.inventory.stock
+    ) {
+      errors.push(
+        "Reserved stock cannot exceed stock.",
+      );
+    }
+  }
 
   return errors;
 }

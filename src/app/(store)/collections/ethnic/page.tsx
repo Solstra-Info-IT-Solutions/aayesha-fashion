@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { getCategoryBySlug } from "@/services/category.service";
 import { getProducts } from "@/lib/api/products";
 
 import type { ProductSort } from "@/types/product";
@@ -42,10 +43,12 @@ export default async function EthnicPage({
       ? (params.sort as ProductSort)
       : "featured";
 
+  const category = await getCategoryBySlug("ethnic");
+
   const response = await getProducts({
     page: 1,
     limit: 48,
-    category: "ethnic",
+    categoryId: category.id,
     sort,
   });
 
@@ -54,7 +57,7 @@ export default async function EthnicPage({
       title="Ethnic"
       eyebrow="The Ethnic Edit"
       description="A refined interpretation of Indian wardrobe classics, balancing familiar craftsmanship and modern ease for pieces that feel rooted, graceful and beautifully wearable."
-      category="ethnic"
+      categoryId={category.id}
       products={response.products}
       sort={sort}
       mood="Heritage-inspired. Modern in spirit."

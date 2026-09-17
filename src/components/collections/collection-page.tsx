@@ -9,7 +9,6 @@ import {
 
 import type {
   Product,
-  ProductCategory,
   ProductSort,
 } from "@/types/product";
 
@@ -25,7 +24,7 @@ type CollectionPageProps = {
   title: string;
   eyebrow: string;
   description: string;
-  category: ProductCategory;
+  categoryId?: string;
   products: Product[];
   sort: ProductSort;
   mood?: string;
@@ -39,30 +38,16 @@ const collectionLinks = [
   {
     label: "Festive",
     href: "/collections/festive",
-    category: "festive",
   },
   {
     label: "Ethnic",
     href: "/collections/ethnic",
-    category: "ethnic",
   },
   {
     label: "Contemporary",
     href: "/collections/contemporary",
-    category: "contemporary",
   },
 ] as const;
-
-/* =========================================================
-   COLLECTION PATHS
-========================================================= */
-
-const collectionPathMap: Record<ProductCategory, string> = {
-  festive: "/collections/festive",
-  ethnic: "/collections/ethnic",
-  contemporary: "/collections/contemporary",
-  "new-arrival": "/collections/new-arrivals",
-};
 
 /* =========================================================
    COMPONENT
@@ -72,15 +57,11 @@ export function CollectionPage({
   title,
   eyebrow,
   description,
-  category,
+  categoryId,
   products,
   sort,
   mood = "Considered silhouettes. Effortless presence.",
 }: CollectionPageProps) {
-  const collectionPath =
-    collectionPathMap[category] ??
-    `/collections/${category}`;
-
   return (
     <>
       {/* =====================================================
@@ -99,7 +80,9 @@ export function CollectionPage({
           },
           {
             name: title,
-            url: collectionPath,
+            url: `/collections/${title
+              .toLowerCase()
+              .replace(/\s+/g, "-")}`,
           },
         ]}
       />
@@ -215,7 +198,11 @@ export function CollectionPage({
 
                   <div className="mt-5">
                     {collectionLinks.map((item) => {
-                      const isActive = item.category === category;
+                      const isActive =
+                        item.href ===
+                        `/collections/${title
+                          .toLowerCase()
+                          .replace(/\s+/g, "-")}`;
 
                       return (
                         <Link
@@ -343,7 +330,7 @@ export function CollectionPage({
               <div className="sticky top-24">
                 <ShopFilters
                   products={products}
-                  selectedCategory={category}
+                  selectedCategory={categoryId}
                 />
               </div>
             </aside>
@@ -355,7 +342,7 @@ export function CollectionPage({
             <div className="min-w-0">
               <ShopProductGrid
                 products={products}
-                category={category}
+                category={categoryId}
                 sort={sort}
               />
             </div>

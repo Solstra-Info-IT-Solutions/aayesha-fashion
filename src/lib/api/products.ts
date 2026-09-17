@@ -1,85 +1,92 @@
 import type {
   Product,
-  ProductCategory,
   ProductSort,
-  ProductType,
+  ProductStatus,
 } from "@/types/product";
 
 import { apiFetch } from "@/lib/api";
 
+/* ============================================================
+   PRODUCT LIST PARAMS
+============================================================ */
+
 export type ProductListParams = {
   page?: number;
+
   limit?: number;
-  category?: ProductCategory;
-  productType?: ProductType;
-  collection?: string;
-  color?: string;
-  size?: string;
-  badge?: string;
+
+  categoryId?: string;
+
   minPrice?: number;
+
   maxPrice?: number;
+
   inStockOnly?: boolean;
+
   isNew?: boolean;
+
   isBestSeller?: boolean;
+
   isFeatured?: boolean;
+
   search?: string;
-  status?: string;
+
+  status?: ProductStatus;
+
   sort?: ProductSort;
 };
 
+/* ============================================================
+   PRODUCT LIST RESPONSE
+============================================================ */
+
 export type ProductListResponse = {
   products: Product[];
+
   pagination: {
     page: number;
+
     limit: number;
+
     total: number;
+
     totalPages: number;
+
     hasNextPage: boolean;
+
     hasPreviousPage: boolean;
   };
 };
 
+/* ============================================================
+   BUILD QUERY
+============================================================ */
+
 function buildQuery(
   params: ProductListParams = {},
-) {
-  const searchParams = new URLSearchParams();
+): string {
+  const searchParams =
+    new URLSearchParams();
 
   if (params.page !== undefined) {
-    searchParams.set("page", String(params.page));
+    searchParams.set(
+      "page",
+      String(params.page),
+    );
   }
 
   if (params.limit !== undefined) {
-    searchParams.set("limit", String(params.limit));
-  }
-
-  if (params.category) {
-    searchParams.set("category", params.category);
-  }
-
-  if (params.productType) {
     searchParams.set(
-      "productType",
-      params.productType,
+      "limit",
+      String(params.limit),
     );
   }
 
-  if (params.collection) {
+  if (params.categoryId) {
     searchParams.set(
-      "collection",
-      params.collection,
+      "categoryId",
+      params.categoryId,
     );
-  }
-
-  if (params.color) {
-    searchParams.set("color", params.color);
-  }
-
-  if (params.size) {
-    searchParams.set("size", params.size);
-  }
-
-  if (params.badge) {
-    searchParams.set("badge", params.badge);
   }
 
   if (params.minPrice !== undefined) {
@@ -145,40 +152,64 @@ function buildQuery(
     );
   }
 
-  const query = searchParams.toString();
+  const query =
+    searchParams.toString();
 
-  return query ? `?${query}` : "";
+  return query
+    ? `?${query}`
+    : "";
 }
+
+/* ============================================================
+   GET PRODUCTS
+============================================================ */
 
 export async function getProducts(
   params: ProductListParams = {},
-) {
-  const query = buildQuery(params);
+): Promise<ProductListResponse> {
+  const query =
+    buildQuery(params);
 
   return apiFetch<ProductListResponse>(
     `/products${query}`,
   );
 }
 
+/* ============================================================
+   GET PRODUCT BY SLUG
+============================================================ */
+
 export async function getProductBySlug(
   slug: string,
-) {
+): Promise<Product> {
   return apiFetch<Product>(
-    `/products/slug/${encodeURIComponent(slug)}`,
+    `/products/slug/${encodeURIComponent(
+      slug,
+    )}`,
   );
 }
+
+/* ============================================================
+   GET PRODUCT BY ID
+============================================================ */
 
 export async function getProductById(
   id: string,
-) {
+): Promise<Product> {
   return apiFetch<Product>(
-    `/products/id/${encodeURIComponent(id)}`,
+    `/products/id/${encodeURIComponent(
+      id,
+    )}`,
   );
 }
 
+/* ============================================================
+   NEW ARRIVALS
+============================================================ */
+
 export async function getNewArrivals(
   limit = 8,
-) {
+): Promise<ProductListResponse> {
   return getProducts({
     page: 1,
     limit,
@@ -187,9 +218,13 @@ export async function getNewArrivals(
   });
 }
 
+/* ============================================================
+   BEST SELLERS
+============================================================ */
+
 export async function getBestSellers(
   limit = 8,
-) {
+): Promise<ProductListResponse> {
   return getProducts({
     page: 1,
     limit,
@@ -198,9 +233,13 @@ export async function getBestSellers(
   });
 }
 
+/* ============================================================
+   FEATURED PRODUCTS
+============================================================ */
+
 export async function getFeaturedProducts(
   limit = 8,
-) {
+): Promise<ProductListResponse> {
   return getProducts({
     page: 1,
     limit,
@@ -209,14 +248,18 @@ export async function getFeaturedProducts(
   });
 }
 
-export async function getCollectionProducts(
-  collection: string,
+/* ============================================================
+   CATEGORY PRODUCTS
+============================================================ */
+
+export async function getCategoryProducts(
+  categoryId: string,
   limit = 8,
-) {
+): Promise<ProductListResponse> {
   return getProducts({
     page: 1,
     limit,
-    collection,
+    categoryId,
     sort: "featured",
   });
 }

@@ -32,7 +32,9 @@ import { useAuthStore } from "@/store/auth-store";
 
 import { useCartStore } from "@/store/cart-store";
 
-import { useCheckoutStore } from "@/store/checkout-store";
+import {
+  useCheckoutStore,
+} from "@/store/checkout-store";
 
 import type { Product } from "@/types/product";
 
@@ -42,7 +44,7 @@ import type { Product } from "@/types/product";
 
 type ResolvedItem = {
   product: Product;
-  variantId: string;
+  productId: string;
   quantity: number;
 };
 
@@ -217,23 +219,10 @@ export function CheckoutPlaceOrder() {
             continue;
           }
 
-          const variant =
-            product.variants.find(
-              (productVariant) =>
-                productVariant.id ===
-                  item.variantId &&
-                productVariant.status ===
-                  "active",
-            );
-
-          if (!variant) {
-            continue;
-          }
-
           nextItems.push({
             product,
-            variantId:
-              item.variantId,
+            productId:
+              item.productId,
             quantity:
               item.quantity,
           });
@@ -263,19 +252,10 @@ export function CheckoutPlaceOrder() {
   let subtotal = 0;
 
   for (const item of resolvedItems) {
-    const variant =
-      item.product.variants.find(
-        (productVariant) =>
-          productVariant.id ===
-          item.variantId,
-      );
-
-    if (!variant) {
-      continue;
-    }
-
     subtotal +=
-      variant.pricing.sellingPrice *
+      Number(
+        item.product.pricing.sellingPrice,
+      ) *
       item.quantity;
   }
 
@@ -638,9 +618,6 @@ export function CheckoutPlaceOrder() {
               (item) => ({
                 productId:
                   item.productId,
-
-                variantId:
-                  item.variantId,
 
                 quantity:
                   item.quantity,

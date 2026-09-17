@@ -439,7 +439,7 @@ function CheckoutSuccessContent() {
                 {order.items.map(
                   (item) => (
                     <div
-                      key={`${item.productId}-${item.variantId}`}
+                      key={item.productId}
                       className="flex gap-5 px-6 py-6 sm:px-8"
                     >
                       <div className="h-28 w-22 shrink-0 overflow-hidden bg-[var(--color-bg-soft)] sm:h-32 sm:w-28">
@@ -466,18 +466,6 @@ function CheckoutSuccessContent() {
                             <p className="break-words font-[var(--font-display)] text-xl leading-tight text-[var(--color-text)] sm:text-2xl">
                               {item.name}
                             </p>
-
-                            {(item.colorName ||
-                              item.sizeLabel) && (
-                              <p className="mt-2 break-words text-[10px] uppercase tracking-[0.12em] text-[var(--color-text-muted)]">
-                                {item.colorName}
-                                {item.colorName &&
-                                item.sizeLabel
-                                  ? " · "
-                                  : ""}
-                                {item.sizeLabel}
-                              </p>
-                            )}
 
                             <p className="mt-3 text-[11px] text-[var(--color-text-secondary)]">
                               Quantity{" "}

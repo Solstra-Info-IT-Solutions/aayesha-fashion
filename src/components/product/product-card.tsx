@@ -9,6 +9,7 @@ import { ProductQuickAdd } from "@/components/product/product-quick-add";
 import {
   getDiscountPercentage,
   getProductAvailability,
+  getPrimaryProductMedia,
 } from "@/types/product";
 
 type ProductCardProps = {
@@ -55,42 +56,36 @@ export function ProductCard({
   const availability =
     getProductAvailability(product);
 
-  const primaryVariant =
-    product.variants.find(
-      (variant) =>
-        variant.status === "active",
-    );
-
-  if (!primaryVariant) {
-    return null;
-  }
+  /* =======================================================
+     PRODUCT MEDIA
+  ======================================================= */
 
   const primaryMedia =
+    getPrimaryProductMedia(product);
+
+  const secondaryMedia =
     product.media.find(
       (media) =>
-        media.isPrimary &&
-        media.type === "image",
-    ) ??
-    product.media.find(
-      (media) =>
-        media.type === "image",
+        media.type === "image" &&
+        media.id !== primaryMedia?.id,
     );
 
   if (!primaryMedia) {
     return null;
   }
 
-  const secondaryMedia =
-    product.media.find(
-      (media) =>
-        media.type === "image" &&
-        media.id !== primaryMedia.id,
-    );
+  /* =======================================================
+     PRODUCT PRICING
+  ======================================================= */
 
   const discount =
     getDiscountPercentage(
-      primaryVariant.pricing,
+      product.pricing,
     );
+
+  /* =======================================================
+     BADGE
+  ======================================================= */
 
   const hasBadge =
     product.merchandising.badges.length > 0;
@@ -331,7 +326,7 @@ export function ProductCard({
               "
             >
               {formatCategory(
-                product.category,
+                product.categoryId,
               )}
             </p>
 
@@ -380,9 +375,7 @@ export function ProductCard({
               "
             >
               {formatPrice(
-                primaryVariant
-                  .pricing
-                  .sellingPrice,
+                product.pricing.sellingPrice,
               )}
             </p>
 
@@ -407,9 +400,7 @@ export function ProductCard({
                   "
                 >
                   {formatPrice(
-                    primaryVariant
-                      .pricing
-                      .mrp,
+                    product.pricing.mrp,
                   )}
                 </span>
 

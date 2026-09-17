@@ -14,12 +14,9 @@ import toast from "react-hot-toast";
 
 import { useCartStore } from "@/store/cart-store";
 import { getProductById } from "@/lib/api/products";
-import type {
-  Product,
-  ProductVariant,
-} from "@/types/product";
+import type { Product } from "@/types/product";
 import {
-  getVariantAvailableStock,
+  getAvailableStock,
   getDiscountPercentage,
 } from "@/types/product";
 
@@ -30,11 +27,9 @@ import {
 type ResolvedCartItem = {
   item: {
     productId: string;
-    variantId: string;
     quantity: number;
   };
   product: Product;
-  variant: ProductVariant;
   media?: Product["media"][number];
 };
 
@@ -92,9 +87,7 @@ export function CartContent() {
           uniqueProductIds.map(
             async (productId) => {
               try {
-                return await getProductById(
-                  productId,
-                );
+                return await getProductById(productId);
               } catch {
                 return null;
               }
@@ -106,63 +99,34 @@ export function CartContent() {
           return;
         }
 
-        const productMap = new Map<
-          string,
-          Product
-        >();
+        const productMap = new Map<string, Product>();
 
         productResults.forEach((product) => {
           if (product) {
-            productMap.set(
-              product.id,
-              product,
-            );
+            productMap.set(product.id, product);
           }
         });
 
-        const resolvedItems: ResolvedCartItem[] =
-          [];
+        const resolvedItems: ResolvedCartItem[] = [];
 
         for (const item of items) {
-          const product = productMap.get(
-            item.productId,
-          );
+          const product = productMap.get(item.productId);
 
           if (!product) {
             continue;
           }
 
-          const variant =
-            product.variants.find(
-              (productVariant) =>
-                productVariant.id ===
-                item.variantId,
-            );
-
-          if (!variant) {
-            continue;
-          }
-
           const media =
             product.media.find(
-              (mediaItem) =>
-                variant.mediaIds?.includes(
-                  mediaItem.id,
-                ),
+              (mediaItem) => mediaItem.isPrimary,
             ) ??
             product.media.find(
-              (mediaItem) =>
-                mediaItem.isPrimary,
-            ) ??
-            product.media.find(
-              (mediaItem) =>
-                mediaItem.type === "image",
+              (mediaItem) => mediaItem.type === "image",
             );
 
           resolvedItems.push({
             item,
             product,
-            variant,
             media,
           });
         }
@@ -188,11 +152,12 @@ export function CartContent() {
 
   const summary = useMemo(() => {
     return cartItems.reduce(
-      (result, { item, variant }) => {
+      (result, { item, product }) => {
         const sellingPrice =
-          variant.pricing.sellingPrice;
+          product.pricing.sellingPrice;
 
-        const mrp = variant.pricing.mrp;
+        const mrp =
+          product.pricing.mrp;
 
         result.itemCount += item.quantity;
 
@@ -214,8 +179,7 @@ export function CartContent() {
 
   const savings = Math.max(
     0,
-    summary.mrpTotal -
-      summary.subtotal,
+    summary.mrpTotal - summary.subtotal,
   );
 
   const formatPrice = (value: number) =>
@@ -239,7 +203,7 @@ export function CartContent() {
             <div className="border-y border-[var(--color-border-light)]">
               {items.map((item) => (
                 <div
-                  key={`${item.productId}-${item.variantId}`}
+                  key={item.productId}
                   className="grid grid-cols-[100px_minmax(0,1fr)] gap-4 border-b border-[var(--color-border-light)] py-6 last:border-b-0 sm:grid-cols-[140px_minmax(0,1fr)] sm:gap-6"
                 >
                   <div className="aspect-[3/4] animate-pulse bg-[var(--color-bg-soft)]" />
@@ -272,16 +236,13 @@ export function CartContent() {
 
   const resolvedItemKeys = new Set(
     cartItems.map(
-      ({ item }) =>
-        `${item.productId}-${item.variantId}`,
+      ({ item }) => item.productId,
     ),
   );
 
   const invalidItems = items.filter(
     (item) =>
-      !resolvedItemKeys.has(
-        `${item.productId}-${item.variantId}`,
-      ),
+      !resolvedItemKeys.has(item.productId),
   );
 
   /* ==========================================================
@@ -471,31 +432,26 @@ export function CartContent() {
                 ({
                   item,
                   product,
-                  variant,
                   media,
                 }) => {
                   const availableStock =
-                    getVariantAvailableStock(
-                      variant,
-                    );
+                    getAvailableStock(product);
 
                   const price =
-                    variant.pricing.sellingPrice;
+                    product.pricing.sellingPrice;
 
                   const mrp =
-                    variant.pricing.mrp;
+                    product.pricing.mrp;
 
                   const discount =
-                    getDiscountPercentage(
-                      variant.pricing,
-                    );
+                    getDiscountPercentage(product.pricing);
 
                   const itemTotal =
                     price * item.quantity;
 
                   return (
                     <article
-                      key={`${item.productId}-${item.variantId}`}
+                      key={item.productId}
                       className="
                         grid
                         grid-cols-[100px_minmax(0,1fr)]
@@ -551,7 +507,7 @@ export function CartContent() {
                         <div className="flex items-start justify-between gap-4">
                           <div className="min-w-0">
                             <p className="font-body text-[9px] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text-muted)]">
-                              {product.category}
+                              Product
                             </p>
 
                             <Link
@@ -579,7 +535,6 @@ export function CartContent() {
                             onClick={() => {
                               removeItem(
                                 item.productId,
-                                item.variantId,
                               );
 
                               toast.success(
@@ -613,26 +568,10 @@ export function CartContent() {
                           </button>
                         </div>
 
-                        {/* VARIANT DETAILS */}
+                        {/* SKU */}
 
-                        <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 font-body text-xs">
-                          <span className="text-[var(--color-text-secondary)]">
-                            Color:{" "}
-                            <strong className="font-medium text-[var(--color-text)]">
-                              {variant.color.name}
-                            </strong>
-                          </span>
-
-                          <span className="text-[var(--color-text-secondary)]">
-                            Size:{" "}
-                            <strong className="font-medium text-[var(--color-text)]">
-                              {variant.size.label}
-                            </strong>
-                          </span>
-                        </div>
-
-                        <p className="mt-2 font-body text-[10px] text-[var(--color-text-muted)]">
-                          SKU: {variant.sku}
+                        <p className="mt-4 font-body text-[10px] text-[var(--color-text-muted)]">
+                          SKU: {product.id}
                         </p>
 
                         {/* PRICE */}
@@ -672,7 +611,6 @@ export function CartContent() {
                                   updateQuantity(
                                     item.productId,
                                     item.quantity - 1,
-                                    item.variantId,
                                   )
                                 }
                                 disabled={
@@ -711,7 +649,6 @@ export function CartContent() {
                                   updateQuantity(
                                     item.productId,
                                     item.quantity + 1,
-                                    item.variantId,
                                   )
                                 }
                                 disabled={
@@ -758,17 +695,16 @@ export function CartContent() {
                         {/* INVENTORY */}
 
                         {availableStock <=
-                          variant.inventory.lowStockThreshold &&
+                          product.inventory.lowStockThreshold &&
                           availableStock > 0 && (
                             <p className="mt-4 font-body text-[10px] font-semibold text-[var(--color-warning)]">
-                              Only {availableStock} left in this
-                              size
+                              Only {availableStock} left
                             </p>
                           )}
 
                         {availableStock === 0 && (
                           <p className="mt-4 font-body text-[10px] font-semibold text-[var(--color-error)]">
-                            This variant is currently unavailable.
+                            This product is currently unavailable.
                           </p>
                         )}
 
@@ -915,9 +851,9 @@ export function CartContent() {
               </p>
 
               <p className="mt-2 font-body text-xs leading-6 text-[var(--color-text-secondary)]">
-                Your selected color, size and variant are preserved
-                in your bag. Final inventory availability is
-                confirmed before order placement.
+                Your selected product is preserved in your bag.
+                Final inventory availability is confirmed before
+                order placement.
               </p>
             </div>
           </aside>

@@ -3,17 +3,15 @@
 ============================================================ */
 
 import type {
-  ProductColor,
-  ProductPricing,
-  ProductSize,
-} from "@/types/product";
-
-import type {
   CheckoutAddress,
   CheckoutContact,
   CheckoutDeliveryMethod,
   CheckoutPaymentMethod,
 } from "@/types/checkout";
+
+/* ============================================================
+   ORDER STATUS
+============================================================ */
 
 export type OrderStatus =
   | "pending"
@@ -26,6 +24,10 @@ export type OrderStatus =
   | "returned"
   | "refunded";
 
+/* ============================================================
+   PAYMENT STATUS
+============================================================ */
+
 export type PaymentStatus =
   | "pending"
   | "authorized"
@@ -34,10 +36,12 @@ export type PaymentStatus =
   | "refunded"
   | "partially-refunded";
 
+/* ============================================================
+   ORDER ITEM
+============================================================ */
+
 export interface OrderItem {
   productId: string;
-
-  variantId: string;
 
   sku: string;
 
@@ -47,16 +51,22 @@ export interface OrderItem {
 
   quantity: number;
 
-  color: ProductColor;
+  pricing: {
+    mrp: number;
 
-  size: ProductSize;
+    sellingPrice: number;
 
-  pricing: ProductPricing;
+    currency: "INR";
+  };
 
   image?: string;
 
   lineTotal: number;
 }
+
+/* ============================================================
+   ORDER PRICING
+============================================================ */
 
 export interface OrderPricing {
   subtotal: number;
@@ -74,6 +84,10 @@ export interface OrderPricing {
   currency: "INR";
 }
 
+/* ============================================================
+   ORDER PAYMENT
+============================================================ */
+
 export interface OrderPayment {
   method: CheckoutPaymentMethod;
 
@@ -84,6 +98,10 @@ export interface OrderPayment {
   gateway?: string;
 }
 
+/* ============================================================
+   ORDER DELIVERY
+============================================================ */
+
 export interface OrderDelivery {
   method: CheckoutDeliveryMethod;
 
@@ -93,6 +111,10 @@ export interface OrderDelivery {
 
   carrier?: string;
 }
+
+/* ============================================================
+   ORDER
+============================================================ */
 
 export interface Order {
   id: string;

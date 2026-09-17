@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 
+import { getCategoryBySlug } from "@/services/category.service";
 import { getProducts } from "@/lib/api/products";
+
 import type { ProductSort } from "@/types/product";
 
 import { CollectionPage } from "@/components/collections/collection-page";
@@ -41,10 +43,12 @@ export default async function FestivePage({
       ? (params.sort as ProductSort)
       : "featured";
 
+  const category = await getCategoryBySlug("festive");
+
   const response = await getProducts({
     page: 1,
     limit: 48,
-    category: "festive",
+    categoryId: category.id,
     sort,
   });
 
@@ -53,7 +57,7 @@ export default async function FestivePage({
       title="Festive"
       eyebrow="The Festive Edit"
       description="Occasion dressing with a quieter confidence — luminous colours, graceful silhouettes and considered details designed for celebrations, intimate gatherings and unforgettable evenings."
-      category="festive"
+      categoryId={category.id}
       products={response.products}
       sort={sort}
       mood="For celebrations, ceremonies and everything worth dressing for."

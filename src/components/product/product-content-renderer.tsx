@@ -13,65 +13,29 @@ export function ProductContentRenderer({
   content,
 }: ProductContentRendererProps) {
   if (
-  content.descriptionFormat === "html" &&
-  typeof content.richContent === "string"
-) {
-  return (
-    <div
-      className="product-rich-content text-sm leading-7 text-[var(--color-text-secondary)]"
-      dangerouslySetInnerHTML={{
-        __html: sanitizeHtml(
-          content.richContent,
-        ),
-      }}
-    />
-  );
-}
+    content.descriptionFormat === "html" &&
+    typeof content.richContent === "string"
+  ) {
+    return (
+      <div
+        className="product-rich-content text-sm leading-7 text-[var(--color-text-secondary)]"
+        dangerouslySetInnerHTML={{
+          __html: sanitizeHtml(content.richContent),
+        }}
+      />
+    );
+  }
 
   if (
-  content.descriptionFormat === "rich" &&
-  Array.isArray(content.richContent)
-) {
-  return (
-    <RichBlocks
-      blocks={content.richContent}
-    />
-  );
-}
+    content.descriptionFormat === "rich" &&
+    Array.isArray(content.richContent)
+  ) {
+    return <RichBlocks blocks={content.richContent} />;
+  }
 
   return (
     <div className="space-y-5 text-sm leading-7 text-[var(--color-text-secondary)]">
       {content.description && <p>{content.description}</p>}
-
-      {content.highlights?.length ? (
-        <div>
-          <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-charcoal)]">
-            Highlights
-          </p>
-
-          <ul className="space-y-2">
-            {content.highlights.map((item) => (
-              <li
-                key={item}
-                className="relative pl-4"
-              >
-                <span className="absolute left-0 top-[11px] h-1 w-1 rounded-full bg-[var(--color-rose)]" />
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-
-      {content.stylingNotes && (
-        <div>
-          <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-charcoal)]">
-            Styling Notes
-          </p>
-
-          <p>{content.stylingNotes}</p>
-        </div>
-      )}
     </div>
   );
 }
@@ -124,9 +88,9 @@ function RichBlocks({
                 {(Array.isArray(block.content)
                   ? block.content
                   : [block.content]
-                ).map((item) => (
+                ).map((item, itemIndex) => (
                   <li
-                    key={item}
+                    key={`${index}-${itemIndex}`}
                     className="relative pl-4"
                   >
                     <span className="absolute left-0 top-3 h-1 w-1 rounded-full bg-[var(--color-rose)]" />
@@ -163,7 +127,10 @@ function sanitizeHtml(html: string) {
   }
 
   const parser = new DOMParser();
-  const document = parser.parseFromString(html, "text/html");
+  const document = parser.parseFromString(
+    html,
+    "text/html",
+  );
 
   document
     .querySelectorAll(
@@ -172,14 +139,22 @@ function sanitizeHtml(html: string) {
     .forEach((node) => node.remove());
 
   document.querySelectorAll("*").forEach((element) => {
-    Array.from(element.attributes).forEach((attribute) => {
-      if (
-        attribute.name.toLowerCase().startsWith("on") ||
-        attribute.value.toLowerCase().includes("javascript:")
-      ) {
-        element.removeAttribute(attribute.name);
-      }
-    });
+    Array.from(element.attributes).forEach(
+      (attribute) => {
+        if (
+          attribute.name
+            .toLowerCase()
+            .startsWith("on") ||
+          attribute.value
+            .toLowerCase()
+            .includes("javascript:")
+        ) {
+          element.removeAttribute(
+            attribute.name,
+          );
+        }
+      },
+    );
   });
 
   return document.body.innerHTML;

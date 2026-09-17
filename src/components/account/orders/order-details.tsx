@@ -568,7 +568,7 @@ export function OrderDetails({
               {order.items.map(
                 (item) => (
                   <div
-                    key={`${item.productId}-${item.variantId}`}
+                    key={item.productId}
                     className="p-5 sm:p-7"
                   >
                     <div className="flex gap-4 sm:gap-5">
@@ -621,27 +621,6 @@ export function OrderDetails({
                             )}
                           </p>
                         </div>
-
-                        {/* Variant */}
-
-                        {(item.colorName ||
-                          item.sizeLabel) && (
-                          <div className="mt-4 flex flex-wrap gap-2">
-                            {item.colorName && (
-                              <span className="border border-[var(--color-border)] px-3 py-1.5 text-[9px] uppercase tracking-[0.08em] text-[var(--color-text-secondary)]">
-                                Color:{" "}
-                                {item.colorName}
-                              </span>
-                            )}
-
-                            {item.sizeLabel && (
-                              <span className="border border-[var(--color-border)] px-3 py-1.5 text-[9px] uppercase tracking-[0.08em] text-[var(--color-text-secondary)]">
-                                Size:{" "}
-                                {item.sizeLabel}
-                              </span>
-                            )}
-                          </div>
-                        )}
 
                         {/* Price */}
 
