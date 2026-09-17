@@ -38,43 +38,36 @@ export function Newsletter({
       className="bg-[var(--color-cream)] text-[var(--color-charcoal)]"
     >
       <Container>
-        <div className="py-16 sm:py-20 lg:py-24 xl:py-28">
-          {/* =====================================================
-              TOP LINE
-          ===================================================== */}
+        <div className="py-7 sm:py-9 lg:py-11">
+          {/* HEADER */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="h-px w-7 bg-[var(--color-rose-dark)]" />
 
-          <div className="border-t border-[var(--color-border-dark)] pt-5 sm:pt-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <span className="h-px w-9 bg-[var(--color-rose-dark)]" />
-
-                <p className="text-[8px] font-semibold uppercase tracking-[0.3em] text-[var(--color-text-secondary)] sm:text-[9px]">
-                  {data.eyebrow}
-                </p>
-              </div>
-
-              <span className="font-display text-lg text-[var(--color-text-muted)] sm:text-xl">
-                13
-              </span>
+              <p className="text-[8px] font-semibold uppercase tracking-[0.28em] text-[var(--color-text-secondary)] sm:text-[9px]">
+                {data.eyebrow}
+              </p>
             </div>
+
+            <span className="font-display text-sm text-[var(--color-text-muted)] sm:text-base">
+              13
+            </span>
           </div>
 
-          {/* =====================================================
-              INTRO
-          ===================================================== */}
-
-          <div className="mx-auto mt-10 max-w-3xl text-center sm:mt-12">
+          {/* INTRO */}
+          <div className="mx-auto mt-7 max-w-3xl text-center sm:mt-9">
             <h2
               className="
                 font-display
-                text-[3rem]
+                text-[2.7rem]
                 font-medium
-                leading-[0.9]
+                leading-[0.94]
                 tracking-[-0.045em]
                 text-[var(--color-charcoal)]
-                sm:text-[4rem]
-                md:text-[4.8rem]
-                lg:text-[5.4rem]
+                sm:text-[3.6rem]
+                md:text-[4.3rem]
+                lg:text-[4.9rem]
+                xl:text-[5.2rem]
               "
             >
               {data.title.lineOne}
@@ -84,36 +77,33 @@ export function Newsletter({
               </span>
             </h2>
 
-            <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-[var(--color-text-secondary)] sm:text-[15px] sm:leading-8">
+            <p className="mx-auto mt-4 max-w-xl text-[13px] leading-6 text-[var(--color-text-secondary)] sm:text-sm sm:leading-7">
               {data.description}
             </p>
           </div>
 
-          {/* =====================================================
-              FORM
-          ===================================================== */}
-
-          <div className="mx-auto mt-10 max-w-3xl sm:mt-12">
+          {/* FORM */}
+          <div className="mx-auto mt-7 max-w-3xl sm:mt-9">
             {submitted ? (
               <div
                 className="
                   flex
                   items-center
                   justify-center
-                  gap-4
+                  gap-3
                   border
                   border-[var(--color-border-dark)]
                   bg-[var(--color-ivory)]
-                  px-6
-                  py-6
+                  px-5
+                  py-5
                   text-center
                 "
               >
                 <span
                   className="
                     flex
-                    h-9
-                    w-9
+                    h-8
+                    w-8
                     shrink-0
                     items-center
                     justify-center
@@ -124,7 +114,7 @@ export function Newsletter({
                   "
                 >
                   <Check
-                    size={16}
+                    size={15}
                     strokeWidth={1.5}
                   />
                 </span>
@@ -142,11 +132,26 @@ export function Newsletter({
             ) : (
               <form
                 onSubmit={handleSubmit}
-                className="flex flex-col gap-3 sm:flex-row"
+                className="flex flex-col gap-2.5 sm:flex-row"
               >
                 {/* EMAIL */}
-
-                <div className="flex min-h-14 flex-1 items-center border border-[var(--color-border-dark)] bg-[var(--color-ivory)] px-5 transition-colors duration-300 focus-within:border-[var(--color-charcoal)] sm:min-h-16">
+                <div
+                  className="
+                    flex
+                    min-h-13
+                    flex-1
+                    items-center
+                    border
+                    border-[var(--color-border-dark)]
+                    bg-[var(--color-ivory)]
+                    px-4
+                    transition-colors
+                    duration-300
+                    focus-within:border-[var(--color-charcoal)]
+                    sm:min-h-14
+                    sm:px-5
+                  "
+                >
                   <div className="w-full">
                     <label
                       htmlFor="newsletter-email"
@@ -155,7 +160,7 @@ export function Newsletter({
                         text-[7px]
                         font-semibold
                         uppercase
-                        tracking-[0.24em]
+                        tracking-[0.22em]
                         text-[var(--color-text-muted)]
                       "
                     >
@@ -194,16 +199,15 @@ export function Newsletter({
                 </div>
 
                 {/* BUTTON */}
-
                 <button
                   type="submit"
                   className="
                     group
                     flex
-                    min-h-14
+                    min-h-13
                     items-center
                     justify-between
-                    gap-8
+                    gap-6
                     border
                     border-[var(--color-charcoal)]
                     bg-[var(--color-charcoal)]
@@ -217,8 +221,8 @@ export function Newsletter({
                     duration-300
                     hover:border-[var(--color-rose-dark)]
                     hover:bg-[var(--color-rose-dark)]
-                    sm:min-h-16
-                    sm:min-w-[190px]
+                    sm:min-h-14
+                    sm:min-w-[180px]
                     sm:px-6
                   "
                 >
@@ -227,7 +231,7 @@ export function Newsletter({
                   </span>
 
                   <ArrowUpRight
-                    size={16}
+                    size={15}
                     strokeWidth={1.4}
                     className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-0.5"
                   />
@@ -236,22 +240,19 @@ export function Newsletter({
             )}
 
             {!submitted && (
-              <p className="mt-4 text-center text-[8px] uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
+              <p className="mt-3 text-center text-[8px] uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
                 {data.disclaimer}
               </p>
             )}
           </div>
 
-          {/* =====================================================
-              BRAND SIGN-OFF
-          ===================================================== */}
-
-          <div className="mt-12 flex items-center justify-between border-t border-[var(--color-border-dark)] pt-5 sm:mt-14">
-            <p className="text-[8px] font-semibold uppercase tracking-[0.28em] text-[var(--color-text-muted)]">
+          {/* BRAND SIGN-OFF */}
+          <div className="mt-8 flex items-center justify-between sm:mt-10">
+            <p className="text-[8px] font-semibold uppercase tracking-[0.26em] text-[var(--color-text-muted)]">
               Ayesha Fashion
             </p>
 
-            <p className="font-display text-lg italic text-[var(--color-charcoal)]">
+            <p className="font-display text-base italic text-[var(--color-charcoal)] sm:text-lg">
               Ayesha
             </p>
           </div>
