@@ -122,8 +122,6 @@ export default async function NewArrivalsPage({
               New Arrivals
             </h1>
           </div>
-
-          
         </div>
       </section>
 
