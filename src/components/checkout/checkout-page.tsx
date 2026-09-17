@@ -5,8 +5,9 @@ import {
   ChevronLeft,
   ShieldCheck,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
-import { useCartStore } from "@/store/cart-store";
+import { getCart } from "@/services/cart.service";
 
 import { CheckoutContact } from "@/components/checkout/checkout-contact";
 import { CheckoutAddress } from "@/components/checkout/checkout-address";
@@ -17,15 +18,84 @@ import { CheckoutSummary } from "@/components/checkout/checkout-summary";
 import { CheckoutPlaceOrder } from "@/components/checkout/checkout-place-order";
 
 export function CheckoutPage() {
-  const items = useCartStore(
-    (state) => state.items,
-  );
+  const [hasItems, setHasItems] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  /* ==========================================================
+     LOAD CART FROM BACKEND
+  ========================================================== */
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadCart() {
+      try {
+        const cart = await getCart();
+
+        if (cancelled) {
+          return;
+        }
+
+        setHasItems(cart.items.length > 0);
+      } catch (error) {
+        console.error(
+          "CHECKOUT CART ERROR:",
+          error,
+        );
+
+        if (!cancelled) {
+          setHasItems(false);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadCart();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  /* ==========================================================
+     LOADING
+  ========================================================== */
+
+  if (isLoading) {
+    return (
+      <main className="min-h-screen bg-[var(--color-bg)]">
+        <div className="mx-auto max-w-[1600px] px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
+          <div className="border-b border-[var(--color-border-light)] pb-7">
+            <div className="h-4 w-28 animate-pulse bg-[var(--color-bg-soft)]" />
+
+            <div className="mt-7 h-12 w-48 animate-pulse bg-[var(--color-bg-soft)]" />
+
+            <div className="mt-4 h-4 w-full max-w-xl animate-pulse bg-[var(--color-bg-soft)]" />
+          </div>
+
+          <div className="mt-9 grid gap-10 lg:grid-cols-[minmax(0,1fr)_390px] lg:items-start lg:gap-16 xl:gap-20">
+            <div className="space-y-4">
+              <div className="h-28 animate-pulse border border-[var(--color-border-light)] bg-[var(--color-surface)]" />
+              <div className="h-28 animate-pulse border border-[var(--color-border-light)] bg-[var(--color-surface)]" />
+              <div className="h-28 animate-pulse border border-[var(--color-border-light)] bg-[var(--color-surface)]" />
+              <div className="h-28 animate-pulse border border-[var(--color-border-light)] bg-[var(--color-surface)]" />
+            </div>
+
+            <div className="h-[360px] animate-pulse border border-[var(--color-border-light)] bg-[var(--color-surface)]" />
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   /* ==========================================================
      EMPTY CART
   ========================================================== */
 
-  if (!items.length) {
+  if (!hasItems) {
     return (
       <main className="min-h-[70vh] bg-[var(--color-bg)]">
         <div className="mx-auto flex min-h-[70vh] max-w-2xl flex-col items-center justify-center px-4 py-20 text-center sm:px-6">

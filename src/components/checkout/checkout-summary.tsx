@@ -3,29 +3,16 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-import { getProductById } from "@/lib/api/products";
+import {
+  getCart,
+  type CartItem,
+} from "@/services/cart.service";
 
-import type { Product } from "@/types/product";
-
-import { useCartStore } from "@/store/cart-store";
 import { useCheckoutStore } from "@/store/checkout-store";
 
-type ResolvedCheckoutItem = {
-  cartItem: {
-    productId: string;
-    quantity: number;
-  };
-
-  product: Product;
-
-  image?: Product["media"][number];
-};
+type CheckoutCartItem = CartItem;
 
 export function CheckoutSummary() {
-  const cartItems = useCartStore(
-    (state) => state.items,
-  );
-
   const delivery = useCheckoutStore(
     (state) => state.delivery,
   );
@@ -40,121 +27,43 @@ export function CheckoutSummary() {
 
   const couponShippingDiscount =
     useCheckoutStore(
-      (state) =>
-        state.couponShippingDiscount,
+      (state) => state.couponShippingDiscount,
     );
 
   const [items, setItems] = useState<
-    ResolvedCheckoutItem[]
+    CheckoutCartItem[]
   >([]);
 
   const [loading, setLoading] =
     useState(true);
 
   /* ==========================================================
-     LOAD PRODUCTS FROM BACKEND
+     LOAD CART FROM BACKEND
   ========================================================== */
 
   useEffect(() => {
     let cancelled = false;
 
-    async function loadProducts() {
-      if (!cartItems.length) {
-        setItems([]);
-        setLoading(false);
-        return;
-      }
-
+    async function loadCart() {
       setLoading(true);
 
       try {
-        const productIds =
-          Array.from(
-            new Set(
-              cartItems.map(
-                (item) =>
-                  item.productId,
-              ),
-            ),
-          );
-
-        const responses =
-          await Promise.all(
-            productIds.map(
-              async (
-                productId,
-              ) => {
-                try {
-                  return await getProductById(
-                    productId,
-                  );
-                } catch {
-                  return null;
-                }
-              },
-            ),
-          );
+        const cart = await getCart();
 
         if (cancelled) {
           return;
         }
 
-        const productMap =
-          new Map<
-            string,
-            Product
-          >();
-
-        responses.forEach(
-          (product) => {
-            if (product) {
-              productMap.set(
-                product.id,
-                product,
-              );
-            }
-          },
+        setItems(cart.items);
+      } catch (error) {
+        console.error(
+          "CHECKOUT CART ERROR:",
+          error,
         );
 
-        const resolved: ResolvedCheckoutItem[] =
-          [];
-
-        for (
-          const cartItem of cartItems
-        ) {
-          const product =
-            productMap.get(
-              cartItem.productId,
-            );
-
-          if (!product) {
-            continue;
-          }
-
-          const image =
-            product.media.find(
-              (media) =>
-                media.isPrimary,
-            ) ??
-            product.media.find(
-              (media) =>
-                media.type ===
-                "image",
-            );
-
-          resolved.push({
-            cartItem: {
-              productId:
-                cartItem.productId,
-              quantity:
-                cartItem.quantity,
-            },
-            product,
-            image,
-          });
+        if (!cancelled) {
+          setItems([]);
         }
-
-        setItems(resolved);
       } finally {
         if (!cancelled) {
           setLoading(false);
@@ -162,41 +71,42 @@ export function CheckoutSummary() {
       }
     }
 
-    void loadProducts();
+    void loadCart();
 
     return () => {
       cancelled = true;
     };
-  }, [cartItems]);
+  }, []);
 
   /* ==========================================================
      SUMMARY
   ========================================================== */
 
   let subtotal = 0;
-
   let mrpTotal = 0;
 
-  for (
-    const item of items
-  ) {
-    subtotal +=
+  for (const item of items) {
+    const sellingPrice =
       Number(
-        item.product.pricing
-          .sellingPrice,
-      ) *
-      item.cartItem.quantity;
+        item.product.pricing.sellingPrice,
+      );
 
-    mrpTotal +=
+    const mrp =
       Number(
         item.product.pricing.mrp,
-      ) *
-      item.cartItem.quantity;
+      );
+
+    subtotal +=
+      sellingPrice * item.quantity;
+
+    mrpTotal +=
+      mrp * item.quantity;
   }
 
   /*
    * Base shipping before coupon.
    */
+
   const baseShipping =
     delivery === "express"
       ? 199
@@ -205,27 +115,29 @@ export function CheckoutSummary() {
         : 99;
 
   /*
-   * Coupon can discount shipping.
-   *
-   * Backend has already validated this amount.
+   * Coupon shipping discount.
    */
+
   const shipping = Math.max(
     0,
     baseShipping -
       couponShippingDiscount,
   );
 
+  /*
+   * Product savings.
+   */
+
   const productSavings =
     Math.max(
       0,
-      mrpTotal -
-        subtotal,
+      mrpTotal - subtotal,
     );
 
   /*
-   * Coupon discount is taken
-   * directly from checkout-store.
+   * Final total.
    */
+
   const total = Math.max(
     0,
     subtotal +
@@ -266,91 +178,101 @@ export function CheckoutSummary() {
           {loading ? (
             <CheckoutItemsSkeleton />
           ) : items.length ? (
-            items.map(
-              ({
-                cartItem,
-                product,
-                image,
-              }) => {
-                const {
-                  sellingPrice,
-                  mrp,
-                } = product.pricing;
+            items.map((item) => {
+              const product = item.product;
 
-                return (
-                  <div
-                    key={cartItem.productId}
-                    className="flex gap-4 border-b border-[var(--color-border-light)] px-5 py-4 sm:px-6"
-                  >
-                    {/* IMAGE */}
+              const sellingPrice =
+                Number(
+                  product.pricing
+                    .sellingPrice,
+                );
 
-                    <div className="relative h-24 w-[76px] shrink-0 overflow-hidden bg-[var(--color-bg-soft)]">
-                      {image?.src ? (
-                        <Image
-                          src={
-                            image.src
-                          }
-                          alt={
-                            image.alt ??
-                            product.name
-                          }
-                          fill
-                          className="image-luxury object-cover"
-                          sizes="76px"
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center px-2 text-center text-[8px] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-muted)]">
-                          No image
-                        </div>
-                      )}
+              const mrp =
+                Number(
+                  product.pricing.mrp,
+                );
 
-                      {/* QUANTITY */}
+              /*
+               * Cart service returns media.url
+               * from the backend.
+               */
+              const image =
+                product.media.find(
+                  (media) =>
+                    media.type ===
+                    "image",
+                ) ??
+                product.media[0];
 
-                      <span className="absolute bottom-1 right-1 flex h-5 min-w-5 items-center justify-center bg-[var(--color-text)] px-1 text-[8px] font-semibold text-[var(--color-text-inverse)]">
-                        {cartItem.quantity}
-                      </span>
-                    </div>
+              return (
+                <div
+                  key={item.productId}
+                  className="flex gap-4 border-b border-[var(--color-border-light)] px-5 py-4 sm:px-6"
+                >
+                  {/* IMAGE */}
 
-                    {/* DETAILS */}
+                  <div className="relative h-24 w-[76px] shrink-0 overflow-hidden bg-[var(--color-bg-soft)]">
+                    {image?.url ? (
+                      <Image
+                        src={image.url}
+                        alt={
+                          image.alt ??
+                          product.name
+                        }
+                        fill
+                        className="image-luxury object-cover"
+                        sizes="76px"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center px-2 text-center text-[8px] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-muted)]">
+                        No image
+                      </div>
+                    )}
 
-                    <div className="min-w-0 flex-1 py-0.5">
-                      <p className="font-[var(--font-display)] text-xl leading-none text-[var(--color-text)]">
-                        {product.name}
+                    {/* QUANTITY */}
+
+                    <span className="absolute bottom-1 right-1 flex h-5 min-w-5 items-center justify-center bg-[var(--color-text)] px-1 text-[8px] font-semibold text-[var(--color-text-inverse)]">
+                      {item.quantity}
+                    </span>
+                  </div>
+
+                  {/* DETAILS */}
+
+                  <div className="min-w-0 flex-1 py-0.5">
+                    <p className="font-[var(--font-display)] text-xl leading-none text-[var(--color-text)]">
+                      {product.name}
+                    </p>
+
+                    <p className="mt-2 text-[10px] uppercase tracking-[0.06em] text-[var(--color-text-muted)]">
+                      Product
+                    </p>
+
+                    <div className="mt-3 flex items-center justify-between gap-3">
+                      <p className="text-xs font-semibold text-[var(--color-text)]">
+                        ₹
+                        {sellingPrice.toLocaleString(
+                          "en-IN",
+                        )}
                       </p>
 
-                      <p className="mt-2 text-[10px] uppercase tracking-[0.06em] text-[var(--color-text-muted)]">
-                        Product
-                      </p>
-
-                      <div className="mt-3 flex items-center justify-between gap-3">
-                        <p className="text-xs font-semibold text-[var(--color-text)]">
+                      {mrp >
+                      sellingPrice ? (
+                        <p className="text-[10px] text-[var(--color-text-muted)] line-through">
                           ₹
-                          {Number(
-                            sellingPrice,
-                          ).toLocaleString(
+                          {mrp.toLocaleString(
                             "en-IN",
                           )}
                         </p>
-
-                        {Number(mrp) >
-                        Number(
-                          sellingPrice,
-                        ) ? (
-                          <p className="text-[10px] text-[var(--color-text-muted)] line-through">
-                            ₹
-                            {Number(
-                              mrp,
-                            ).toLocaleString(
-                              "en-IN",
-                            )}
-                          </p>
-                        ) : null}
-                      </div>
+                      ) : null}
                     </div>
+
+                    <p className="mt-1 text-[10px] text-[var(--color-text-muted)]">
+                      Qty: {item.quantity}
+                    </p>
                   </div>
-                );
-              },
-            )
+                </div>
+              );
+            })
           ) : (
             <div className="px-6 py-10 text-center">
               <p className="font-[var(--font-display)] text-xl text-[var(--color-text)]">
@@ -398,7 +320,8 @@ export function CheckoutSummary() {
           ) : null}
 
           {couponShippingDiscount >
-          0 ? (
+          0 &&
+          couponCode ? (
             <SummaryRow
               label={`Shipping Discount (${couponCode.toUpperCase()})`}
               value={`- ₹${couponShippingDiscount.toLocaleString(
@@ -503,24 +426,22 @@ function CheckoutItemsSkeleton() {
     <>
       {Array.from({
         length: 2,
-      }).map(
-        (_, index) => (
-          <div
-            key={index}
-            className="flex gap-4 border-b border-[var(--color-border-light)] px-5 py-4 sm:px-6"
-          >
-            <div className="h-24 w-[76px] animate-pulse bg-[var(--color-bg-soft)]" />
+      }).map((_, index) => (
+        <div
+          key={index}
+          className="flex gap-4 border-b border-[var(--color-border-light)] px-5 py-4 sm:px-6"
+        >
+          <div className="h-24 w-[76px] animate-pulse bg-[var(--color-bg-soft)]" />
 
-            <div className="flex-1 py-1">
-              <div className="h-5 w-32 animate-pulse bg-[var(--color-bg-soft)]" />
+          <div className="flex-1 py-1">
+            <div className="h-5 w-32 animate-pulse bg-[var(--color-bg-soft)]" />
 
-              <div className="mt-3 h-3 w-24 animate-pulse bg-[var(--color-bg-soft)]" />
+            <div className="mt-3 h-3 w-24 animate-pulse bg-[var(--color-bg-soft)]" />
 
-              <div className="mt-4 h-4 w-16 animate-pulse bg-[var(--color-bg-soft)]" />
-            </div>
+            <div className="mt-4 h-4 w-16 animate-pulse bg-[var(--color-bg-soft)]" />
           </div>
-        ),
-      )}
+        </div>
+      ))}
     </>
   );
 }

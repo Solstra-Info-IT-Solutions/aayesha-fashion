@@ -8,41 +8,22 @@ import {
 import toast from "react-hot-toast";
 
 import {
-  getProductById,
-} from "@/lib/api/products";
+  getCart,
+} from "@/services/cart.service";
 
 import {
   validateCustomerCoupon,
 } from "@/services/coupon.service";
 
 import {
-  useCartStore,
-} from "@/store/cart-store";
-
-import {
   useCheckoutStore,
 } from "@/store/checkout-store";
-
-import type {
-  Product,
-} from "@/types/product";
-
-type ResolvedCouponItem = {
-  product: Product;
-  productId: string;
-  quantity: number;
-  sellingPrice: number;
-};
 
 /* =========================================================
    COMPONENT
 ========================================================= */
 
 export function CheckoutCoupon() {
-  const cartItems = useCartStore(
-    (state) => state.items,
-  );
-
   const couponCode = useCheckoutStore(
     (state) => state.couponCode,
   );
@@ -53,7 +34,8 @@ export function CheckoutCoupon() {
 
   const couponShippingDiscount =
     useCheckoutStore(
-      (state) => state.couponShippingDiscount,
+      (state) =>
+        state.couponShippingDiscount,
     );
 
   const contactEmail = useCheckoutStore(
@@ -74,24 +56,36 @@ export function CheckoutCoupon() {
 
   const setCouponShippingDiscount =
     useCheckoutStore(
-      (state) => state.setCouponShippingDiscount,
+      (state) =>
+        state.setCouponShippingDiscount,
     );
 
   const setCouponDiscountType =
     useCheckoutStore(
-      (state) => state.setCouponDiscountType,
+      (state) =>
+        state.setCouponDiscountType,
     );
 
   const [input, setInput] = useState(
     couponCode,
   );
 
-  const [items, setItems] = useState<
-    ResolvedCouponItem[]
-  >([]);
-
-  const [loadingProducts, setLoadingProducts] =
+  const [loadingCart, setLoadingCart] =
     useState(true);
+
+  const [cartItemCount, setCartItemCount] =
+    useState(0);
+
+  const [cartItems, setCartItems] =
+    useState<
+      Array<{
+        productId: string;
+        quantity: number;
+      }>
+    >([]);
+
+  const [subtotal, setSubtotal] =
+    useState(0);
 
   const [applying, setApplying] =
     useState(false);
@@ -105,115 +99,79 @@ export function CheckoutCoupon() {
   }, [couponCode]);
 
   /* =========================================================
-     LOAD CART PRODUCTS
+     LOAD CART FROM BACKEND
   ========================================================= */
 
   useEffect(() => {
     let cancelled = false;
 
-    async function loadProducts() {
-      if (!cartItems.length) {
-        setItems([]);
-        setLoadingProducts(false);
-        return;
-      }
-
-      setLoadingProducts(true);
+    async function loadCart() {
+      setLoadingCart(true);
 
       try {
-        const productIds = Array.from(
-          new Set(
-            cartItems.map(
-              (item) => item.productId,
-            ),
-          ),
-        );
-
-        const responses =
-          await Promise.all(
-            productIds.map(
-              async (productId) => {
-                try {
-                  return await getProductById(
-                    productId,
-                  );
-                } catch {
-                  return null;
-                }
-              },
-            ),
-          );
+        const cart = await getCart();
 
         if (cancelled) {
           return;
         }
 
-        const productMap = new Map<
-          string,
-          Product
-        >();
-
-        responses.forEach((product) => {
-          if (product) {
-            productMap.set(
-              product.id,
-              product,
-            );
-          }
-        });
-
-        const resolved: ResolvedCouponItem[] =
-          [];
-
-        for (const cartItem of cartItems) {
-          const product =
-            productMap.get(
-              cartItem.productId,
-            );
-
-          if (!product) {
-            continue;
-          }
-
-          resolved.push({
-            product,
+        const items = cart.items.map(
+          (item) => ({
             productId:
-              cartItem.productId,
+              item.productId,
             quantity:
-              cartItem.quantity,
-            sellingPrice:
-              Number(
-                product.pricing.sellingPrice,
-              ),
-          });
+              item.quantity,
+          }),
+        );
+
+        let calculatedSubtotal = 0;
+
+        for (const item of cart.items) {
+          calculatedSubtotal +=
+            Number(
+              item.product.pricing
+                .sellingPrice,
+            ) *
+            item.quantity;
         }
 
-        setItems(resolved);
+        setCartItems(items);
+
+        setCartItemCount(
+          cart.items.reduce(
+            (total, item) =>
+              total + item.quantity,
+            0,
+          ),
+        );
+
+        setSubtotal(
+          calculatedSubtotal,
+        );
+      } catch (error) {
+        console.error(
+          "CHECKOUT COUPON CART ERROR:",
+          error,
+        );
+
+        if (!cancelled) {
+          setCartItems([]);
+          setCartItemCount(0);
+          setSubtotal(0);
+        }
       } finally {
         if (!cancelled) {
-          setLoadingProducts(false);
+          setLoadingCart(false);
         }
       }
     }
 
-    void loadProducts();
+    void loadCart();
 
     return () => {
       cancelled = true;
     };
-  }, [cartItems]);
-
-  /* =========================================================
-     CALCULATE SUBTOTAL
-  ========================================================= */
-
-  const subtotal = items.reduce(
-    (total, item) =>
-      total +
-      item.sellingPrice *
-        item.quantity,
-    0,
-  );
+  }, []);
 
   /* =========================================================
      CLEAR COUPON
@@ -243,21 +201,21 @@ export function CheckoutCoupon() {
       return;
     }
 
-    if (!cartItems.length) {
+    if (!cartItemCount) {
       toast.error(
         "Your bag is empty.",
       );
       return;
     }
 
-    if (loadingProducts) {
+    if (loadingCart) {
       toast.error(
         "Please wait while your bag is loading.",
       );
       return;
     }
 
-    if (!items.length) {
+    if (!cartItems.length) {
       toast.error(
         "Unable to validate your cart items.",
       );
@@ -285,14 +243,7 @@ export function CheckoutCoupon() {
             undefined,
           deliveryMethod:
             delivery,
-          items: items.map(
-            (item) => ({
-              productId:
-                item.productId,
-              quantity:
-                item.quantity,
-            }),
-          ),
+          items: cartItems,
         });
 
       setCouponCode(
@@ -392,7 +343,10 @@ export function CheckoutCoupon() {
                 void applyCoupon();
               }
             }}
-            disabled={applying}
+            disabled={
+              applying ||
+              loadingCart
+            }
             placeholder="Enter code"
             aria-label="Coupon code"
             className="h-12 min-w-0 flex-1 border border-r-0 border-[var(--color-border-dark)] bg-[var(--color-surface-soft)] px-4 text-xs font-medium uppercase tracking-[0.06em] text-[var(--color-text)] outline-none transition-colors placeholder:normal-case placeholder:tracking-normal placeholder:text-[var(--color-text-muted)] hover:border-[var(--color-accent-soft)] focus:border-[var(--color-accent)] disabled:cursor-not-allowed disabled:opacity-60"
@@ -405,7 +359,7 @@ export function CheckoutCoupon() {
             }
             disabled={
               applying ||
-              loadingProducts
+              loadingCart
             }
             className="h-12 min-w-[90px] bg-[var(--color-text)] px-5 text-[10px] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text-inverse)] transition-all duration-[var(--duration-base)] hover:bg-[var(--color-accent-dark)] disabled:cursor-not-allowed disabled:opacity-50"
           >

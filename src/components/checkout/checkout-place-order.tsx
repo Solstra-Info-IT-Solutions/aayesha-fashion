@@ -16,7 +16,9 @@ import {
 
 import toast from "react-hot-toast";
 
-import { getProductById } from "@/lib/api/products";
+import {
+  getCart,
+} from "@/services/cart.service";
 
 import {
   createOrder,
@@ -30,20 +32,15 @@ import {
 
 import { useAuthStore } from "@/store/auth-store";
 
-import { useCartStore } from "@/store/cart-store";
-
 import {
   useCheckoutStore,
 } from "@/store/checkout-store";
-
-import type { Product } from "@/types/product";
 
 /* ==========================================================
    TYPES
 ========================================================== */
 
-type ResolvedItem = {
-  product: Product;
+type CheckoutCartItem = {
   productId: string;
   quantity: number;
 };
@@ -74,18 +71,6 @@ export function CheckoutPlaceOrder() {
 
   const isAuthenticated = useAuthStore(
     (state) => state.isAuthenticated,
-  );
-
-  /* ========================================================
-     CART
-  ======================================================== */
-
-  const items = useCartStore(
-    (state) => state.items,
-  );
-
-  const clearCart = useCartStore(
-    (state) => state.clearCart,
   );
 
   /* ========================================================
@@ -127,13 +112,18 @@ export function CheckoutPlaceOrder() {
   ======================================================== */
 
   const [
-    resolvedItems,
-    setResolvedItems,
-  ] = useState<ResolvedItem[]>([]);
+    items,
+    setItems,
+  ] = useState<CheckoutCartItem[]>([]);
 
   const [
-    loadingProducts,
-    setLoadingProducts,
+    subtotal,
+    setSubtotal,
+  ] = useState(0);
+
+  const [
+    loadingCart,
+    setLoadingCart,
   ] = useState(true);
 
   const [
@@ -149,115 +139,74 @@ export function CheckoutPlaceOrder() {
     useRef<string | null>(null);
 
   /* ==========================================================
-     RESOLVE CART ITEMS FROM BACKEND
+     LOAD CART FROM BACKEND
   ========================================================== */
 
   useEffect(() => {
     let cancelled = false;
 
-    async function resolveItems() {
-      if (!items.length) {
-        setResolvedItems([]);
-        setLoadingProducts(false);
-        return;
-      }
-
-      setLoadingProducts(true);
+    async function loadCart() {
+      setLoadingCart(true);
 
       try {
-        const productIds = Array.from(
-          new Set(
-            items.map(
-              (item) => item.productId,
-            ),
-          ),
-        );
-
-        const products =
-          await Promise.all(
-            productIds.map(
-              async (productId) => {
-                try {
-                  return await getProductById(
-                    productId,
-                  );
-                } catch {
-                  return null;
-                }
-              },
-            ),
-          );
+        const cart = await getCart();
 
         if (cancelled) {
           return;
         }
 
-        const productMap =
-          new Map<string, Product>();
+        const nextItems =
+          cart.items.map(
+            (item) => ({
+              productId:
+                item.productId,
+              quantity:
+                item.quantity,
+            }),
+          );
 
-        products.forEach(
-          (product) => {
-            if (product) {
-              productMap.set(
-                product.id,
-                product,
-              );
-            }
-          },
-        );
+        let calculatedSubtotal = 0;
 
-        const nextItems: ResolvedItem[] =
-          [];
-
-        for (const item of items) {
-          const product =
-            productMap.get(
-              item.productId,
-            );
-
-          if (!product) {
-            continue;
-          }
-
-          nextItems.push({
-            product,
-            productId:
-              item.productId,
-            quantity:
-              item.quantity,
-          });
+        for (const item of cart.items) {
+          calculatedSubtotal +=
+            Number(
+              item.product.pricing
+                .sellingPrice,
+            ) *
+            item.quantity;
         }
 
-        setResolvedItems(
-          nextItems,
+        setItems(nextItems);
+        setSubtotal(
+          calculatedSubtotal,
         );
+      } catch (error) {
+        console.error(
+          "CHECKOUT CART ERROR:",
+          error,
+        );
+
+        if (!cancelled) {
+          setItems([]);
+          setSubtotal(0);
+        }
       } finally {
         if (!cancelled) {
-          setLoadingProducts(false);
+          setLoadingCart(false);
         }
       }
     }
 
-    void resolveItems();
+    void loadCart();
 
     return () => {
       cancelled = true;
     };
-  }, [items]);
+  }, []);
 
   /* ==========================================================
      CLIENT-SIDE DISPLAY TOTAL
   ========================================================== */
-
-  let subtotal = 0;
-
-  for (const item of resolvedItems) {
-    subtotal +=
-      Number(
-        item.product.pricing.sellingPrice,
-      ) *
-      item.quantity;
-  }
 
   const baseShipping =
     delivery === "express"
@@ -270,6 +219,7 @@ export function CheckoutPlaceOrder() {
    * Coupon values come from the server-validated
    * coupon stored in the checkout store.
    */
+
   const shipping = Math.max(
     0,
     baseShipping -
@@ -405,6 +355,22 @@ export function CheckoutPlaceOrder() {
   ========================================================== */
 
   const validateCheckout = () => {
+    if (!isAuthenticated) {
+      toast.error(
+        "Please login before placing your order.",
+      );
+
+      return false;
+    }
+
+    if (!accessToken) {
+      toast.error(
+        "Your login session has expired. Please login again.",
+      );
+
+      return false;
+    }
+
     if (!contact.email.trim()) {
       toast.error(
         "Please enter your email address.",
@@ -477,17 +443,6 @@ export function CheckoutPlaceOrder() {
       return false;
     }
 
-    if (
-      resolvedItems.length !==
-      items.length
-    ) {
-      toast.error(
-        "Some items in your bag are no longer available. Please review your bag.",
-      );
-
-      return false;
-    }
-
     /*
      * Current backend supports COD only.
      */
@@ -510,7 +465,7 @@ export function CheckoutPlaceOrder() {
     async () => {
       if (
         placingOrder ||
-        loadingProducts
+        loadingCart
       ) {
         return;
       }
@@ -525,17 +480,6 @@ export function CheckoutPlaceOrder() {
         /* ----------------------------------------------------
            SAVE ADDRESS
         ---------------------------------------------------- */
-
-        console.log(
-          "CHECKOUT AUTH STATE:",
-          {
-            isAuthenticated,
-            accessTokenExists:
-              Boolean(accessToken),
-            accessTokenLength:
-              accessToken?.length ?? 0,
-          },
-        );
 
         try {
           await saveAddressForFutureOrders();
@@ -636,16 +580,6 @@ export function CheckoutPlaceOrder() {
            CREATE ORDER
         ---------------------------------------------------- */
 
-        console.log(
-          "BEFORE CREATE ORDER:",
-          {
-            accessTokenExists:
-              Boolean(accessToken),
-            accessTokenLength:
-              accessToken?.length ?? 0,
-          },
-        );
-
         const response =
           await createOrder(
             orderPayload,
@@ -699,10 +633,31 @@ export function CheckoutPlaceOrder() {
         }
 
         /* ----------------------------------------------------
-           CLEAR CART
+           CLEAR BACKEND CART
         ---------------------------------------------------- */
 
-        clearCart();
+        /*
+         * The cart is now stored in the backend.
+         * Do NOT use Zustand clearCart().
+         */
+        try {
+          const { clearCart } =
+            await import(
+              "@/services/cart.service"
+            );
+
+          await clearCart();
+        } catch (cartError) {
+          /*
+           * Order is already created. Do not show
+           * the customer an order failure because
+           * cart cleanup failed.
+           */
+          console.error(
+            "Clear backend cart error:",
+            cartError,
+          );
+        }
 
         idempotencyKeyRef.current =
           null;
@@ -746,9 +701,7 @@ export function CheckoutPlaceOrder() {
 
   return (
     <section className="overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface)]">
-      {/* =====================================================
-          HEADER / SECURITY
-      ===================================================== */}
+      {/* HEADER / SECURITY */}
 
       <div className="border-b border-[var(--color-border-light)] px-5 py-6 sm:px-7 sm:py-7">
         <div className="flex items-start gap-4">
@@ -774,9 +727,7 @@ export function CheckoutPlaceOrder() {
       </div>
 
       <div className="p-5 sm:p-7">
-        {/* ===================================================
-            SECURITY
-        =================================================== */}
+        {/* SECURITY */}
 
         <div className="flex gap-3 border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-4 py-4 sm:px-5">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-[var(--color-surface)] text-[var(--color-accent)]">
@@ -798,9 +749,7 @@ export function CheckoutPlaceOrder() {
           </div>
         </div>
 
-        {/* ===================================================
-            PAYMENT + DELIVERY
-        =================================================== */}
+        {/* PAYMENT + DELIVERY */}
 
         <div className="mt-6 border-y border-[var(--color-border-light)] py-5">
           <div className="flex items-center justify-between gap-5">
@@ -844,9 +793,7 @@ export function CheckoutPlaceOrder() {
           </div>
         </div>
 
-        {/* ===================================================
-            COUPON
-        =================================================== */}
+        {/* COUPON */}
 
         {couponCode ? (
           <div className="border-b border-[var(--color-border-light)] py-5">
@@ -893,9 +840,7 @@ export function CheckoutPlaceOrder() {
           </div>
         ) : null}
 
-        {/* ===================================================
-            TOTAL
-        =================================================== */}
+        {/* TOTAL */}
 
         <div className="flex items-end justify-between gap-5 py-6">
           <div>
@@ -916,16 +861,14 @@ export function CheckoutPlaceOrder() {
           </p>
         </div>
 
-        {/* ===================================================
-            PLACE ORDER
-        =================================================== */}
+        {/* PLACE ORDER */}
 
         <button
           type="button"
           onClick={handlePlaceOrder}
           disabled={
             placingOrder ||
-            loadingProducts ||
+            loadingCart ||
             !items.length ||
             payment !== "cod"
           }
@@ -936,7 +879,7 @@ export function CheckoutPlaceOrder() {
             className="transition-transform duration-[var(--duration-base)] group-hover:-translate-y-px"
           />
 
-          {loadingProducts
+          {loadingCart
             ? "Preparing Order..."
             : placingOrder
               ? "Placing Order..."
@@ -947,9 +890,7 @@ export function CheckoutPlaceOrder() {
                 : "Online Payment Unavailable"}
         </button>
 
-        {/* ===================================================
-            TERMS
-        =================================================== */}
+        {/* TERMS */}
 
         <p className="mt-4 text-center text-[9px] leading-5 text-[var(--color-text-muted)]">
           By placing your order, you agree to Aayesha

@@ -12,126 +12,55 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 
-import { useCartStore } from "@/store/cart-store";
-import { getProductById } from "@/lib/api/products";
-import type { Product } from "@/types/product";
 import {
-  getAvailableStock,
-  getDiscountPercentage,
-} from "@/types/product";
-
-/* ============================================================
-   RESOLVED CART ITEM
-============================================================ */
-
-type ResolvedCartItem = {
-  item: {
-    productId: string;
-    quantity: number;
-  };
-  product: Product;
-  media?: Product["media"][number];
-};
+  clearCart,
+  getCart,
+  removeFromCart,
+  updateCartItem,
+  type Cart,
+} from "@/services/cart.service";
 
 /* ============================================================
    COMPONENT
 ============================================================ */
 
 export function CartContent() {
-  const items = useCartStore((state) => state.items);
-
-  const updateQuantity = useCartStore(
-    (state) => state.updateQuantity,
-  );
-
-  const removeItem = useCartStore(
-    (state) => state.removeItem,
-  );
-
-  const clearCart = useCartStore(
-    (state) => state.clearCart,
-  );
-
-  const [cartItems, setCartItems] = useState<
-    ResolvedCartItem[]
-  >([]);
+  const [cart, setCart] = useState<Cart | null>(null);
 
   const [isLoading, setIsLoading] = useState(true);
 
+  const [updatingProductId, setUpdatingProductId] =
+    useState<string | null>(null);
+
+  const [removingProductId, setRemovingProductId] =
+    useState<string | null>(null);
+
+  const [isClearing, setIsClearing] = useState(false);
+
   /* ==========================================================
-     LOAD PRODUCTS FROM BACKEND
+     LOAD CART
   ========================================================== */
 
   useEffect(() => {
     let cancelled = false;
 
-    async function loadCartProducts() {
-      if (!items.length) {
-        setCartItems([]);
-        setIsLoading(false);
-        return;
-      }
-
+    async function loadCart() {
       setIsLoading(true);
 
       try {
-        const uniqueProductIds = Array.from(
-          new Set(
-            items.map(
-              (item) => item.productId,
-            ),
-          ),
-        );
-
-        const productResults = await Promise.all(
-          uniqueProductIds.map(
-            async (productId) => {
-              try {
-                return await getProductById(productId);
-              } catch {
-                return null;
-              }
-            },
-          ),
-        );
+        const response = await getCart();
 
         if (cancelled) {
           return;
         }
 
-        const productMap = new Map<string, Product>();
+        setCart(response);
+      } catch (error) {
+        console.error("LOAD CART ERROR:", error);
 
-        productResults.forEach((product) => {
-          if (product) {
-            productMap.set(product.id, product);
-          }
-        });
-
-        const resolvedItems: ResolvedCartItem[] = [];
-
-        for (const item of items) {
-          const product = productMap.get(item.productId);
-
-          if (!product) {
-            continue;
-          }
-
-          const media =
-            product.media.find(
-              (mediaItem) => mediaItem.isPrimary,
-            ) ??
-            product.media.find(
-              (mediaItem) => mediaItem.type === "image",
-            );
-
-          resolvedItems.push({
-            item,
-            product,
-            media,
-          });
+        if (!cancelled) {
+          setCart(null);
         }
-
-        setCartItems(resolvedItems);
       } finally {
         if (!cancelled) {
           setIsLoading(false);
@@ -139,12 +68,18 @@ export function CartContent() {
       }
     }
 
-    void loadCartProducts();
+    void loadCart();
 
     return () => {
       cancelled = true;
     };
-  }, [items]);
+  }, []);
+
+  /* ==========================================================
+     CART ITEMS
+  ========================================================== */
+
+  const cartItems = cart?.items ?? [];
 
   /* ==========================================================
      SUMMARY
@@ -152,20 +87,28 @@ export function CartContent() {
 
   const summary = useMemo(() => {
     return cartItems.reduce(
-      (result, { item, product }) => {
+      (result, item) => {
+        const product = item.product;
+
+        if (!product) {
+          return result;
+        }
+
+        const quantity = item.quantity;
+
         const sellingPrice =
           product.pricing.sellingPrice;
 
         const mrp =
           product.pricing.mrp;
 
-        result.itemCount += item.quantity;
+        result.itemCount += quantity;
 
         result.subtotal +=
-          sellingPrice * item.quantity;
+          sellingPrice * quantity;
 
         result.mrpTotal +=
-          mrp * item.quantity;
+          mrp * quantity;
 
         return result;
       },
@@ -186,7 +129,110 @@ export function CartContent() {
     `₹${value.toLocaleString("en-IN")}`;
 
   /* ==========================================================
-     LOADING STATE
+     UPDATE QUANTITY
+  ========================================================== */
+
+  const handleUpdateQuantity = async (
+    productId: string,
+    quantity: number,
+  ) => {
+    if (quantity < 1) {
+      return;
+    }
+
+    try {
+      setUpdatingProductId(productId);
+
+      const response =
+        await updateCartItem(
+          productId,
+          quantity,
+        );
+
+      setCart(response);
+
+      toast.success("Cart updated.");
+    } catch (error) {
+      console.error(
+        "UPDATE CART ERROR:",
+        error,
+      );
+
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Unable to update cart.",
+      );
+    } finally {
+      setUpdatingProductId(null);
+    }
+  };
+
+  /* ==========================================================
+     REMOVE ITEM
+  ========================================================== */
+
+  const handleRemoveItem = async (
+    productId: string,
+  ) => {
+    try {
+      setRemovingProductId(productId);
+
+      const response =
+        await removeFromCart(productId);
+
+      setCart(response);
+
+      toast.success("Removed from bag.");
+    } catch (error) {
+      console.error(
+        "REMOVE FROM CART ERROR:",
+        error,
+      );
+
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Unable to remove item.",
+      );
+    } finally {
+      setRemovingProductId(null);
+    }
+  };
+
+  /* ==========================================================
+     CLEAR CART
+  ========================================================== */
+
+  const handleClearCart = async () => {
+    try {
+      setIsClearing(true);
+
+      const response = await clearCart();
+
+      setCart(response);
+
+      toast.success(
+        "Your bag has been cleared.",
+      );
+    } catch (error) {
+      console.error(
+        "CLEAR CART ERROR:",
+        error,
+      );
+
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Unable to clear your bag.",
+      );
+    } finally {
+      setIsClearing(false);
+    }
+  };
+
+  /* ==========================================================
+     LOADING
   ========================================================== */
 
   if (isLoading) {
@@ -201,9 +247,9 @@ export function CartContent() {
 
           <div className="mt-9 grid gap-10 lg:grid-cols-[minmax(0,1fr)_390px] lg:gap-16">
             <div className="border-y border-[var(--color-border-light)]">
-              {items.map((item) => (
+              {[1, 2].map((item) => (
                 <div
-                  key={item.productId}
+                  key={item}
                   className="grid grid-cols-[100px_minmax(0,1fr)] gap-4 border-b border-[var(--color-border-light)] py-6 last:border-b-0 sm:grid-cols-[140px_minmax(0,1fr)] sm:gap-6"
                 >
                   <div className="aspect-[3/4] animate-pulse bg-[var(--color-bg-soft)]" />
@@ -229,21 +275,6 @@ export function CartContent() {
       </section>
     );
   }
-
-  /* ==========================================================
-     CLEAN INVALID CART ITEMS
-  ========================================================== */
-
-  const resolvedItemKeys = new Set(
-    cartItems.map(
-      ({ item }) => item.productId,
-    ),
-  );
-
-  const invalidItems = items.filter(
-    (item) =>
-      !resolvedItemKeys.has(item.productId),
-  );
 
   /* ==========================================================
      EMPTY CART
@@ -327,9 +358,7 @@ export function CartContent() {
   return (
     <main className="min-h-screen bg-[var(--color-bg)]">
       <div className="mx-auto max-w-[1600px] px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
-        {/* ====================================================
-            HEADER
-        ==================================================== */}
+        {/* HEADER */}
 
         <div className="border-b border-[var(--color-border-light)] pb-7">
           <Link
@@ -395,345 +424,354 @@ export function CartContent() {
           </div>
         </div>
 
-        {/* ====================================================
-            MAIN
-        ==================================================== */}
+        {/* MAIN */}
 
         <div className="mt-9 grid gap-10 lg:grid-cols-[minmax(0,1fr)_390px] lg:items-start lg:gap-16">
-          {/* ==================================================
-              ITEMS
-          ================================================== */}
+          {/* ITEMS */}
 
           <section>
-            {invalidItems.length > 0 && (
-              <div
-                role="status"
-                className="
-                  mb-6
-                  border
-                  border-[var(--color-accent-soft)]
-                  bg-[var(--color-bg-soft)]
-                  px-4
-                  py-4
-                  font-body
-                  text-xs
-                  leading-5
-                  text-[var(--color-text)]
-                "
-              >
-                Some saved items are no longer available and
-                have been excluded from your bag. Please review
-                your selection before checkout.
-              </div>
-            )}
-
             <div className="border-y border-[var(--color-border)]">
-              {cartItems.map(
-                ({
-                  item,
-                  product,
-                  media,
-                }) => {
-                  const availableStock =
-                    getAvailableStock(product);
+              {cartItems.map((item) => {
+                const product = item.product;
 
-                  const price =
-                    product.pricing.sellingPrice;
+                if (!product) {
+                  return null;
+                }
 
-                  const mrp =
-                    product.pricing.mrp;
+                const availableStock = Math.max(
+                  0,
+                  product.inventory.stock -
+                    product.inventory.reserved,
+                );
 
-                  const discount =
-                    getDiscountPercentage(product.pricing);
+                const price =
+                  product.pricing.sellingPrice;
 
-                  const itemTotal =
-                    price * item.quantity;
+                const mrp =
+                  product.pricing.mrp;
 
-                  return (
-                    <article
-                      key={item.productId}
+                const discount =
+                  mrp > 0
+                    ? Math.round(
+                        ((mrp - price) / mrp) *
+                          100,
+                      )
+                    : 0;
+
+                const itemTotal =
+                  price * item.quantity;
+
+                const media =
+                  product.media.find(
+                    (mediaItem) =>
+                      mediaItem.type === "image",
+                  ) ?? product.media[0];
+
+                const isUpdating =
+                  updatingProductId ===
+                  item.productId;
+
+                const isRemoving =
+                  removingProductId ===
+                  item.productId;
+
+                return (
+                  <article
+                    key={item.productId}
+                    className="
+                      grid
+                      grid-cols-[100px_minmax(0,1fr)]
+                      gap-4
+                      border-b
+                      border-[var(--color-border-light)]
+                      py-7
+                      last:border-b-0
+                      sm:grid-cols-[140px_minmax(0,1fr)]
+                      sm:gap-6
+                      lg:py-8
+                    "
+                  >
+                    {/* IMAGE */}
+
+                    <Link
+                      href={`/products/${product.slug}`}
                       className="
-                        grid
-                        grid-cols-[100px_minmax(0,1fr)]
-                        gap-4
-                        border-b
-                        border-[var(--color-border-light)]
-                        py-7
-                        last:border-b-0
-                        sm:grid-cols-[140px_minmax(0,1fr)]
-                        sm:gap-6
-                        lg:py-8
+                        group
+                        relative
+                        aspect-[3/4]
+                        overflow-hidden
+                        bg-[var(--color-bg-soft)]
                       "
                     >
-                      {/* PRODUCT IMAGE */}
+                      {media?.url ? (
+                        <Image
+                          src={media.url}
+                          alt={
+                            media.alt ??
+                            product.name
+                          }
+                          fill
+                          className="
+                            object-cover
+                            transition-transform
+                            duration-700
+                            ease-[cubic-bezier(0.22,1,0.36,1)]
+                            group-hover:scale-[1.025]
+                          "
+                          sizes="(max-width: 640px) 100px, 140px"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center px-2 text-center font-body text-[9px] uppercase tracking-[0.1em] text-[var(--color-text-muted)]">
+                          No image
+                        </div>
+                      )}
+                    </Link>
 
-                      <Link
-                        href={`/products/${product.slug}`}
-                        className="
-                          group
-                          relative
-                          aspect-[3/4]
-                          overflow-hidden
-                          bg-[var(--color-bg-soft)]
-                        "
-                      >
-                        {media?.src ? (
-                          <Image
-                            src={media.src}
-                            alt={
-                              media.alt ??
-                              product.name
-                            }
-                            fill
+                    {/* DETAILS */}
+
+                    <div className="min-w-0">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <p className="font-body text-[9px] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text-muted)]">
+                            Product
+                          </p>
+
+                          <Link
+                            href={`/products/${product.slug}`}
                             className="
-                              object-cover
-                              transition-transform
-                              duration-700
-                              ease-[cubic-bezier(0.22,1,0.36,1)]
-                              group-hover:scale-[1.025]
-                            "
-                            sizes="(max-width: 640px) 100px, 140px"
-                          />
-                        ) : (
-                          <div className="flex h-full items-center justify-center px-2 text-center font-body text-[9px] uppercase tracking-[0.1em] text-[var(--color-text-muted)]">
-                            No image
-                          </div>
-                        )}
-                      </Link>
-
-                      {/* DETAILS */}
-
-                      <div className="min-w-0">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="min-w-0">
-                            <p className="font-body text-[9px] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text-muted)]">
-                              Product
-                            </p>
-
-                            <Link
-                              href={`/products/${product.slug}`}
-                              className="
-                                mt-1
-                                block
-                                font-display
-                                text-[25px]
-                                font-medium
-                                leading-tight
-                                tracking-[var(--tracking-tight)]
-                                text-[var(--color-text)]
-                                transition-colors
-                                duration-[var(--duration-base)]
-                                hover:text-[var(--color-accent-dark)]
-                              "
-                            >
-                              {product.name}
-                            </Link>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              removeItem(
-                                item.productId,
-                              );
-
-                              toast.success(
-                                "Removed from bag.",
-                              );
-                            }}
-                            aria-label={`Remove ${product.name}`}
-                            className="
-                              flex
-                              h-9
-                              w-9
-                              shrink-0
-                              items-center
-                              justify-center
-                              border
-                              border-transparent
-                              text-[var(--color-text-muted)]
-                              transition-all
+                              mt-1
+                              block
+                              font-display
+                              text-[25px]
+                              font-medium
+                              leading-tight
+                              tracking-[var(--tracking-tight)]
+                              text-[var(--color-text)]
+                              transition-colors
                               duration-[var(--duration-base)]
-                              hover:border-[var(--color-border)]
-                              hover:text-[var(--color-error)]
-                              focus:outline-none
-                              focus:ring-2
-                              focus:ring-[var(--color-accent)]
+                              hover:text-[var(--color-accent-dark)]
                             "
                           >
-                            <Trash2
-                              size={15}
-                              strokeWidth={1.35}
-                            />
-                          </button>
+                            {product.name}
+                          </Link>
                         </div>
 
-                        {/* SKU */}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            void handleRemoveItem(
+                              item.productId,
+                            )
+                          }
+                          disabled={
+                            isRemoving
+                          }
+                          aria-label={`Remove ${product.name}`}
+                          className="
+                            flex
+                            h-9
+                            w-9
+                            shrink-0
+                            items-center
+                            justify-center
+                            border
+                            border-transparent
+                            text-[var(--color-text-muted)]
+                            transition-all
+                            duration-[var(--duration-base)]
+                            hover:border-[var(--color-border)]
+                            hover:text-[var(--color-error)]
+                            focus:outline-none
+                            focus:ring-2
+                            focus:ring-[var(--color-accent)]
+                            disabled:cursor-not-allowed
+                            disabled:opacity-40
+                          "
+                        >
+                          <Trash2
+                            size={15}
+                            strokeWidth={1.35}
+                          />
+                        </button>
+                      </div>
 
-                        <p className="mt-4 font-body text-[10px] text-[var(--color-text-muted)]">
-                          SKU: {product.id}
-                        </p>
+                      {/* SKU */}
 
-                        {/* PRICE */}
+                      <p className="mt-4 font-body text-[10px] text-[var(--color-text-muted)]">
+                        SKU: {product.id}
+                      </p>
 
-                        <div className="mt-5 flex flex-wrap items-baseline gap-2">
-                          <span className="font-body text-sm font-semibold text-[var(--color-text)]">
-                            {formatPrice(price)}
-                          </span>
+                      {/* PRICE */}
 
-                          {mrp > price && (
-                            <>
-                              <span className="font-body text-xs text-[var(--color-text-muted)] line-through">
-                                {formatPrice(mrp)}
+                      <div className="mt-5 flex flex-wrap items-baseline gap-2">
+                        <span className="font-body text-sm font-semibold text-[var(--color-text)]">
+                          {formatPrice(price)}
+                        </span>
+
+                        {mrp > price && (
+                          <>
+                            <span className="font-body text-xs text-[var(--color-text-muted)] line-through">
+                              {formatPrice(mrp)}
+                            </span>
+
+                            {discount > 0 && (
+                              <span className="font-body text-[10px] font-semibold uppercase tracking-wide text-[var(--color-accent-dark)]">
+                                {discount}% Off
                               </span>
+                            )}
+                          </>
+                        )}
+                      </div>
 
-                              {discount > 0 && (
-                                <span className="font-body text-[10px] font-semibold uppercase tracking-wide text-[var(--color-accent-dark)]">
-                                  {discount}% Off
-                                </span>
-                              )}
-                            </>
-                          )}
-                        </div>
+                      {/* QUANTITY */}
 
-                        {/* QUANTITY / TOTAL */}
+                      <div className="mt-7 flex flex-wrap items-end justify-between gap-5">
+                        <div>
+                          <p className="mb-2 font-body text-[9px] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text-muted)]">
+                            Quantity
+                          </p>
 
-                        <div className="mt-7 flex flex-wrap items-end justify-between gap-5">
-                          <div>
-                            <p className="mb-2 font-body text-[9px] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text-muted)]">
-                              Quantity
-                            </p>
+                          <div className="flex h-11 border border-[var(--color-border-dark)]">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                void handleUpdateQuantity(
+                                  item.productId,
+                                  item.quantity -
+                                    1,
+                                )
+                              }
+                              disabled={
+                                item.quantity <=
+                                  1 ||
+                                isUpdating ||
+                                isRemoving
+                              }
+                              className="
+                                flex
+                                w-10
+                                items-center
+                                justify-center
+                                transition-colors
+                                duration-[var(--duration-fast)]
+                                hover:bg-[var(--color-bg-soft)]
+                                disabled:cursor-not-allowed
+                                disabled:opacity-25
+                                focus:outline-none
+                                focus:ring-2
+                                focus:ring-inset
+                                focus:ring-[var(--color-accent)]
+                              "
+                              aria-label="Decrease quantity"
+                            >
+                              <Minus
+                                size={13}
+                                strokeWidth={1.4}
+                              />
+                            </button>
 
-                            <div className="flex h-11 border border-[var(--color-border-dark)]">
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  updateQuantity(
-                                    item.productId,
-                                    item.quantity - 1,
-                                  )
-                                }
-                                disabled={
-                                  item.quantity <= 1
-                                }
-                                className="
-                                  flex
-                                  w-10
-                                  items-center
-                                  justify-center
-                                  transition-colors
-                                  duration-[var(--duration-fast)]
-                                  hover:bg-[var(--color-bg-soft)]
-                                  disabled:cursor-not-allowed
-                                  disabled:opacity-25
-                                  focus:outline-none
-                                  focus:ring-2
-                                  focus:ring-inset
-                                  focus:ring-[var(--color-accent)]
-                                "
-                                aria-label="Decrease quantity"
-                              >
-                                <Minus
-                                  size={13}
-                                  strokeWidth={1.4}
-                                />
-                              </button>
+                            <span className="flex w-10 items-center justify-center border-x border-[var(--color-border-dark)] font-body text-xs font-semibold text-[var(--color-text)]">
+                              {isUpdating
+                                ? "..."
+                                : item.quantity}
+                            </span>
 
-                              <span className="flex w-10 items-center justify-center border-x border-[var(--color-border-dark)] font-body text-xs font-semibold text-[var(--color-text)]">
-                                {item.quantity}
-                              </span>
-
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  updateQuantity(
-                                    item.productId,
-                                    item.quantity + 1,
-                                  )
-                                }
-                                disabled={
-                                  availableStock <= 0 ||
-                                  item.quantity >=
-                                    availableStock
-                                }
-                                className="
-                                  flex
-                                  w-10
-                                  items-center
-                                  justify-center
-                                  transition-colors
-                                  duration-[var(--duration-fast)]
-                                  hover:bg-[var(--color-bg-soft)]
-                                  disabled:cursor-not-allowed
-                                  disabled:opacity-25
-                                  focus:outline-none
-                                  focus:ring-2
-                                  focus:ring-inset
-                                  focus:ring-[var(--color-accent)]
-                                "
-                                aria-label="Increase quantity"
-                              >
-                                <Plus
-                                  size={13}
-                                  strokeWidth={1.4}
-                                />
-                              </button>
-                            </div>
-                          </div>
-
-                          <div className="text-right">
-                            <p className="font-body text-[9px] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text-muted)]">
-                              Item Total
-                            </p>
-
-                            <p className="mt-1 font-body text-sm font-semibold text-[var(--color-text)]">
-                              {formatPrice(itemTotal)}
-                            </p>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                void handleUpdateQuantity(
+                                  item.productId,
+                                  item.quantity +
+                                    1,
+                                )
+                              }
+                              disabled={
+                                availableStock <=
+                                  item.quantity ||
+                                isUpdating ||
+                                isRemoving
+                              }
+                              className="
+                                flex
+                                w-10
+                                items-center
+                                justify-center
+                                transition-colors
+                                duration-[var(--duration-fast)]
+                                hover:bg-[var(--color-bg-soft)]
+                                disabled:cursor-not-allowed
+                                disabled:opacity-25
+                                focus:outline-none
+                                focus:ring-2
+                                focus:ring-inset
+                                focus:ring-[var(--color-accent)]
+                              "
+                              aria-label="Increase quantity"
+                            >
+                              <Plus
+                                size={13}
+                                strokeWidth={1.4}
+                              />
+                            </button>
                           </div>
                         </div>
 
-                        {/* INVENTORY */}
+                        {/* TOTAL */}
 
-                        {availableStock <=
-                          product.inventory.lowStockThreshold &&
-                          availableStock > 0 && (
-                            <p className="mt-4 font-body text-[10px] font-semibold text-[var(--color-warning)]">
-                              Only {availableStock} left
-                            </p>
-                          )}
+                        <div className="text-right">
+                          <p className="font-body text-[9px] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text-muted)]">
+                            Item Total
+                          </p>
 
-                        {availableStock === 0 && (
-                          <p className="mt-4 font-body text-[10px] font-semibold text-[var(--color-error)]">
-                            This product is currently unavailable.
+                          <p className="mt-1 font-body text-sm font-semibold text-[var(--color-text)]">
+                            {formatPrice(
+                              itemTotal,
+                            )}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* STOCK */}
+
+                      {availableStock > 0 &&
+                        availableStock <=
+                          product.inventory
+                            .lowStockThreshold && (
+                          <p className="mt-4 font-body text-[10px] font-semibold text-[var(--color-warning)]">
+                            Only {availableStock} left
                           </p>
                         )}
 
-                        {item.quantity > availableStock &&
-                          availableStock > 0 && (
-                            <p className="mt-4 font-body text-[10px] font-semibold text-[var(--color-error)]">
-                              Only {availableStock} units are
-                              currently available. Please reduce
-                              the quantity.
-                            </p>
-                          )}
-                      </div>
-                    </article>
-                  );
-                },
-              )}
+                      {availableStock === 0 && (
+                        <p className="mt-4 font-body text-[10px] font-semibold text-[var(--color-error)]">
+                          This product is currently
+                          unavailable.
+                        </p>
+                      )}
+
+                      {item.quantity >
+                        availableStock &&
+                        availableStock > 0 && (
+                          <p className="mt-4 font-body text-[10px] font-semibold text-[var(--color-error)]">
+                            Only {availableStock} units are
+                            currently available. Please
+                            reduce the quantity.
+                          </p>
+                        )}
+                    </div>
+                  </article>
+                );
+              })}
             </div>
 
-            {/* CLEAR BAG */}
+            {/* CLEAR */}
 
             <button
               type="button"
-              onClick={() => {
-                clearCart();
-
-                toast.success(
-                  "Your bag has been cleared.",
-                );
-              }}
+              onClick={() =>
+                void handleClearCart()
+              }
+              disabled={isClearing}
               className="
                 mt-6
                 font-body
@@ -750,15 +788,17 @@ export function CartContent() {
                 focus:outline-none
                 focus:ring-2
                 focus:ring-[var(--color-accent)]
+                disabled:cursor-not-allowed
+                disabled:opacity-40
               "
             >
-              Clear Bag
+              {isClearing
+                ? "Clearing..."
+                : "Clear Bag"}
             </button>
           </section>
 
-          {/* ==================================================
-              SUMMARY
-          ================================================== */}
+          {/* SUMMARY */}
 
           <aside className="lg:sticky lg:top-24">
             <div className="border border-[var(--color-border)] bg-[var(--color-surface)] p-6 sm:p-7">
@@ -769,7 +809,9 @@ export function CartContent() {
               <div className="mt-6 space-y-4 border-b border-[var(--color-border-light)] pb-6">
                 <SummaryRow
                   label="MRP Total"
-                  value={formatPrice(summary.mrpTotal)}
+                  value={formatPrice(
+                    summary.mrpTotal,
+                  )}
                 />
 
                 {savings > 0 && (
@@ -836,14 +878,12 @@ export function CartContent() {
               </Link>
 
               <p className="mt-4 text-center font-body text-[10px] leading-5 text-[var(--color-text-muted)]">
-                Secure checkout · Payment and delivery options
-                available at checkout
+                Secure checkout · Payment and delivery
+                options available at checkout
               </p>
             </div>
 
-            {/* ==================================================
-                CARE CARD
-            ================================================== */}
+            {/* CARE */}
 
             <div className="mt-4 border border-[var(--color-border-light)] bg-[var(--color-bg-soft)] p-5">
               <p className="font-body text-[10px] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text)]">
@@ -851,9 +891,9 @@ export function CartContent() {
               </p>
 
               <p className="mt-2 font-body text-xs leading-6 text-[var(--color-text-secondary)]">
-                Your selected product is preserved in your bag.
-                Final inventory availability is confirmed before
-                order placement.
+                Your selected product is preserved in your
+                bag. Final inventory availability is confirmed
+                before order placement.
               </p>
             </div>
           </aside>
