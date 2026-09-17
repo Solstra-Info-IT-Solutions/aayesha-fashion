@@ -196,7 +196,7 @@ export function FeaturedCategories() {
                 "
               >
                 <LinkButton
-                  href="/collections"
+                  href="/categories"
                   variant="secondary"
                   size="lg"
                   icon={
@@ -205,7 +205,7 @@ export function FeaturedCategories() {
                     />
                   }
                 >
-                  Explore All Collections
+                  Explore All Categories
                 </LinkButton>
               </div>
             </>
