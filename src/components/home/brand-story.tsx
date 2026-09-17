@@ -19,21 +19,6 @@ export function BrandStory({
       <Container>
         <div className="py-10 sm:py-14 lg:py-16">
 
-          {/* Section Header */}
-          <div className="flex items-center justify-between border-t border-[var(--color-border)] pt-5">
-            <div className="flex items-center gap-3">
-              <span className="h-px w-7 bg-[var(--color-rose-dark)]" />
-
-              <p className="text-[9px] font-semibold uppercase tracking-[0.28em] text-[var(--color-text-secondary)]">
-                {data.eyebrow}
-              </p>
-            </div>
-
-            <span className="font-display text-base text-[var(--color-text-muted)] sm:text-lg">
-              {data.number}
-            </span>
-          </div>
-
           {/* Main Content */}
           <div className="mt-10 grid gap-10 lg:mt-12 lg:grid-cols-12 lg:items-center lg:gap-12 xl:gap-16">
 
