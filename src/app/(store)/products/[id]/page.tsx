@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import {
-  getProductBySlug,
+  getProductById,
   getProducts,
 } from "@/lib/api/products";
 
@@ -12,9 +12,11 @@ import { ProductJsonLd } from "@/components/seo/product-json-ld";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-json-ld";
 import { ProductDetail } from "@/components/product/product-detail";
 
+import type { Product } from "@/types/product";
+
 interface ProductPageProps {
   params: Promise<{
-    slug: string;
+    id: string;
   }>;
 }
 
@@ -25,10 +27,10 @@ interface ProductPageProps {
 export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
-  const { slug } = await params;
+  const { id } = await params;
 
   try {
-    const product = await getProductBySlug(slug);
+    const product = await getProductById(id);
 
     const title =
       product.seo?.title ||
@@ -41,7 +43,7 @@ export async function generateMetadata({
 
     const canonical =
       product.seo?.canonical ||
-      `/products/${product.slug}`;
+      `/products/${product._id}`;
 
     const primaryMedia =
       product.media?.find(
@@ -127,17 +129,30 @@ export async function generateMetadata({
 export default async function ProductPage({
   params,
 }: ProductPageProps) {
-  const { slug } = await params;
+  const { id } = await params;
 
   /* ----------------------------------------------------------
-     LOAD PRODUCT
+     VALIDATE ID
   ---------------------------------------------------------- */
 
-  let product;
+  if (!id) {
+    notFound();
+  }
+
+  /* ----------------------------------------------------------
+     LOAD PRODUCT BY MONGODB _ID
+  ---------------------------------------------------------- */
+
+  let product: Product;
 
   try {
-    product = await getProductBySlug(slug);
-  } catch {
+    product = await getProductById(id);
+  } catch (error) {
+    console.error(
+      "Failed to load product:",
+      error,
+    );
+
     notFound();
   }
 
@@ -167,44 +182,39 @@ export default async function ProductPage({
   }
 
   /* ----------------------------------------------------------
-     LOAD RECOMMENDATIONS
-
-     Products are now independent products.
-     Recommendations are based on the same category.
+     LOAD RELATED PRODUCTS
   ---------------------------------------------------------- */
 
-  const categoryResponse = await getProducts({
-    page: 1,
-    limit: 8,
-    categoryId: product.categoryId,
-    status: "active",
-    sort: "featured",
-  });
+  let recommendations: Product[] = [];
+
+  try {
+    const categoryResponse = await getProducts({
+      page: 1,
+      limit: 8,
+      categoryId: product.categoryId,
+      status: "active",
+      sort: "featured",
+    });
+
+    recommendations =
+      categoryResponse.products
+        .filter(
+          (item) =>
+            item._id !== product._id &&
+            item.status === "active" &&
+            item.categoryId ===
+              product.categoryId,
+        )
+        .slice(0, 4);
+  } catch (error) {
+    console.error(
+      "Failed to load product recommendations:",
+      error,
+    );
+  }
 
   /* ----------------------------------------------------------
-     MERGE + DEDUPLICATE RECOMMENDATIONS
-  ---------------------------------------------------------- */
-
-  const recommendationMap = new Map(
-    categoryResponse.products.map((item) => [
-      item.id,
-      item,
-    ]),
-  );
-
-  const recommendations = Array.from(
-    recommendationMap.values(),
-  )
-    .filter(
-      (item) =>
-        item.id !== product.id &&
-        item.status === "active" &&
-        item.categoryId === product.categoryId,
-    )
-    .slice(0, 4);
-
-  /* ----------------------------------------------------------
-     JSON-LD
+     PRODUCT PAGE
   ---------------------------------------------------------- */
 
   return (
@@ -228,27 +238,32 @@ export default async function ProductPage({
             name: "Home",
             url: "/",
           },
+
           {
             name: "Shop",
             url: "/shop",
           },
+
           ...(categoryName
             ? [
                 {
                   name: categoryName,
-                  url: `/shop?category=${product.categoryId}`,
+                  url: `/shop?category=${encodeURIComponent(
+                    product.categoryId,
+                  )}`,
                 },
               ]
             : []),
+
           {
             name: product.name,
-            url: `/products/${product.slug}`,
+            url: `/products/${product._id}`,
           },
         ]}
       />
 
       {/* ======================================================
-          PRODUCT UI
+          PRODUCT DETAIL
       ====================================================== */}
 
       <ProductDetail

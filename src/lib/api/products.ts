@@ -197,9 +197,7 @@ export async function getProductById(
   id: string,
 ): Promise<Product> {
   return apiFetch<Product>(
-    `/products/id/${encodeURIComponent(
-      id,
-    )}`,
+    `/products/${encodeURIComponent(id)}`,
   );
 }
 
