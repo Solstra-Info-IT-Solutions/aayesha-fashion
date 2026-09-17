@@ -32,17 +32,13 @@ function formatPrice(price: number) {
 function formatCategory(category: string) {
   return category
     .replace(/-/g, " ")
-    .replace(/\b\w/g, (letter) =>
-      letter.toUpperCase(),
-    );
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 function formatBadge(badge: string) {
   return badge
     .replace(/-/g, " ")
-    .replace(/\b\w/g, (letter) =>
-      letter.toUpperCase(),
-    );
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 /* =========================================================
@@ -53,57 +49,59 @@ export function ProductCard({
   product,
   priority = false,
 }: ProductCardProps) {
-  const availability =
-    getProductAvailability(product);
+  const availability = getProductAvailability(product);
 
   /* =======================================================
      PRODUCT MEDIA
   ======================================================= */
 
-  const primaryMedia =
-    getPrimaryProductMedia(product);
+  const primaryMedia = getPrimaryProductMedia(product);
 
-  const secondaryMedia =
-    product.media.find(
-      (media) =>
-        media.type === "image" &&
-        media.id !== primaryMedia?.id,
-    );
+  const secondaryMedia = product.media.find(
+    (media) =>
+      media.type === "image" &&
+      media.id !== primaryMedia?.id,
+  );
 
   if (!primaryMedia) {
     return null;
   }
 
   /* =======================================================
-     PRODUCT PRICING
+     PRICING
   ======================================================= */
 
-  const discount =
-    getDiscountPercentage(
-      product.pricing,
-    );
+  const discount = getDiscountPercentage(product.pricing);
 
   /* =======================================================
      BADGE
   ======================================================= */
 
-  const hasBadge =
-    product.merchandising.badges.length > 0;
+  const hasBadge = product.merchandising.badges.length > 0;
 
   return (
     <article
       className="
         group
         w-full
+        overflow-hidden
+        border
+        border-[var(--color-border)]
+        bg-[var(--color-bg)]
+        transition-all
+        duration-[var(--duration-base)]
+        hover:border-[var(--color-accent)]
       "
     >
       {/* =====================================================
-          PRODUCT IMAGE
+          IMAGE
       ===================================================== */}
 
       <div
         className="
           relative
+          mx-2
+          mt-2
           overflow-hidden
           bg-[var(--color-bg-soft)]
         "
@@ -114,7 +112,7 @@ export function ProductCard({
           className="
             relative
             block
-            aspect-[3/4]
+            aspect-[4/5]
             overflow-hidden
           "
         >
@@ -122,18 +120,15 @@ export function ProductCard({
 
           <Image
             src={primaryMedia.src}
-            alt={
-              primaryMedia.alt ??
-              product.name
-            }
+            alt={primaryMedia.alt ?? product.name}
             fill
             priority={priority}
             sizes="
-              (max-width: 639px) 78vw,
-              (max-width: 767px) 50vw,
-              (max-width: 1023px) 43vw,
-              (max-width: 1279px) 29vw,
-              27vw
+              (max-width: 639px) 44vw,
+              (max-width: 767px) 44vw,
+              (max-width: 1023px) 30vw,
+              (max-width: 1279px) 24vw,
+              22vw
             "
             className="
               object-cover
@@ -141,7 +136,7 @@ export function ProductCard({
               transition-transform
               duration-[var(--duration-luxury)]
               ease-[var(--ease-luxury)]
-              group-hover:scale-[1.025]
+              group-hover:scale-[1.02]
             "
           />
 
@@ -150,17 +145,14 @@ export function ProductCard({
           {secondaryMedia && (
             <Image
               src={secondaryMedia.src}
-              alt={
-                secondaryMedia.alt ??
-                product.name
-              }
+              alt={secondaryMedia.alt ?? product.name}
               fill
               sizes="
-                (max-width: 639px) 78vw,
-                (max-width: 767px) 50vw,
-                (max-width: 1023px) 43vw,
-                (max-width: 1279px) 29vw,
-                27vw
+                (max-width: 639px) 44vw,
+                (max-width: 767px) 44vw,
+                (max-width: 1023px) 30vw,
+                (max-width: 1279px) 24vw,
+                22vw
               "
               className="
                 pointer-events-none
@@ -170,7 +162,7 @@ export function ProductCard({
                 transition-all
                 duration-[var(--duration-luxury)]
                 ease-[var(--ease-luxury)]
-                group-hover:scale-[1.025]
+                group-hover:scale-[1.02]
                 group-hover:opacity-100
               "
             />
@@ -187,7 +179,7 @@ export function ProductCard({
               bg-transparent
               transition-colors
               duration-[var(--duration-slow)]
-              group-hover:bg-[rgba(33,31,29,0.025)]
+              group-hover:bg-[rgba(33,31,29,0.02)]
             "
           />
         </Link>
@@ -201,11 +193,11 @@ export function ProductCard({
             className="
               pointer-events-none
               absolute
-              left-3
-              top-3
+              left-2
+              top-2
               z-10
-              sm:left-4
-              sm:top-4
+              sm:left-3
+              sm:top-3
             "
           >
             <span
@@ -215,22 +207,22 @@ export function ProductCard({
                 border
                 border-[var(--color-border-light)]
                 bg-[rgba(255,255,255,0.94)]
-                px-3
-                py-2
+                px-2
+                py-1
                 font-body
-                text-[8px]
+                text-[7px]
                 font-semibold
                 uppercase
-                tracking-[0.18em]
+                tracking-[0.16em]
                 text-[var(--color-text)]
                 shadow-[var(--shadow-xs)]
                 backdrop-blur-sm
+                sm:px-2.5
+                sm:py-1.5
+                sm:text-[8px]
               "
             >
-              {formatBadge(
-                product.merchandising
-                  .badges[0],
-              )}
+              {formatBadge(product.merchandising.badges[0])}
             </span>
           </div>
         )}
@@ -242,11 +234,11 @@ export function ProductCard({
         <div
           className="
             absolute
-            right-3
-            top-3
+            right-2
+            top-2
             z-10
-            sm:right-4
-            sm:top-4
+            sm:right-3
+            sm:top-3
           "
         >
           <WishlistButton
@@ -268,9 +260,9 @@ export function ProductCard({
               z-10
               border-t
               border-white/10
-              bg-[rgba(33,31,29,0.94)]
-              px-4
-              py-3
+              bg-[rgba(33,31,29,0.92)]
+              px-3
+              py-2
               text-center
               backdrop-blur-sm
             "
@@ -278,11 +270,12 @@ export function ProductCard({
             <span
               className="
                 font-body
-                text-[8px]
+                text-[7px]
                 font-semibold
                 uppercase
-                tracking-[0.22em]
+                tracking-[0.18em]
                 text-[var(--color-text-inverse)]
+                sm:text-[8px]
               "
             >
               Sold Out
@@ -297,148 +290,122 @@ export function ProductCard({
 
       <div
         className="
-          pt-4
-          sm:pt-5
+          px-3
+          pb-3
+          pt-3
+          sm:px-4
+          sm:pb-4
+          sm:pt-4
         "
       >
-        <div
+        {/* CATEGORY */}
+
+        <p
           className="
-            flex
-            items-start
-            justify-between
-            gap-4
+            font-body
+            text-[7px]
+            font-medium
+            uppercase
+            tracking-[0.16em]
+            text-[var(--color-text-muted)]
+            sm:text-[8px]
           "
         >
-          {/* =================================================
-              PRODUCT NAME
-          ================================================= */}
+          {formatCategory(product.categoryId)}
+        </p>
 
-          <div className="min-w-0">
-            <p
-              className="
-                font-body
-                text-[8px]
-                font-medium
-                uppercase
-                tracking-[0.2em]
-                text-[var(--color-text-muted)]
-                sm:text-[9px]
-              "
-            >
-              {formatCategory(
-                product.categoryId,
-              )}
-            </p>
+        {/* PRODUCT NAME */}
 
-            <Link
-              href={`/products/${product.slug}`}
-              className="group/title mt-2 block"
-            >
-              <h3
-                className="
-                  font-display
-                  text-[22px]
-                  font-medium
-                  leading-[1]
-                  tracking-[-0.02em]
-                  text-[var(--color-text)]
-                  transition-colors
-                  duration-[var(--duration-base)]
-                  group-hover/title:text-[var(--color-accent)]
-                  sm:text-[24px]
-                "
-              >
-                {product.name}
-              </h3>
-            </Link>
-          </div>
-
-          {/* =================================================
-              PRICE
-          ================================================= */}
-
-          <div
+        <Link
+          href={`/products/${product.slug}`}
+          className="group/title mt-1.5 block"
+        >
+          <h3
             className="
-              shrink-0
-              pt-0.5
-              text-right
+              line-clamp-2
+              min-h-[34px]
+              font-display
+              text-[14px]
+              font-medium
+              leading-[1.2]
+              tracking-[-0.01em]
+              text-[var(--color-text)]
+              transition-colors
+              duration-[var(--duration-base)]
+              group-hover/title:text-[var(--color-accent)]
+              sm:text-[15px]
             "
           >
-            <p
-              className="
-                font-body
-                text-[12px]
-                font-semibold
-                tracking-[-0.01em]
-                text-[var(--color-text)]
-                sm:text-[13px]
-              "
-            >
-              {formatPrice(
-                product.pricing.sellingPrice,
-              )}
-            </p>
+            {product.name}
+          </h3>
+        </Link>
 
-            {discount > 0 && (
-              <div
+        {/* ===================================================
+            PRICE
+        =================================================== */}
+
+        <div
+          className="
+            mt-2
+            flex
+            flex-wrap
+            items-center
+            gap-x-2
+            gap-y-1
+          "
+        >
+          <span
+            className="
+              font-body
+              text-[12px]
+              font-semibold
+              tracking-[-0.01em]
+              text-[var(--color-text)]
+              sm:text-[13px]
+            "
+          >
+            {formatPrice(product.pricing.sellingPrice)}
+          </span>
+
+          {discount > 0 && (
+            <>
+              <span
                 className="
-                  mt-1
-                  flex
-                  items-center
-                  justify-end
-                  gap-1.5
+                  font-body
+                  text-[9px]
+                  font-medium
+                  text-[var(--color-text-muted)]
+                  line-through
+                  sm:text-[10px]
                 "
               >
-                <span
-                  className="
-                    font-body
-                    text-[8px]
-                    font-medium
-                    text-[var(--color-text-muted)]
-                    line-through
-                    sm:text-[9px]
-                  "
-                >
-                  {formatPrice(
-                    product.pricing.mrp,
-                  )}
-                </span>
+                {formatPrice(product.pricing.mrp)}
+              </span>
 
-                <span
-                  className="
-                    font-body
-                    text-[8px]
-                    font-semibold
-                    uppercase
-                    tracking-[0.04em]
-                    text-[var(--color-accent-dark)]
-                    sm:text-[9px]
-                  "
-                >
-                  {discount}% OFF
-                </span>
-              </div>
-            )}
-          </div>
+              <span
+                className="
+                  font-body
+                  text-[8px]
+                  font-semibold
+                  uppercase
+                  tracking-[0.04em]
+                  text-[var(--color-accent-dark)]
+                  sm:text-[9px]
+                "
+              >
+                {discount}% OFF
+              </span>
+            </>
+          )}
         </div>
 
-        {/* =================================================
+        {/* ===================================================
             QUICK ADD
-        ================================================= */}
+        =================================================== */}
 
         {!availability.isSoldOut && (
-          <div
-            className="
-              mt-4
-              transition-transform
-              duration-[var(--duration-base)]
-              ease-[var(--ease-luxury)]
-              sm:mt-5
-            "
-          >
-            <ProductQuickAdd
-              product={product}
-            />
+          <div className="mt-3">
+            <ProductQuickAdd product={product} />
           </div>
         )}
       </div>
