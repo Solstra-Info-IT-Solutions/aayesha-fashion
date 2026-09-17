@@ -23,58 +23,52 @@ export function InstagramGallery({
       className="bg-[var(--color-ivory)]"
     >
       <Container>
-        <div className="pt-16 pb-16 sm:pt-20 sm:pb-20 lg:pt-24 lg:pb-24">
-          {/* =====================================================
-              HEADER
-          ===================================================== */}
+        <div className="py-7 sm:py-9 lg:py-11">
+          {/* HEADER */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="h-px w-7 bg-[var(--color-rose-dark)]" />
 
-          <div className="border-t border-[var(--color-border)] pt-5 sm:pt-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <span className="h-px w-9 bg-[var(--color-rose-dark)]" />
-
-                <p className="text-[8px] font-semibold uppercase tracking-[0.3em] text-[var(--color-text-secondary)] sm:text-[9px]">
-                  {data.eyebrow}
-                </p>
-              </div>
-
-              <span className="font-display text-lg text-[var(--color-text-muted)] sm:text-xl">
-                12
-              </span>
-            </div>
-
-            <div className="mt-9 text-center sm:mt-11">
-              <h2
-                className="
-                  font-display
-                  text-[3rem]
-                  font-medium
-                  leading-none
-                  tracking-[-0.045em]
-                  text-[var(--color-charcoal)]
-                  sm:text-[4rem]
-                  md:text-[4.8rem]
-                  lg:text-[5.4rem]
-                "
-              >
-                {data.title.lineOne}{" "}
-                <span className="italic text-[var(--color-rose-dark)]">
-                  {data.title.lineTwo}
-                </span>
-              </h2>
-
-              <p className="mt-4 text-[9px] font-semibold uppercase tracking-[0.28em] text-[var(--color-text-muted)] sm:text-[10px]">
-                {data.handle}
+              <p className="text-[8px] font-semibold uppercase tracking-[0.28em] text-[var(--color-text-secondary)] sm:text-[9px]">
+                {data.eyebrow}
               </p>
             </div>
+
+            <span className="font-display text-sm text-[var(--color-text-muted)] sm:text-base">
+              {String(posts.length).padStart(2, "0")}
+            </span>
           </div>
 
-          {/* =====================================================
-              INSTAGRAM GRID
-          ===================================================== */}
+          {/* TITLE */}
+          <div className="mt-7 text-center sm:mt-9">
+            <h2
+              className="
+                font-display
+                text-[2.7rem]
+                font-medium
+                leading-[0.95]
+                tracking-[-0.045em]
+                text-[var(--color-charcoal)]
+                sm:text-[3.6rem]
+                md:text-[4.3rem]
+                lg:text-[4.9rem]
+                xl:text-[5.2rem]
+              "
+            >
+              {data.title.lineOne}{" "}
+              <span className="italic text-[var(--color-rose-dark)]">
+                {data.title.lineTwo}
+              </span>
+            </h2>
 
+            <p className="mt-3 text-[9px] font-semibold uppercase tracking-[0.26em] text-[var(--color-text-muted)] sm:text-[10px]">
+              {data.handle}
+            </p>
+          </div>
+
+          {/* INSTAGRAM GRID */}
           {posts.length > 0 && (
-            <div className="mt-12 grid grid-cols-2 gap-3 sm:mt-14 sm:grid-cols-3 sm:gap-5 lg:mt-16 lg:gap-6">
+            <div className="mt-7 grid grid-cols-2 gap-2.5 sm:mt-9 sm:grid-cols-3 sm:gap-4 lg:mt-10 lg:gap-5">
               {posts.map((post) => (
                 <a
                   key={post.id}
@@ -108,7 +102,6 @@ export function InstagramGallery({
                     />
 
                     {/* HOVER OVERLAY */}
-
                     <div
                       className="
                         absolute
@@ -121,15 +114,14 @@ export function InstagramGallery({
                     />
 
                     {/* HOVER ICON */}
-
                     <span
                       className="
                         absolute
-                        bottom-4
-                        right-4
+                        bottom-3
+                        right-3
                         flex
-                        h-9
-                        w-9
+                        h-8
+                        w-8
                         items-center
                         justify-center
                         border
@@ -151,12 +143,9 @@ export function InstagramGallery({
             </div>
           )}
 
-          {/* =====================================================
-              CTA
-          ===================================================== */}
-
+          {/* CTA */}
           {data.instagramUrl && (
-            <div className="mt-10 flex justify-center border-t border-[var(--color-border)] pt-7 sm:mt-12">
+            <div className="mt-7 flex justify-center sm:mt-9">
               <LinkButton
                 href={data.instagramUrl}
                 target="_blank"
