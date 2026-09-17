@@ -135,7 +135,7 @@ export function ProductCard({
     try {
       setIsAdding(true);
 
-      await addToCart(product.id, 1);
+      await addToCart(product._id, 1);
     } catch (error) {
       console.error(
         "ADD TO CART ERROR:",

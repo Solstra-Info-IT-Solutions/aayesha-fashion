@@ -83,7 +83,7 @@ export function ProductStickyBuyBar({
       setAdding(true);
 
       await addToCart(
-        product.id,
+        product._id,
         1,
       );
 

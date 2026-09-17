@@ -105,7 +105,7 @@ export function ProductPurchasePanel({
       setAddingToBag(true);
 
       await addToCart(
-        product.id,
+        product._id,
         quantity,
       );
 
@@ -167,7 +167,7 @@ export function ProductPurchasePanel({
       setBuyingNow(true);
 
       await addToCart(
-        product.id,
+        product._id,
         quantity,
       );
 
