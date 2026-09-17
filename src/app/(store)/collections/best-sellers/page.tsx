@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 
 import { getProducts } from "@/lib/api/products";
 import type { ProductSort } from "@/types/product";
-
-import { ShopHeader } from "@/components/shop/shop-header";
 import { ShopFilters } from "@/components/shop/shop-filters";
 import { ShopProductGrid } from "@/components/shop/shop-product-grid";
 
@@ -121,6 +119,7 @@ export default async function BestSellersPage({
               Best Sellers
             </h1>
           </div>
+        </div>
       </section>
 
       {/* =====================================================
