@@ -46,66 +46,40 @@ export function WhyChooseUs({
         <div className="py-6 sm:py-8 lg:py-10">
 
           {/* Header */}
-          <div className="border-t border-[var(--color-border)] pt-3 sm:pt-4">
+          <div className="text-center">
+            <h2
+              className="
+                font-display
+                text-[2.7rem]
+                font-medium
+                leading-[0.95]
+                tracking-[-0.04em]
+                text-[var(--color-charcoal)]
+                sm:text-[3.5rem]
+                md:text-[4.2rem]
+                lg:text-[4.8rem]
+                xl:text-[5.2rem]
+              "
+            >
+              {data.title}
+            </h2>
 
-            <div className="text-center">
-              <h2
-                className="
-                  font-display
-                  text-[2.7rem]
-                  font-medium
-                  leading-[0.95]
-                  tracking-[-0.04em]
-                  text-[var(--color-charcoal)]
-                  sm:text-[3.5rem]
-                  md:text-[4.2rem]
-                  lg:text-[4.8rem]
-                  xl:text-[5.2rem]
-                "
-              >
-                {data.title}
-              </h2>
-
-              <p className="mx-auto mt-3 max-w-[520px] text-[13px] leading-6 text-[var(--color-text-secondary)] sm:mt-4 sm:text-sm sm:leading-7">
-                {data.description}
-              </p>
-            </div>
+            <p className="mx-auto mt-3 max-w-[520px] text-[13px] leading-6 text-[var(--color-text-secondary)] sm:mt-4 sm:text-sm sm:leading-7">
+              {data.description}
+            </p>
           </div>
 
           {/* Values */}
           {values.length > 0 && (
-            <div className="mt-7 grid border-y border-[var(--color-border)] sm:mt-9 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-7 grid gap-7 sm:mt-9 sm:grid-cols-2 lg:mt-10 lg:grid-cols-4 lg:gap-6">
 
-              {values.map((value, index) => {
+              {values.map((value) => {
                 const Icon = getIcon(value.icon);
 
                 return (
                   <div
                     key={value.id}
-                    className={`
-                      flex
-                      flex-col
-                      items-center
-                      px-5
-                      py-7
-                      text-center
-                      sm:px-7
-                      sm:py-8
-                      lg:px-5
-                      lg:py-9
-                      xl:px-7
-                      ${
-                        index !==
-                        values.length - 1
-                          ? "border-b border-[var(--color-border)] sm:odd:border-r lg:border-b-0 lg:border-r"
-                          : ""
-                      }
-                      ${
-                        index === 2
-                          ? "sm:border-b-0"
-                          : ""
-                      }
-                    `}
+                    className="flex flex-col items-center px-4 text-center"
                   >
                     {/* Icon */}
                     <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-rose-dark)]">
@@ -132,7 +106,7 @@ export function WhyChooseUs({
                     </h3>
 
                     {/* Description */}
-                    <p className="mt-3 max-w-[230px] text-[11px] leading-5 text-[var(--color-text-secondary)] sm:text-[12px] sm:leading-6">
+                    <p className="mt-2.5 max-w-[230px] text-[11px] leading-5 text-[var(--color-text-secondary)] sm:text-[12px] sm:leading-6">
                       {value.description}
                     </p>
                   </div>
