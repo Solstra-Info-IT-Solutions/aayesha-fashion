@@ -1,16 +1,20 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { ShoppingBag } from "lucide-react";
 
 import type { Product } from "@/types/product";
 
 import { WishlistButton } from "@/components/product/wishlist-button";
-import { ProductQuickAdd } from "@/components/product/product-quick-add";
 
 import {
   getDiscountPercentage,
   getProductAvailability,
   getPrimaryProductMedia,
 } from "@/types/product";
+
+import { useCartStore } from "@/store/cart-store";
 
 type ProductCardProps = {
   product: Product;
@@ -49,6 +53,8 @@ export function ProductCard({
   product,
   priority = false,
 }: ProductCardProps) {
+  const addItem = useCartStore((state) => state.addItem);
+
   const availability = getProductAvailability(product);
 
   /* =======================================================
@@ -78,6 +84,18 @@ export function ProductCard({
   ======================================================= */
 
   const hasBadge = product.merchandising.badges.length > 0;
+
+  /* =======================================================
+     ADD TO BAG
+  ======================================================= */
+
+  const handleAddToBag = () => {
+    if (availability.isSoldOut) {
+      return;
+    }
+
+    addItem(product.id, 1);
+  };
 
   return (
     <article
@@ -124,11 +142,11 @@ export function ProductCard({
             fill
             priority={priority}
             sizes="
-              (max-width: 639px) 44vw,
-              (max-width: 767px) 44vw,
-              (max-width: 1023px) 30vw,
-              (max-width: 1279px) 24vw,
-              22vw
+              (max-width: 639px) 42vw,
+              (max-width: 767px) 42vw,
+              (max-width: 1023px) 29vw,
+              (max-width: 1279px) 23vw,
+              21vw
             "
             className="
               object-cover
@@ -136,7 +154,7 @@ export function ProductCard({
               transition-transform
               duration-[var(--duration-luxury)]
               ease-[var(--ease-luxury)]
-              group-hover:scale-[1.02]
+              group-hover:scale-[1.025]
             "
           />
 
@@ -148,11 +166,11 @@ export function ProductCard({
               alt={secondaryMedia.alt ?? product.name}
               fill
               sizes="
-                (max-width: 639px) 44vw,
-                (max-width: 767px) 44vw,
-                (max-width: 1023px) 30vw,
-                (max-width: 1279px) 24vw,
-                22vw
+                (max-width: 639px) 42vw,
+                (max-width: 767px) 42vw,
+                (max-width: 1023px) 29vw,
+                (max-width: 1279px) 23vw,
+                21vw
               "
               className="
                 pointer-events-none
@@ -162,7 +180,7 @@ export function ProductCard({
                 transition-all
                 duration-[var(--duration-luxury)]
                 ease-[var(--ease-luxury)]
-                group-hover:scale-[1.02]
+                group-hover:scale-[1.025]
                 group-hover:opacity-100
               "
             />
@@ -206,9 +224,9 @@ export function ProductCard({
                 items-center
                 border
                 border-[var(--color-border-light)]
-                bg-[rgba(255,255,255,0.94)]
-                px-2
-                py-1
+                bg-[rgba(255,255,255,0.95)]
+                px-2.5
+                py-1.5
                 font-body
                 text-[7px]
                 font-semibold
@@ -217,12 +235,12 @@ export function ProductCard({
                 text-[var(--color-text)]
                 shadow-[var(--shadow-xs)]
                 backdrop-blur-sm
-                sm:px-2.5
-                sm:py-1.5
                 sm:text-[8px]
               "
             >
-              {formatBadge(product.merchandising.badges[0])}
+              {formatBadge(
+                product.merchandising.badges[0],
+              )}
             </span>
           </div>
         )}
@@ -304,10 +322,10 @@ export function ProductCard({
           className="
             font-body
             text-[7px]
-            font-medium
+            font-semibold
             uppercase
-            tracking-[0.16em]
-            text-[var(--color-text-muted)]
+            tracking-[0.18em]
+            text-[var(--color-accent)]
             sm:text-[8px]
           "
         >
@@ -318,10 +336,11 @@ export function ProductCard({
 
         <Link
           href={`/products/${product.slug}`}
-          className="group/title mt-1.5 block"
+          className="group/title block"
         >
           <h3
             className="
+              mt-1.5
               line-clamp-2
               min-h-[34px]
               font-display
@@ -359,12 +378,13 @@ export function ProductCard({
               font-body
               text-[12px]
               font-semibold
-              tracking-[-0.01em]
               text-[var(--color-text)]
               sm:text-[13px]
             "
           >
-            {formatPrice(product.pricing.sellingPrice)}
+            {formatPrice(
+              product.pricing.sellingPrice,
+            )}
           </span>
 
           {discount > 0 && (
@@ -379,7 +399,9 @@ export function ProductCard({
                   sm:text-[10px]
                 "
               >
-                {formatPrice(product.pricing.mrp)}
+                {formatPrice(
+                  product.pricing.mrp,
+                )}
               </span>
 
               <span
@@ -400,14 +422,89 @@ export function ProductCard({
         </div>
 
         {/* ===================================================
-            QUICK ADD
+            AVAILABILITY
         =================================================== */}
 
         {!availability.isSoldOut && (
-          <div className="mt-3">
-            <ProductQuickAdd product={product} />
+          <div
+            className="
+              mt-2
+              flex
+              items-center
+              gap-1.5
+            "
+          >
+            <span
+              className="
+                h-1.5
+                w-1.5
+                rounded-full
+                bg-[var(--color-accent)]
+              "
+            />
+
+            <span
+              className="
+                font-body
+                text-[8px]
+                font-medium
+                text-[var(--color-text-secondary)]
+              "
+            >
+              {availability.isLowStock
+                ? "Only a few left"
+                : "In Stock"}
+            </span>
           </div>
         )}
+
+        {/* ===================================================
+            ADD TO BAG
+        =================================================== */}
+
+        <button
+          type="button"
+          onClick={handleAddToBag}
+          disabled={availability.isSoldOut}
+          className="
+            mt-3
+            flex
+            w-full
+            items-center
+            justify-center
+            gap-2
+            border
+            border-[var(--color-text)]
+            bg-[var(--color-text)]
+            px-3
+            py-2.5
+            font-body
+            text-[8px]
+            font-semibold
+            uppercase
+            tracking-[0.16em]
+            text-[var(--color-text-inverse)]
+            transition-all
+            duration-[var(--duration-base)]
+            hover:border-[var(--color-accent)]
+            hover:bg-[var(--color-accent)]
+            disabled:cursor-not-allowed
+            disabled:border-[var(--color-border)]
+            disabled:bg-[var(--color-bg-soft)]
+            disabled:text-[var(--color-text-muted)]
+            sm:py-3
+            sm:text-[9px]
+          "
+        >
+          <ShoppingBag
+            size={13}
+            strokeWidth={1.5}
+          />
+
+          {availability.isSoldOut
+            ? "Sold Out"
+            : "Add to Bag"}
+        </button>
       </div>
     </article>
   );
