@@ -9,6 +9,7 @@ import {
 import { useRouter } from "next/navigation";
 
 import type { Product } from "@/types/product";
+
 import {
   getAvailableStock,
   getInventoryStatus,
@@ -39,189 +40,151 @@ interface ProductDetailProps {
   recommendations?: Product[];
 }
 
+/* ============================================================
+   SAFE PRODUCT
+============================================================ */
+
 function normalizeProduct(
   product: Product,
 ): Product {
-  const safeProduct =
+  const source =
     product ?? ({} as Product);
 
   return {
-    ...safeProduct,
+    ...source,
 
     _id:
-      safeProduct._id ??
-      safeProduct.id ??
+      source._id ??
+      source.id ??
       "",
 
     id:
-      safeProduct.id ??
-      safeProduct._id ??
+      source.id ??
+      source._id ??
       "",
 
     slug:
-      safeProduct.slug ?? "",
+      source.slug ?? "",
 
     name:
-      safeProduct.name ??
+      source.name ??
       "Product",
 
     categoryId:
-      safeProduct.categoryId ??
+      source.categoryId ??
       "",
 
     pricing: {
       mrp:
-        safeProduct.pricing?.mrp ??
+        source.pricing?.mrp ??
         0,
 
       sellingPrice:
-        safeProduct.pricing
+        source.pricing
           ?.sellingPrice ??
         0,
 
       currency:
-        safeProduct.pricing
-          ?.currency ??
+        source.pricing?.currency ??
         "INR",
     },
 
     inventory: {
       stock:
-        safeProduct.inventory
-          ?.stock ?? 0,
+        source.inventory?.stock ??
+        0,
 
       reserved:
-        safeProduct.inventory
-          ?.reserved ?? 0,
+        source.inventory?.reserved ??
+        0,
 
       lowStockThreshold:
-        safeProduct.inventory
+        source.inventory
           ?.lowStockThreshold ??
         2,
     },
 
     content: {
       description:
-        safeProduct.content
-          ?.description ?? "",
+        source.content?.description ??
+        "",
 
       descriptionFormat:
-        safeProduct.content
+        source.content
           ?.descriptionFormat ??
         "plain",
 
       richContent:
-        safeProduct.content
-          ?.richContent,
+        source.content?.richContent,
     },
 
     media: Array.isArray(
-      safeProduct.media,
+      source.media,
     )
-      ? safeProduct.media
+      ? source.media
       : [],
 
     merchandising: {
       isNew:
-        safeProduct.merchandising
+        source.merchandising
           ?.isNew ?? false,
 
       isFeatured:
-        safeProduct.merchandising
+        source.merchandising
           ?.isFeatured ?? false,
 
       isBestSeller:
-        safeProduct.merchandising
+        source.merchandising
           ?.isBestSeller ?? false,
 
       badges:
         Array.isArray(
-          safeProduct.merchandising
+          source.merchandising
             ?.badges,
         )
-          ? safeProduct.merchandising
+          ? source.merchandising
               .badges
           : [],
 
       ranking:
-        safeProduct.merchandising
+        source.merchandising
           ?.ranking,
     },
 
-    seo: safeProduct.seo
+    seo: source.seo
       ? {
-          ...safeProduct.seo,
+          ...source.seo,
 
           keywords:
             Array.isArray(
-              safeProduct.seo
+              source.seo
                 .keywords,
             )
-              ? safeProduct.seo
-                  .keywords
+              ? source.seo.keywords
               : [],
         }
       : undefined,
 
     status:
-      safeProduct.status ??
+      source.status ??
       "draft",
 
     publishedAt:
-      safeProduct.publishedAt,
+      source.publishedAt,
 
     createdAt:
-      safeProduct.createdAt ??
+      source.createdAt ??
       "",
 
     updatedAt:
-      safeProduct.updatedAt ??
+      source.updatedAt ??
       "",
   };
 }
 
-function getMediaSrc(
-  product: Product,
-  index: number,
-): string | null {
-  const media = Array.isArray(
-    product.media,
-  )
-    ? product.media
-    : [];
-
-  const item = media[index];
-
-  if (!item) {
-    return null;
-  }
-
-  if (
-    item.type === "image" &&
-    item.src
-  ) {
-    return item.src;
-  }
-
-  return null;
-}
-
-function getImageAlt(
-  product: Product,
-  index: number,
-): string {
-  const media = Array.isArray(
-    product.media,
-  )
-    ? product.media
-    : [];
-
-  return (
-    media[index]?.alt ||
-    product.name ||
-    "Aayesha Fashion product"
-  );
-}
+/* ============================================================
+   HELPERS
+============================================================ */
 
 function formatPrice(
   value: number,
@@ -230,6 +193,28 @@ function formatPrice(
     value ?? 0,
   ).toLocaleString("en-IN")}`;
 }
+
+function getDiscount(
+  mrp: number,
+  sellingPrice: number,
+): number {
+  if (
+    mrp <= 0 ||
+    sellingPrice >= mrp
+  ) {
+    return 0;
+  }
+
+  return Math.round(
+    ((mrp - sellingPrice) /
+      mrp) *
+      100,
+  );
+}
+
+/* ============================================================
+   COMPONENT
+============================================================ */
 
 export function ProductDetail({
   product,
@@ -262,6 +247,10 @@ export function ProductDetail({
       [recommendations],
     );
 
+  /* ==========================================================
+     STATE
+  ========================================================== */
+
   const [categoryName, setCategoryName] =
     useState("");
 
@@ -282,7 +271,7 @@ export function ProductDetail({
   const [pincode, setPincode] =
     useState("");
 
-  const [pincodeChecked, setPincodeChecked] =
+  const [deliveryChecked, setDeliveryChecked] =
     useState(false);
 
   const [addingToCart, setAddingToCart] =
@@ -291,32 +280,33 @@ export function ProductDetail({
   const [buyingNow, setBuyingNow] =
     useState(false);
 
+  /* ==========================================================
+     PRODUCT VALUES
+  ========================================================== */
+
   const maxStock =
     getAvailableStock(
       safeProduct,
     );
 
-  const availability =
+  const inventoryStatus =
     getInventoryStatus(
       safeProduct,
     );
 
   const mrp =
-  safeProduct.pricing?.mrp ?? 0;
+    safeProduct.pricing?.mrp ??
+    0;
 
-const sellingPrice =
-  safeProduct.pricing
-    ?.sellingPrice ?? 0;
+  const sellingPrice =
+    safeProduct.pricing
+      ?.sellingPrice ?? 0;
 
-const discount =
-  mrp > sellingPrice &&
-  mrp > 0
-    ? Math.round(
-        ((mrp - sellingPrice) /
-          mrp) *
-          100,
-      )
-    : 0;
+  const discount =
+    getDiscount(
+      mrp,
+      sellingPrice,
+    );
 
   const media = Array.isArray(
     safeProduct.media,
@@ -329,9 +319,14 @@ const discount =
       )
     : [];
 
-  const currentImage =
-    media[selectedImage]?.src ??
+  const currentMedia =
+    media[selectedImage] ??
+    media[0] ??
     null;
+
+  /* ==========================================================
+     CATEGORY
+  ========================================================== */
 
   useEffect(() => {
     let cancelled = false;
@@ -381,152 +376,183 @@ const discount =
     safeProduct.categoryId,
   ]);
 
+  /* ==========================================================
+     RESET WHEN PRODUCT CHANGES
+  ========================================================== */
+
   useEffect(() => {
-    setQuantity(1);
     setSelectedImage(0);
+    setQuantity(1);
+    setWishlist(false);
   }, [safeProduct._id]);
 
-  const increaseQuantity = () => {
+  /* ==========================================================
+     QUANTITY
+  ========================================================== */
+
+  function decreaseQuantity() {
+    setQuantity(
+      (current) =>
+        Math.max(
+          current - 1,
+          1,
+        ),
+    );
+  }
+
+  function increaseQuantity() {
     if (maxStock <= 0) {
       return;
     }
 
-    setQuantity((current) =>
-      Math.min(
-        current + 1,
-        maxStock,
-      ),
+    setQuantity(
+      (current) =>
+        Math.min(
+          current + 1,
+          maxStock,
+        ),
     );
-  };
+  }
 
-  const decreaseQuantity = () => {
-    setQuantity((current) =>
-      Math.max(current - 1, 1),
-    );
-  };
+  /* ==========================================================
+     CART
+  ========================================================== */
 
-  const handleAddToCart =
-    async () => {
-      if (!isAuthenticated) {
-        router.push(
-          `/login?redirect=${encodeURIComponent(
-            `/products/${safeProduct._id}`,
-          )}`,
-        );
+  async function handleAddToCart() {
+    if (!isAuthenticated) {
+      router.push(
+        `/login?redirect=${encodeURIComponent(
+          `/products/${safeProduct._id}`,
+        )}`,
+      );
 
-        return;
-      }
+      return;
+    }
 
-      if (maxStock <= 0) {
-        return;
-      }
+    if (maxStock <= 0) {
+      return;
+    }
 
-      try {
-        setAddingToCart(true);
+    try {
+      setAddingToCart(true);
 
-        await addToCart(
-          safeProduct._id,
-          quantity,
-        );
-      } catch (error) {
-        console.error(
-          "Failed to add product to cart:",
-          error,
-        );
-      } finally {
-        setAddingToCart(false);
-      }
-    };
+      await addToCart(
+        safeProduct._id,
+        quantity,
+      );
+    } catch (error) {
+      console.error(
+        "Failed to add product to cart:",
+        error,
+      );
+    } finally {
+      setAddingToCart(false);
+    }
+  }
 
-  const handleBuyNow =
-    async () => {
-      if (!isAuthenticated) {
-        router.push(
-          `/login?redirect=${encodeURIComponent(
-            `/products/${safeProduct._id}`,
-          )}`,
-        );
+  async function handleBuyNow() {
+    if (!isAuthenticated) {
+      router.push(
+        `/login?redirect=${encodeURIComponent(
+          `/products/${safeProduct._id}`,
+        )}`,
+      );
 
-        return;
-      }
+      return;
+    }
 
-      if (maxStock <= 0) {
-        return;
-      }
+    if (maxStock <= 0) {
+      return;
+    }
 
-      try {
-        setBuyingNow(true);
+    try {
+      setBuyingNow(true);
 
-        await addToCart(
-          safeProduct._id,
-          quantity,
-        );
+      await addToCart(
+        safeProduct._id,
+        quantity,
+      );
 
-        router.push("/checkout");
-      } catch (error) {
-        console.error(
-          "Failed to buy product:",
-          error,
-        );
-      } finally {
-        setBuyingNow(false);
-      }
-    };
+      router.push(
+        "/checkout",
+      );
+    } catch (error) {
+      console.error(
+        "Failed to buy product:",
+        error,
+      );
+    } finally {
+      setBuyingNow(false);
+    }
+  }
 
-  const toggleSection = (
-    section: string,
-  ) => {
-    setOpenSection((current) =>
-      current === section
-        ? null
-        : section,
-    );
-  };
+  /* ==========================================================
+     IMAGE NAVIGATION
+  ========================================================== */
 
-  const goPreviousImage = () => {
+  function previousImage() {
     if (media.length <= 1) {
       return;
     }
 
     setSelectedImage(
       (current) =>
-        current === 0
+        current <= 0
           ? media.length - 1
           : current - 1,
     );
-  };
+  }
 
-  const goNextImage = () => {
+  function nextImage() {
     if (media.length <= 1) {
       return;
     }
 
     setSelectedImage(
       (current) =>
-        current ===
+        current >=
         media.length - 1
           ? 0
           : current + 1,
     );
-  };
+  }
 
-  const checkPincode = () => {
-    if (
+  /* ==========================================================
+     ACCORDION
+  ========================================================== */
+
+  function toggleSection(
+    section: string,
+  ) {
+    setOpenSection(
+      (current) =>
+        current === section
+          ? null
+          : section,
+    );
+  }
+
+  /* ==========================================================
+     PINCODE
+  ========================================================== */
+
+  function checkDelivery() {
+    setDeliveryChecked(
       /^[1-9][0-9]{5}$/.test(
         pincode,
-      )
-    ) {
-      setPincodeChecked(true);
-    } else {
-      setPincodeChecked(false);
-    }
-  };
+      ),
+    );
+  }
+
+  /* ==========================================================
+     RENDER
+  ========================================================== */
 
   return (
     <main className="bg-[var(--color-bg)]">
-      {/* =====================================================
-          MAIN PRODUCT AREA
-      ===================================================== */}
+      {/* ======================================================
+          PRODUCT
+      ====================================================== */}
 
       <section className="border-b border-[var(--color-border-light)]">
         <div
@@ -539,11 +565,13 @@ const discount =
             sm:px-6
             sm:py-7
             lg:px-10
-            lg:py-9
+            lg:py-8
             xl:px-12
           "
         >
-          {/* BREADCRUMB */}
+          {/* ==================================================
+              BREADCRUMB
+          ================================================== */}
 
           <div
             className="
@@ -555,7 +583,7 @@ const discount =
               text-[9px]
               font-medium
               uppercase
-              tracking-[0.14em]
+              tracking-[0.15em]
               text-[var(--color-text-muted)]
               sm:mb-7
             "
@@ -567,7 +595,7 @@ const discount =
                   "/shop",
                 )
               }
-              className="shrink-0 transition-colors hover:text-[var(--color-text)]"
+              className="shrink-0 hover:text-[var(--color-text)]"
             >
               Shop
             </button>
@@ -581,31 +609,39 @@ const discount =
                 </span>
               </>
             )}
+
+            <span>/</span>
+
+            <span className="truncate text-[var(--color-text-secondary)]">
+              {safeProduct.name}
+            </span>
           </div>
+
+          {/* ==================================================
+              MAIN GRID
+          ================================================== */}
 
           <div
             className="
               grid
               items-start
               gap-8
-              md:gap-10
-              lg:grid-cols-[minmax(0,1.1fr)_minmax(340px,0.9fr)]
+              lg:grid-cols-[minmax(0,1.18fr)_minmax(360px,0.82fr)]
               lg:gap-12
               xl:gap-16
             "
           >
             {/* =================================================
-                MEDIA
+                IMAGE AREA
             ================================================= */}
 
             <div className="min-w-0">
               <div
                 className="
-                  relative
                   grid
                   gap-3
-                  sm:grid-cols-[72px_minmax(0,1fr)]
-                  lg:grid-cols-[82px_minmax(0,1fr)]
+                  sm:grid-cols-[76px_minmax(0,1fr)]
+                  lg:grid-cols-[86px_minmax(0,1fr)]
                 "
               >
                 {/* THUMBNAILS */}
@@ -618,7 +654,6 @@ const discount =
                       gap-2
                       overflow-x-auto
                       sm:order-1
-                      sm:max-h-[680px]
                       sm:flex-col
                       sm:overflow-y-auto
                     "
@@ -640,23 +675,22 @@ const discount =
                             )
                           }
                           className={`
-                            relative
-                            h-20
-                            w-16
+                            h-[78px]
+                            w-[62px]
                             shrink-0
                             overflow-hidden
                             border
                             bg-[var(--color-bg-soft)]
-                            transition-all
-                            sm:h-[94px]
-                            sm:w-[72px]
-                            lg:h-[106px]
-                            lg:w-[82px]
+                            transition
+                            sm:h-[92px]
+                            sm:w-[76px]
+                            lg:h-[104px]
+                            lg:w-[86px]
                             ${
                               selectedImage ===
                               index
                                 ? "border-[var(--color-text)]"
-                                : "border-[var(--color-border)] hover:border-[var(--color-text-muted)]"
+                                : "border-[var(--color-border)]"
                             }
                           `}
                         >
@@ -668,7 +702,11 @@ const discount =
                               item.alt ||
                               safeProduct.name
                             }
-                            className="h-full w-full object-cover"
+                            className="
+                              h-full
+                              w-full
+                              object-cover
+                            "
                           />
                         </button>
                       ),
@@ -683,29 +721,44 @@ const discount =
                     relative
                     order-1
                     aspect-[3/4]
+                    min-h-[460px]
                     w-full
                     overflow-hidden
                     bg-[var(--color-bg-soft)]
                     sm:order-2
+                    sm:min-h-[560px]
+                    lg:min-h-[620px]
+                    xl:min-h-[680px]
                   "
                 >
-                  {currentImage ? (
+                  {currentMedia?.src ? (
                     <img
                       src={
-                        currentImage
+                        currentMedia.src
                       }
-                      alt={getImageAlt(
-                        safeProduct,
-                        selectedImage,
-                      )}
+                      alt={
+                        currentMedia.alt ||
+                        safeProduct.name
+                      }
                       className="
                         h-full
                         w-full
                         object-cover
+                        object-center
+                        transition-transform
+                        duration-500
                       "
                     />
                   ) : (
-                    <div className="flex h-full items-center justify-center">
+                    <div
+                      className="
+                        flex
+                        h-full
+                        items-center
+                        justify-center
+                        bg-[var(--color-bg-soft)]
+                      "
+                    >
                       <span
                         className="
                           text-[9px]
@@ -720,15 +773,14 @@ const discount =
                     </div>
                   )}
 
-                  {/* IMAGE CONTROLS */}
+                  {/* IMAGE ARROWS */}
 
-                  {media.length >
-                    1 && (
+                  {media.length > 1 && (
                     <>
                       <button
                         type="button"
                         onClick={
-                          goPreviousImage
+                          previousImage
                         }
                         aria-label="Previous image"
                         className="
@@ -752,16 +804,13 @@ const discount =
                       >
                         <ChevronLeft
                           size={16}
-                          strokeWidth={
-                            1.5
-                          }
                         />
                       </button>
 
                       <button
                         type="button"
                         onClick={
-                          goNextImage
+                          nextImage
                         }
                         aria-label="Next image"
                         className="
@@ -785,15 +834,37 @@ const discount =
                       >
                         <ChevronRight
                           size={16}
-                          strokeWidth={
-                            1.5
-                          }
                         />
                       </button>
                     </>
                   )}
 
-                  {/* BADGES */}
+                  {/* IMAGE COUNT */}
+
+                  {media.length >
+                    1 && (
+                    <div
+                      className="
+                        absolute
+                        bottom-3
+                        right-3
+                        bg-black/65
+                        px-2.5
+                        py-1.5
+                        text-[8px]
+                        font-medium
+                        tracking-[0.1em]
+                        text-white
+                        backdrop-blur
+                      "
+                    >
+                      {selectedImage +
+                        1}{" "}
+                      / {media.length}
+                    </div>
+                  )}
+
+                  {/* BADGE */}
 
                   {safeProduct
                     .merchandising
@@ -805,42 +876,26 @@ const discount =
                         absolute
                         left-3
                         top-3
-                        flex
-                        flex-wrap
-                        gap-1.5
                       "
                     >
-                      {safeProduct.merchandising.badges
-                        .slice(
-                          0,
-                          2,
-                        )
-                        .map(
-                          (
-                            badge,
-                          ) => (
-                            <span
-                              key={
-                                badge
-                              }
-                              className="
-                                bg-[var(--color-text)]
-                                px-2.5
-                                py-1.5
-                                text-[8px]
-                                font-semibold
-                                uppercase
-                                tracking-[0.12em]
-                                text-[var(--color-text-inverse)]
-                              "
-                            >
-                              {badge.replace(
-                                "-",
-                                " ",
-                              )}
-                            </span>
-                          ),
-                        )}
+                      <span
+                        className="
+                          bg-[var(--color-text)]
+                          px-2.5
+                          py-1.5
+                          text-[8px]
+                          font-semibold
+                          uppercase
+                          tracking-[0.12em]
+                          text-white
+                        "
+                      >
+                        {
+                          safeProduct
+                            .merchandising
+                            .badges[0]
+                        }
+                      </span>
                     </div>
                   )}
                 </div>
@@ -880,13 +935,15 @@ const discount =
 
                     <h1
                       className="
-                        max-w-[620px]
+                        max-w-xl
                         font-display
-                        text-[clamp(1.8rem,3vw,3rem)]
+                        text-[26px]
                         font-medium
-                        leading-[1.02]
-                        tracking-[-0.025em]
+                        leading-[1.08]
+                        tracking-[-0.02em]
                         text-[var(--color-text)]
+                        sm:text-[30px]
+                        lg:text-[32px]
                       "
                     >
                       {
@@ -903,29 +960,24 @@ const discount =
                           !current,
                       )
                     }
-                    aria-label={
-                      wishlist
-                        ? "Remove from wishlist"
-                        : "Add to wishlist"
-                    }
+                    aria-label="Wishlist"
                     className={`
                       flex
-                      h-10
-                      w-10
+                      h-9
+                      w-9
                       shrink-0
                       items-center
                       justify-center
                       border
-                      transition
                       ${
                         wishlist
-                          ? "border-[var(--color-text)] bg-[var(--color-text)] text-[var(--color-text-inverse)]"
-                          : "border-[var(--color-border)] bg-transparent text-[var(--color-text)] hover:border-[var(--color-text)]"
+                          ? "border-[var(--color-text)] bg-[var(--color-text)] text-white"
+                          : "border-[var(--color-border)] text-[var(--color-text)]"
                       }
                     `}
                   >
                     <Heart
-                      size={17}
+                      size={16}
                       strokeWidth={
                         1.4
                       }
@@ -942,31 +994,22 @@ const discount =
               {/* PRICE */}
 
               <div className="border-b border-[var(--color-border)] py-5">
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                <div className="flex flex-wrap items-center gap-3">
                   <span
                     className="
-                      text-[22px]
+                      text-[23px]
                       font-semibold
                       tracking-[-0.02em]
                       text-[var(--color-text)]
-                      sm:text-[24px]
                     "
                   >
                     {formatPrice(
-                      safeProduct
-                        .pricing
-                        ?.sellingPrice ??
-                        0,
+                      sellingPrice,
                     )}
                   </span>
 
-                  {(safeProduct
-                    .pricing
-                    ?.mrp ?? 0) >
-                    (safeProduct
-                      .pricing
-                      ?.sellingPrice ??
-                      0) && (
+                  {mrp >
+                    sellingPrice && (
                     <>
                       <span
                         className="
@@ -976,9 +1019,7 @@ const discount =
                         "
                       >
                         {formatPrice(
-                          safeProduct
-                            .pricing
-                            .mrp,
+                          mrp,
                         )}
                       </span>
 
@@ -1000,25 +1041,17 @@ const discount =
                   )}
                 </div>
 
-                <p className="mt-2 text-[9px] text-[var(--color-text-muted)]">
+                <p className="mt-1.5 text-[9px] text-[var(--color-text-muted)]">
                   Inclusive of applicable
                   taxes
                 </p>
               </div>
 
-              {/* STOCK */}
+              {/* AVAILABILITY */}
 
               <div className="border-b border-[var(--color-border)] py-4">
-                <div className="flex items-center justify-between gap-4">
-                  <span
-                    className="
-                      text-[9px]
-                      font-semibold
-                      uppercase
-                      tracking-[0.14em]
-                      text-[var(--color-text-muted)]
-                    "
-                  >
+                <div className="flex items-center justify-between">
+                  <span className="text-[9px] font-semibold uppercase tracking-[0.13em] text-[var(--color-text-muted)]">
                     Availability
                   </span>
 
@@ -1027,22 +1060,22 @@ const discount =
                       text-[9px]
                       font-semibold
                       uppercase
-                      tracking-[0.12em]
+                      tracking-[0.1em]
                       ${
-                        availability ===
+                        inventoryStatus ===
                         "out-of-stock"
                           ? "text-[var(--color-error)]"
-                          : availability ===
+                          : inventoryStatus ===
                               "low-stock"
                             ? "text-[var(--color-accent-dark)]"
                             : "text-[var(--color-success)]"
                       }
                     `}
                   >
-                    {availability ===
+                    {inventoryStatus ===
                     "out-of-stock"
-                      ? "Sold out"
-                      : availability ===
+                      ? "Sold Out"
+                      : inventoryStatus ===
                           "low-stock"
                         ? `Only ${maxStock} left`
                         : `${maxStock} available`}
@@ -1050,19 +1083,11 @@ const discount =
                 </div>
               </div>
 
-              {/* PURCHASE */}
+              {/* QUANTITY + CART */}
 
               <div className="border-b border-[var(--color-border)] py-5">
                 <div className="mb-3 flex items-center justify-between">
-                  <span
-                    className="
-                      text-[9px]
-                      font-semibold
-                      uppercase
-                      tracking-[0.14em]
-                      text-[var(--color-text)]
-                    "
-                  >
+                  <span className="text-[9px] font-semibold uppercase tracking-[0.13em]">
                     Quantity
                   </span>
 
@@ -1083,19 +1108,16 @@ const discount =
                         decreaseQuantity
                       }
                       disabled={
-                        quantity <= 1 ||
-                        maxStock <= 0
+                        quantity <=
+                          1 ||
+                        maxStock <=
+                          0
                       }
-                      aria-label="Decrease quantity"
                       className="
                         flex
                         w-9
                         items-center
                         justify-center
-                        text-[var(--color-text)]
-                        transition
-                        hover:bg-[var(--color-bg-soft)]
-                        disabled:cursor-not-allowed
                         disabled:opacity-30
                       "
                     >
@@ -1130,16 +1152,11 @@ const discount =
                         quantity >=
                           maxStock
                       }
-                      aria-label="Increase quantity"
                       className="
                         flex
                         w-9
                         items-center
                         justify-center
-                        text-[var(--color-text)]
-                        transition
-                        hover:bg-[var(--color-bg-soft)]
-                        disabled:cursor-not-allowed
                         disabled:opacity-30
                       "
                     >
@@ -1149,7 +1166,7 @@ const discount =
                     </button>
                   </div>
 
-                  {/* ADD BAG */}
+                  {/* ADD TO BAG */}
 
                   <button
                     type="button"
@@ -1165,7 +1182,6 @@ const discount =
                     className="
                       flex
                       h-11
-                      min-w-0
                       flex-1
                       items-center
                       justify-center
@@ -1175,11 +1191,10 @@ const discount =
                       text-[9px]
                       font-semibold
                       uppercase
-                      tracking-[0.15em]
-                      text-[var(--color-text-inverse)]
+                      tracking-[0.14em]
+                      text-white
                       transition
                       hover:bg-[var(--color-accent-dark)]
-                      disabled:cursor-not-allowed
                       disabled:opacity-40
                     "
                   >
@@ -1204,30 +1219,25 @@ const discount =
                     handleBuyNow
                   }
                   disabled={
-                    maxStock <= 0 ||
+                    maxStock <=
+                      0 ||
                     addingToCart ||
                     buyingNow
                   }
                   className="
                     mt-2
-                    flex
                     h-11
                     w-full
-                    items-center
-                    justify-center
                     border
                     border-[var(--color-text)]
-                    bg-transparent
-                    px-4
                     text-[9px]
                     font-semibold
                     uppercase
-                    tracking-[0.15em]
+                    tracking-[0.14em]
                     text-[var(--color-text)]
                     transition
                     hover:bg-[var(--color-text)]
-                    hover:text-[var(--color-text-inverse)]
-                    disabled:cursor-not-allowed
+                    hover:text-white
                     disabled:opacity-40
                   "
                 >
@@ -1240,25 +1250,17 @@ const discount =
               {/* DELIVERY */}
 
               <div className="border-b border-[var(--color-border)] py-5">
-                <div className="flex items-start gap-3">
+                <div className="flex gap-3">
                   <MapPin
                     size={17}
                     strokeWidth={
                       1.4
                     }
-                    className="mt-0.5 shrink-0 text-[var(--color-text-secondary)]"
+                    className="mt-0.5 shrink-0"
                   />
 
                   <div className="min-w-0 flex-1">
-                    <p
-                      className="
-                        text-[9px]
-                        font-semibold
-                        uppercase
-                        tracking-[0.14em]
-                        text-[var(--color-text)]
-                      "
-                    >
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.13em]">
                       Check Delivery
                     </p>
 
@@ -1277,16 +1279,18 @@ const discount =
                           event,
                         ) => {
                           setPincode(
-                            event.target.value.replace(
-                              /\D/g,
-                              "",
-                            ).slice(
-                              0,
-                              6,
-                            ),
+                            event.target.value
+                              .replace(
+                                /\D/g,
+                                "",
+                              )
+                              .slice(
+                                0,
+                                6,
+                              ),
                           );
 
-                          setPincodeChecked(
+                          setDeliveryChecked(
                             false,
                           );
                         }}
@@ -1306,35 +1310,31 @@ const discount =
                           px-3
                           text-[11px]
                           outline-none
-                          placeholder:text-[var(--color-text-muted)]
-                          focus:border-[var(--color-text)]
                         "
                       />
 
                       <button
                         type="button"
                         onClick={
-                          checkPincode
+                          checkDelivery
                         }
                         className="
                           h-10
-                          min-w-[76px]
+                          min-w-[72px]
                           bg-[var(--color-text)]
                           px-3
                           text-[8px]
                           font-semibold
                           uppercase
-                          tracking-[0.13em]
-                          text-[var(--color-text-inverse)]
-                          transition
-                          hover:bg-[var(--color-accent-dark)]
+                          tracking-[0.12em]
+                          text-white
                         "
                       >
                         Check
                       </button>
                     </div>
 
-                    {pincodeChecked && (
+                    {deliveryChecked && (
                       <div className="mt-2 flex items-center gap-1.5 text-[9px] text-[var(--color-success)]">
                         <Check
                           size={12}
@@ -1346,23 +1346,23 @@ const discount =
                 </div>
               </div>
 
-              {/* ASSURANCES */}
+              {/* SERVICE FEATURES */}
 
-              <div className="grid grid-cols-3 border-b border-[var(--color-border)]">
+              <div className="grid grid-cols-3">
                 <div className="border-r border-[var(--color-border)] px-2 py-4 text-center">
                   <Truck
                     size={17}
                     strokeWidth={
                       1.3
                     }
-                    className="mx-auto text-[var(--color-text-secondary)]"
+                    className="mx-auto"
                   />
 
-                  <p className="mt-2 text-[8px] font-semibold uppercase tracking-[0.1em]">
+                  <p className="mt-2 text-[8px] font-semibold uppercase tracking-[0.08em]">
                     Delivery
                   </p>
 
-                  <p className="mt-1 text-[8px] leading-4 text-[var(--color-text-muted)]">
+                  <p className="mt-1 text-[8px] text-[var(--color-text-muted)]">
                     Across India
                   </p>
                 </div>
@@ -1373,14 +1373,14 @@ const discount =
                     strokeWidth={
                       1.3
                     }
-                    className="mx-auto text-[var(--color-text-secondary)]"
+                    className="mx-auto"
                   />
 
-                  <p className="mt-2 text-[8px] font-semibold uppercase tracking-[0.1em]">
+                  <p className="mt-2 text-[8px] font-semibold uppercase tracking-[0.08em]">
                     Secure
                   </p>
 
-                  <p className="mt-1 text-[8px] leading-4 text-[var(--color-text-muted)]">
+                  <p className="mt-1 text-[8px] text-[var(--color-text-muted)]">
                     Safe checkout
                   </p>
                 </div>
@@ -1391,15 +1391,15 @@ const discount =
                     strokeWidth={
                       1.3
                     }
-                    className="mx-auto text-[var(--color-text-secondary)]"
+                    className="mx-auto"
                   />
 
-                  <p className="mt-2 text-[8px] font-semibold uppercase tracking-[0.1em]">
-                    Easy Returns
+                  <p className="mt-2 text-[8px] font-semibold uppercase tracking-[0.08em]">
+                    Returns
                   </p>
 
-                  <p className="mt-1 text-[8px] leading-4 text-[var(--color-text-muted)]">
-                    Hassle free
+                  <p className="mt-1 text-[8px] text-[var(--color-text-muted)]">
+                    Easy process
                   </p>
                 </div>
               </div>
@@ -1408,11 +1408,11 @@ const discount =
         </div>
       </section>
 
-      {/* =====================================================
-          PRODUCT DETAILS
-      ===================================================== */}
+      {/* ======================================================
+          DETAILS
+      ====================================================== */}
 
-      <section className="border-b border-[var(--color-border-light)]">
+      <section className="border-b border-[var(--color-border-light)] bg-[var(--color-surface)]">
         <div
           className="
             mx-auto
@@ -1433,24 +1433,29 @@ const discount =
               gap-10
               lg:grid-cols-[minmax(0,1fr)_300px]
               lg:gap-16
-              xl:grid-cols-[minmax(0,1fr)_340px]
             "
           >
-            {/* ACCORDIONS */}
+            {/* DETAILS */}
 
             <div className="min-w-0">
-              <p
-                className="
-                  mb-2
-                  text-[9px]
-                  font-semibold
-                  uppercase
-                  tracking-[0.16em]
-                  text-[var(--color-text-muted)]
-                "
-              >
-                Product Information
-              </p>
+              <div className="mb-5">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
+                  Product Information
+                </p>
+
+                <h2
+                  className="
+                    mt-2
+                    font-display
+                    text-[25px]
+                    font-medium
+                    tracking-[-0.02em]
+                    text-[var(--color-text)]
+                  "
+                >
+                  Product Details
+                </h2>
+              </div>
 
               <div className="border-t border-[var(--color-border)]">
                 {/* DESCRIPTION */}
@@ -1472,7 +1477,7 @@ const discount =
                       text-left
                     "
                   >
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.12em]">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.13em]">
                       Description
                     </span>
 
@@ -1511,8 +1516,7 @@ const discount =
                         />
                       ) : (
                         <p className="text-[12px] text-[var(--color-text-muted)]">
-                          Product
-                          description
+                          Description
                           will be
                           updated
                           soon.
@@ -1541,7 +1545,7 @@ const discount =
                       text-left
                     "
                   >
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.12em]">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.13em]">
                       Product Details
                     </span>
 
@@ -1558,7 +1562,7 @@ const discount =
 
                   {openSection ===
                     "details" && (
-                    <div className="grid max-w-2xl grid-cols-1 pb-5 sm:grid-cols-2">
+                    <div className="grid pb-5 sm:grid-cols-2">
                       {[
                         [
                           "Category",
@@ -1577,7 +1581,7 @@ const discount =
                             "INR",
                         ],
                         [
-                          "Stock",
+                          "Available Stock",
                           String(
                             maxStock,
                           ),
@@ -1626,7 +1630,7 @@ const discount =
                       text-left
                     "
                   >
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.12em]">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.13em]">
                       Shipping & Delivery
                     </span>
 
@@ -1643,13 +1647,13 @@ const discount =
 
                   {openSection ===
                     "shipping" && (
-                    <p className="max-w-2xl pb-5 text-[12px] leading-6 text-[var(--color-text-secondary)]">
+                    <p className="max-w-3xl pb-5 text-[12px] leading-6 text-[var(--color-text-secondary)]">
                       Shipping and
                       delivery
                       availability
                       is calculated
                       during checkout
-                      based on the
+                      based on your
                       delivery
                       address.
                     </p>
@@ -1675,7 +1679,7 @@ const discount =
                       text-left
                     "
                   >
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.12em]">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.13em]">
                       Returns & Exchange
                     </span>
 
@@ -1692,7 +1696,7 @@ const discount =
 
                   {openSection ===
                     "returns" && (
-                    <p className="max-w-2xl pb-5 text-[12px] leading-6 text-[var(--color-text-secondary)]">
+                    <p className="max-w-3xl pb-5 text-[12px] leading-6 text-[var(--color-text-secondary)]">
                       Please refer to
                       the store return
                       and exchange
@@ -1704,35 +1708,39 @@ const discount =
               </div>
             </div>
 
-            {/* STANDARD */}
+            {/* DESKTOP SIDE CARD */}
 
             <aside className="hidden lg:block">
-              <div className="border border-[var(--color-border)] bg-[var(--color-bg-soft)] p-6">
+              <div
+                className="
+                  border
+                  border-[var(--color-border)]
+                  bg-[var(--color-bg-soft)]
+                  p-6
+                "
+              >
                 <p className="text-[8px] font-semibold uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
-                  The Ayesha Standard
+                  Ayesha Fashion
                 </p>
 
-                <h2
+                <h3
                   className="
                     mt-3
                     font-display
-                    text-[25px]
+                    text-[24px]
                     font-medium
                     leading-[1.08]
                     tracking-[-0.02em]
                   "
                 >
                   Thoughtfully
-                  designed for
-                  everyday elegance.
-                </h2>
+                  designed.
+                </h3>
 
                 <p className="mt-4 text-[11px] leading-6 text-[var(--color-text-secondary)]">
-                  Every piece is
-                  selected with
-                  attention to
-                  elegance, comfort
-                  and enduring
+                  Designed with an
+                  emphasis on elegance,
+                  comfort and timeless
                   style.
                 </p>
 
@@ -1746,10 +1754,7 @@ const discount =
 
                     <p className="mt-1 text-[13px] text-[var(--color-text-secondary)]">
                       {formatPrice(
-                        safeProduct
-                          .pricing
-                          ?.sellingPrice ??
-                          0,
+                        sellingPrice,
                       )}
                     </p>
                   </div>
@@ -1773,9 +1778,9 @@ const discount =
         </div>
       </section>
 
-      {/* =====================================================
+      {/* ======================================================
           RECOMMENDATIONS
-      ===================================================== */}
+      ====================================================== */}
 
       {safeRecommendations
         .length > 0 && (
@@ -1794,13 +1799,21 @@ const discount =
               xl:px-12
             "
           >
-            <div className="mb-6 flex items-end justify-between gap-4">
+            <div className="mb-6 flex items-end justify-between">
               <div>
                 <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
                   You may also like
                 </p>
 
-                <h2 className="mt-2 font-display text-[25px] font-medium tracking-[-0.02em] sm:text-[28px]">
+                <h2
+                  className="
+                    mt-2
+                    font-display
+                    text-[25px]
+                    font-medium
+                    tracking-[-0.02em]
+                  "
+                >
                   More from this edit
                 </h2>
               </div>
@@ -1814,7 +1827,7 @@ const discount =
                     )}`,
                   )
                 }
-                className="hidden text-[9px] font-semibold uppercase tracking-[0.13em] text-[var(--color-text-secondary)] underline underline-offset-4 sm:block"
+                className="hidden text-[9px] font-semibold uppercase tracking-[0.13em] underline underline-offset-4 sm:block"
               >
                 View all
               </button>
@@ -1835,14 +1848,20 @@ const discount =
               {safeRecommendations.map(
                 (item) => {
                   const image =
-                    item.media?.find(
-                      (
-                        media,
-                      ) =>
-                        media.type ===
-                          "image" &&
-                        media.src,
-                    );
+                    Array.isArray(
+                      item.media,
+                    )
+                      ? item.media.find(
+                          (
+                            media,
+                          ) =>
+                            media?.type ===
+                              "image" &&
+                            Boolean(
+                              media?.src,
+                            ),
+                        )
+                      : null;
 
                   return (
                     <button
@@ -1857,7 +1876,13 @@ const discount =
                       }
                       className="group min-w-0 text-left"
                     >
-                      <div className="aspect-[3/4] overflow-hidden bg-[var(--color-bg-soft)]">
+                      <div
+                        className="
+                          aspect-[3/4]
+                          overflow-hidden
+                          bg-[var(--color-bg-soft)]
+                        "
+                      >
                         {image ? (
                           <img
                             src={
@@ -1883,7 +1908,7 @@ const discount =
                         )}
                       </div>
 
-                      <p className="mt-3 line-clamp-2 text-[11px] font-medium leading-5 text-[var(--color-text)]">
+                      <p className="mt-3 line-clamp-2 text-[11px] font-medium leading-5">
                         {
                           item.name
                         }
@@ -1905,85 +1930,6 @@ const discount =
           </div>
         </section>
       )}
-
-      {/* =====================================================
-          MOBILE BOTTOM PURCHASE BAR
-      ===================================================== */}
-
-      <div
-        className="
-          fixed
-          inset-x-0
-          bottom-0
-          z-50
-          border-t
-          border-[var(--color-border)]
-          bg-[var(--color-bg)]/95
-          px-3
-          py-3
-          backdrop-blur-md
-          lg:hidden
-        "
-      >
-        <div className="mx-auto flex max-w-2xl items-center gap-2">
-          <div className="min-w-0 shrink-0">
-            <p className="text-[8px] uppercase tracking-[0.1em] text-[var(--color-text-muted)]">
-              Total
-            </p>
-
-            <p className="text-[14px] font-semibold text-[var(--color-text)]">
-              {formatPrice(
-                (safeProduct
-                  .pricing
-                  ?.sellingPrice ??
-                  0) *
-                  quantity,
-              )}
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={
-              handleAddToCart
-            }
-            disabled={
-              maxStock <= 0 ||
-              addingToCart ||
-              buyingNow
-            }
-            className="
-              flex
-              h-11
-              min-w-0
-              flex-1
-              items-center
-              justify-center
-              gap-2
-              bg-[var(--color-text)]
-              px-3
-              text-[9px]
-              font-semibold
-              uppercase
-              tracking-[0.12em]
-              text-[var(--color-text-inverse)]
-              disabled:opacity-40
-            "
-          >
-            <ShoppingBag
-              size={14}
-            />
-
-            {addingToCart
-              ? "Adding..."
-              : "Add to Bag"}
-          </button>
-        </div>
-      </div>
-
-      {/* MOBILE BAR SPACING */}
-
-      <div className="h-20 lg:hidden" />
     </main>
   );
 }
