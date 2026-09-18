@@ -52,29 +52,33 @@ export function ProductSpecifications({
     };
   }, [product.categoryId]);
 
+  const stock = product.inventory?.stock ?? 0;
+  const reserved = product.inventory?.reserved ?? 0;
+  const availableStock = Math.max(0, stock - reserved);
+
   const specifications = [
     ["Category", categoryName],
     ["Product Status", product.status],
-    ["Currency", product.pricing.currency],
+    ["Currency", product.pricing?.currency],
     [
       "MRP",
-      `₹${product.pricing.mrp.toLocaleString("en-IN")}`,
+      product.pricing
+        ? `₹${product.pricing.mrp.toLocaleString("en-IN")}`
+        : "",
     ],
     [
       "Selling Price",
-      `₹${product.pricing.sellingPrice.toLocaleString(
-        "en-IN",
-      )}`,
+      product.pricing
+        ? `₹${product.pricing.sellingPrice.toLocaleString(
+            "en-IN",
+          )}`
+        : "",
     ],
-    ["Stock", product.inventory.stock],
-    [
-      "Available Stock",
-      product.inventory.stock -
-        product.inventory.reserved,
-    ],
+    ["Stock", stock],
+    ["Available Stock", availableStock],
     [
       "Description Format",
-      product.content.descriptionFormat,
+      product.content?.descriptionFormat,
     ],
   ].filter(
     ([, value]) =>
