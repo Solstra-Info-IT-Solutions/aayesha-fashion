@@ -51,10 +51,6 @@ export type ProductListResponse = {
     total: number;
 
     totalPages: number;
-
-    hasNextPage: boolean;
-
-    hasPreviousPage: boolean;
   };
 };
 

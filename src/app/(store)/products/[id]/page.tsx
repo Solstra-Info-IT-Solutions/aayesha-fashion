@@ -197,15 +197,15 @@ export default async function ProductPage({
     });
 
     recommendations =
-      categoryResponse.products
-        .filter(
-          (item) =>
-            item._id !== product._id &&
-            item.status === "active" &&
-            item.categoryId ===
-              product.categoryId,
-        )
-        .slice(0, 4);
+  (categoryResponse?.products ?? [])
+    .filter(
+      (item) =>
+        item._id !== product._id &&
+        item.status === "active" &&
+        item.categoryId ===
+          product.categoryId,
+    )
+    .slice(0, 4);
   } catch (error) {
     console.error(
       "Failed to load product recommendations:",
