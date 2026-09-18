@@ -19,7 +19,14 @@ function absoluteUrl(value: string): string {
 }
 
 function getAvailabilityUrl(product: Product): string {
-  const availability = getProductAvailability(product);
+  const availability = getProductAvailability({
+    inventory: {
+      stock: product.inventory?.stock ?? 0,
+      reserved: product.inventory?.reserved ?? 0,
+      lowStockThreshold:
+        product.inventory?.lowStockThreshold ?? 2,
+    },
+  });
 
   if (availability.isSoldOut) {
     return "https://schema.org/OutOfStock";

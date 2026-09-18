@@ -301,11 +301,55 @@ export function getInventoryStatus(
    PRODUCT AVAILABILITY
 ------------------------------------------------------------ */
 
+// export function getProductAvailability(
+//   product: Product,
+// ): ProductAvailability {
+//   const availableQuantity =
+//     getAvailableStock(product);
+
+//   return {
+//     isSoldOut:
+//       availableQuantity <= 0,
+
+//     isInStock:
+//       availableQuantity > 0,
+
+//     isLowStock:
+//       availableQuantity > 0 &&
+//       availableQuantity <=
+//         Math.max(
+//           0,
+//           product.inventory.lowStockThreshold,
+//         ),
+
+//     availableQuantity,
+//   };
+// }
+
+
 export function getProductAvailability(
-  product: Product,
-): ProductAvailability {
+  product: {
+    inventory?: {
+      stock?: number;
+      reserved?: number;
+      lowStockThreshold?: number;
+    };
+  },
+) {
+  const stock =
+    product.inventory?.stock ?? 0;
+
+  const reserved =
+    product.inventory?.reserved ?? 0;
+
+  const lowStockThreshold =
+    product.inventory?.lowStockThreshold ?? 2;
+
   const availableQuantity =
-    getAvailableStock(product);
+    Math.max(
+      0,
+      stock - reserved,
+    );
 
   return {
     isSoldOut:
@@ -317,15 +361,11 @@ export function getProductAvailability(
     isLowStock:
       availableQuantity > 0 &&
       availableQuantity <=
-        Math.max(
-          0,
-          product.inventory.lowStockThreshold,
-        ),
+        lowStockThreshold,
 
     availableQuantity,
   };
 }
-
 /* ------------------------------------------------------------
    DISCOUNT AMOUNT
 ------------------------------------------------------------ */
