@@ -12,7 +12,6 @@ import type { Product } from "@/types/product";
 import {
   getAvailableStock,
   getInventoryStatus,
-  getProductDiscountPercent,
 } from "@/types/product";
 
 import { getCategories } from "@/services/category.service";
@@ -302,10 +301,22 @@ export function ProductDetail({
       safeProduct,
     );
 
-  const discount =
-    getProductDiscountPercent(
-      safeProduct,
-    );
+  const mrp =
+  safeProduct.pricing?.mrp ?? 0;
+
+const sellingPrice =
+  safeProduct.pricing
+    ?.sellingPrice ?? 0;
+
+const discount =
+  mrp > sellingPrice &&
+  mrp > 0
+    ? Math.round(
+        ((mrp - sellingPrice) /
+          mrp) *
+          100,
+      )
+    : 0;
 
   const media = Array.isArray(
     safeProduct.media,
