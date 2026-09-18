@@ -41,7 +41,7 @@ interface ProductDetailProps {
 }
 
 /* ============================================================
-   SAFE PRODUCT
+   SAFE PRODUCT NORMALIZER
 ============================================================ */
 
 function normalizeProduct(
@@ -80,8 +80,7 @@ function normalizeProduct(
         0,
 
       sellingPrice:
-        source.pricing
-          ?.sellingPrice ??
+        source.pricing?.sellingPrice ??
         0,
 
       currency:
@@ -183,7 +182,7 @@ function normalizeProduct(
 }
 
 /* ============================================================
-   HELPERS
+   PRICE FORMATTER
 ============================================================ */
 
 function formatPrice(
@@ -193,6 +192,10 @@ function formatPrice(
     value ?? 0,
   ).toLocaleString("en-IN")}`;
 }
+
+/* ============================================================
+   DISCOUNT
+============================================================ */
 
 function getDiscount(
   mrp: number,
@@ -213,7 +216,7 @@ function getDiscount(
 }
 
 /* ============================================================
-   COMPONENT
+   MAIN COMPONENT
 ============================================================ */
 
 export function ProductDetail({
@@ -225,6 +228,10 @@ export function ProductDetail({
   const {
     isAuthenticated,
   } = useAuthStore();
+
+  /* ==========================================================
+     SAFE PRODUCT
+  ========================================================== */
 
   const safeProduct = useMemo(
     () =>
@@ -308,6 +315,10 @@ export function ProductDetail({
       sellingPrice,
     );
 
+  /* ==========================================================
+     PRODUCT MEDIA
+  ========================================================== */
+
   const media = Array.isArray(
     safeProduct.media,
   )
@@ -325,7 +336,7 @@ export function ProductDetail({
     null;
 
   /* ==========================================================
-     CATEGORY
+     LOAD CATEGORY
   ========================================================== */
 
   useEffect(() => {
@@ -356,7 +367,12 @@ export function ProductDetail({
             category?.name ?? "",
           );
         }
-      } catch {
+      } catch (error) {
+        console.error(
+          "Failed to load product category:",
+          error,
+        );
+
         if (!cancelled) {
           setCategoryName("");
         }
@@ -367,6 +383,8 @@ export function ProductDetail({
       safeProduct.categoryId
     ) {
       loadCategory();
+    } else {
+      setCategoryName("");
     }
 
     return () => {
@@ -415,7 +433,7 @@ export function ProductDetail({
   }
 
   /* ==========================================================
-     CART
+     ADD TO CART
   ========================================================== */
 
   async function handleAddToCart() {
@@ -429,7 +447,10 @@ export function ProductDetail({
       return;
     }
 
-    if (maxStock <= 0) {
+    if (
+      !safeProduct._id ||
+      maxStock <= 0
+    ) {
       return;
     }
 
@@ -450,6 +471,10 @@ export function ProductDetail({
     }
   }
 
+  /* ==========================================================
+     BUY NOW
+  ========================================================== */
+
   async function handleBuyNow() {
     if (!isAuthenticated) {
       router.push(
@@ -461,7 +486,10 @@ export function ProductDetail({
       return;
     }
 
-    if (maxStock <= 0) {
+    if (
+      !safeProduct._id ||
+      maxStock <= 0
+    ) {
       return;
     }
 
@@ -551,7 +579,7 @@ export function ProductDetail({
   return (
     <main className="bg-[var(--color-bg)]">
       {/* ======================================================
-          PRODUCT
+          PRODUCT HERO
       ====================================================== */}
 
       <section className="border-b border-[var(--color-border-light)]">
@@ -583,7 +611,7 @@ export function ProductDetail({
               text-[9px]
               font-medium
               uppercase
-              tracking-[0.15em]
+              tracking-[0.14em]
               text-[var(--color-text-muted)]
               sm:mb-7
             "
@@ -595,7 +623,11 @@ export function ProductDetail({
                   "/shop",
                 )
               }
-              className="shrink-0 hover:text-[var(--color-text)]"
+              className="
+                shrink-0
+                transition-colors
+                hover:text-[var(--color-text)]
+              "
             >
               Shop
             </button>
@@ -604,7 +636,7 @@ export function ProductDetail({
               <>
                 <span>/</span>
 
-                <span className="truncate text-[var(--color-text-secondary)]">
+                <span className="truncate">
                   {categoryName}
                 </span>
               </>
@@ -618,7 +650,7 @@ export function ProductDetail({
           </div>
 
           {/* ==================================================
-              MAIN GRID
+              MAIN PRODUCT GRID
           ================================================== */}
 
           <div
@@ -626,25 +658,31 @@ export function ProductDetail({
               grid
               items-start
               gap-8
-              lg:grid-cols-[minmax(0,1.18fr)_minmax(360px,0.82fr)]
+              lg:grid-cols-[minmax(0,1.2fr)_minmax(360px,0.8fr)]
               lg:gap-12
               xl:gap-16
             "
           >
             {/* =================================================
-                IMAGE AREA
+                PRODUCT MEDIA
             ================================================= */}
 
             <div className="min-w-0">
               <div
-                className="
-                  grid
-                  gap-3
-                  sm:grid-cols-[76px_minmax(0,1fr)]
-                  lg:grid-cols-[86px_minmax(0,1fr)]
-                "
+                className={
+                  media.length > 1
+                    ? `
+                      grid
+                      gap-3
+                      sm:grid-cols-[76px_minmax(0,1fr)]
+                      lg:grid-cols-[86px_minmax(0,1fr)]
+                    `
+                    : "block"
+                }
               >
-                {/* THUMBNAILS */}
+                {/* =============================================
+                    THUMBNAILS
+                ============================================= */}
 
                 {media.length > 1 && (
                   <div
@@ -674,6 +712,9 @@ export function ProductDetail({
                               index,
                             )
                           }
+                          aria-label={`View image ${
+                            index + 1
+                          }`}
                           className={`
                             h-[78px]
                             w-[62px]
@@ -690,7 +731,7 @@ export function ProductDetail({
                               selectedImage ===
                               index
                                 ? "border-[var(--color-text)]"
-                                : "border-[var(--color-border)]"
+                                : "border-[var(--color-border)] hover:border-[var(--color-text-muted)]"
                             }
                           `}
                         >
@@ -714,22 +755,24 @@ export function ProductDetail({
                   </div>
                 )}
 
-                {/* MAIN IMAGE */}
+                {/* =============================================
+                    MAIN IMAGE
+                ============================================= */}
 
                 <div
-                  className="
+                  className={`
                     relative
-                    order-1
+                    ${
+                      media.length >
+                      1
+                        ? "order-1 sm:order-2"
+                        : ""
+                    }
                     aspect-[3/4]
-                    min-h-[460px]
                     w-full
                     overflow-hidden
                     bg-[var(--color-bg-soft)]
-                    sm:order-2
-                    sm:min-h-[560px]
-                    lg:min-h-[620px]
-                    xl:min-h-[680px]
-                  "
+                  `}
                 >
                   {currentMedia?.src ? (
                     <img
@@ -741,12 +784,11 @@ export function ProductDetail({
                         safeProduct.name
                       }
                       className="
+                        block
                         h-full
                         w-full
                         object-cover
                         object-center
-                        transition-transform
-                        duration-500
                       "
                     />
                   ) : (
@@ -754,6 +796,7 @@ export function ProductDetail({
                       className="
                         flex
                         h-full
+                        w-full
                         items-center
                         justify-center
                         bg-[var(--color-bg-soft)]
@@ -773,7 +816,9 @@ export function ProductDetail({
                     </div>
                   )}
 
-                  {/* IMAGE ARROWS */}
+                  {/* ==========================================
+                      IMAGE NAVIGATION
+                  ========================================== */}
 
                   {media.length > 1 && (
                     <>
@@ -804,6 +849,9 @@ export function ProductDetail({
                       >
                         <ChevronLeft
                           size={16}
+                          strokeWidth={
+                            1.5
+                          }
                         />
                       </button>
 
@@ -834,50 +882,43 @@ export function ProductDetail({
                       >
                         <ChevronRight
                           size={16}
+                          strokeWidth={
+                            1.5
+                          }
                         />
                       </button>
+
+                      <div
+                        className="
+                          absolute
+                          bottom-3
+                          right-3
+                          bg-black/60
+                          px-2.5
+                          py-1.5
+                          text-[8px]
+                          font-medium
+                          tracking-[0.1em]
+                          text-white
+                          backdrop-blur
+                        "
+                      >
+                        {selectedImage +
+                          1}{" "}
+                        / {media.length}
+                      </div>
                     </>
                   )}
 
-                  {/* IMAGE COUNT */}
-
-                  {media.length >
-                    1 && (
-                    <div
-                      className="
-                        absolute
-                        bottom-3
-                        right-3
-                        bg-black/65
-                        px-2.5
-                        py-1.5
-                        text-[8px]
-                        font-medium
-                        tracking-[0.1em]
-                        text-white
-                        backdrop-blur
-                      "
-                    >
-                      {selectedImage +
-                        1}{" "}
-                      / {media.length}
-                    </div>
-                  )}
-
-                  {/* BADGE */}
+                  {/* ==========================================
+                      BADGE
+                  ========================================== */}
 
                   {safeProduct
                     .merchandising
                     ?.badges
-                    ?.length >
-                    0 && (
-                    <div
-                      className="
-                        absolute
-                        left-3
-                        top-3
-                      "
-                    >
+                    ?.length > 0 && (
+                    <div className="absolute left-3 top-3">
                       <span
                         className="
                           bg-[var(--color-text)]
@@ -890,11 +931,11 @@ export function ProductDetail({
                           text-white
                         "
                       >
-                        {
-                          safeProduct
-                            .merchandising
-                            .badges[0]
-                        }
+                        {safeProduct.merchandising.badges[0]
+                          .replace(
+                            "-",
+                            " ",
+                          )}
                       </span>
                     </div>
                   )}
@@ -903,7 +944,7 @@ export function ProductDetail({
             </div>
 
             {/* =================================================
-                PRODUCT INFO
+                PRODUCT INFORMATION
             ================================================= */}
 
             <div
@@ -913,7 +954,9 @@ export function ProductDetail({
                 lg:top-24
               "
             >
-              {/* TITLE */}
+              {/* =============================================
+                  TITLE
+              ============================================= */}
 
               <div className="border-b border-[var(--color-border)] pb-5">
                 <div className="flex items-start justify-between gap-4">
@@ -937,18 +980,16 @@ export function ProductDetail({
                       className="
                         max-w-xl
                         font-display
-                        text-[26px]
+                        text-[25px]
                         font-medium
-                        leading-[1.08]
+                        leading-[1.1]
                         tracking-[-0.02em]
                         text-[var(--color-text)]
-                        sm:text-[30px]
-                        lg:text-[32px]
+                        sm:text-[28px]
+                        lg:text-[30px]
                       "
                     >
-                      {
-                        safeProduct.name
-                      }
+                      {safeProduct.name}
                     </h1>
                   </div>
 
@@ -960,7 +1001,7 @@ export function ProductDetail({
                           !current,
                       )
                     }
-                    aria-label="Wishlist"
+                    aria-label="Add to wishlist"
                     className={`
                       flex
                       h-9
@@ -969,10 +1010,11 @@ export function ProductDetail({
                       items-center
                       justify-center
                       border
+                      transition
                       ${
                         wishlist
                           ? "border-[var(--color-text)] bg-[var(--color-text)] text-white"
-                          : "border-[var(--color-border)] text-[var(--color-text)]"
+                          : "border-[var(--color-border)] text-[var(--color-text)] hover:border-[var(--color-text)]"
                       }
                     `}
                   >
@@ -991,13 +1033,15 @@ export function ProductDetail({
                 </div>
               </div>
 
-              {/* PRICE */}
+              {/* =============================================
+                  PRICE
+              ============================================= */}
 
               <div className="border-b border-[var(--color-border)] py-5">
                 <div className="flex flex-wrap items-center gap-3">
                   <span
                     className="
-                      text-[23px]
+                      text-[22px]
                       font-semibold
                       tracking-[-0.02em]
                       text-[var(--color-text)]
@@ -1047,11 +1091,21 @@ export function ProductDetail({
                 </p>
               </div>
 
-              {/* AVAILABILITY */}
+              {/* =============================================
+                  AVAILABILITY
+              ============================================= */}
 
               <div className="border-b border-[var(--color-border)] py-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-[9px] font-semibold uppercase tracking-[0.13em] text-[var(--color-text-muted)]">
+                <div className="flex items-center justify-between gap-4">
+                  <span
+                    className="
+                      text-[9px]
+                      font-semibold
+                      uppercase
+                      tracking-[0.13em]
+                      text-[var(--color-text-muted)]
+                    "
+                  >
                     Availability
                   </span>
 
@@ -1083,11 +1137,20 @@ export function ProductDetail({
                 </div>
               </div>
 
-              {/* QUANTITY + CART */}
+              {/* =============================================
+                  PURCHASE
+              ============================================= */}
 
               <div className="border-b border-[var(--color-border)] py-5">
                 <div className="mb-3 flex items-center justify-between">
-                  <span className="text-[9px] font-semibold uppercase tracking-[0.13em]">
+                  <span
+                    className="
+                      text-[9px]
+                      font-semibold
+                      uppercase
+                      tracking-[0.13em]
+                    "
+                  >
                     Quantity
                   </span>
 
@@ -1101,7 +1164,15 @@ export function ProductDetail({
                 <div className="flex gap-2">
                   {/* QUANTITY */}
 
-                  <div className="flex h-11 shrink-0 border border-[var(--color-border-dark)]">
+                  <div
+                    className="
+                      flex
+                      h-11
+                      shrink-0
+                      border
+                      border-[var(--color-border-dark)]
+                    "
+                  >
                     <button
                       type="button"
                       onClick={
@@ -1113,11 +1184,13 @@ export function ProductDetail({
                         maxStock <=
                           0
                       }
+                      aria-label="Decrease quantity"
                       className="
                         flex
                         w-9
                         items-center
                         justify-center
+                        text-[var(--color-text)]
                         disabled:opacity-30
                       "
                     >
@@ -1152,11 +1225,13 @@ export function ProductDetail({
                         quantity >=
                           maxStock
                       }
+                      aria-label="Increase quantity"
                       className="
                         flex
                         w-9
                         items-center
                         justify-center
+                        text-[var(--color-text)]
                         disabled:opacity-30
                       "
                     >
@@ -1182,6 +1257,7 @@ export function ProductDetail({
                     className="
                       flex
                       h-11
+                      min-w-0
                       flex-1
                       items-center
                       justify-center
@@ -1195,6 +1271,7 @@ export function ProductDetail({
                       text-white
                       transition
                       hover:bg-[var(--color-accent-dark)]
+                      disabled:cursor-not-allowed
                       disabled:opacity-40
                     "
                   >
@@ -1230,6 +1307,7 @@ export function ProductDetail({
                     w-full
                     border
                     border-[var(--color-text)]
+                    bg-transparent
                     text-[9px]
                     font-semibold
                     uppercase
@@ -1238,6 +1316,7 @@ export function ProductDetail({
                     transition
                     hover:bg-[var(--color-text)]
                     hover:text-white
+                    disabled:cursor-not-allowed
                     disabled:opacity-40
                   "
                 >
@@ -1247,7 +1326,9 @@ export function ProductDetail({
                 </button>
               </div>
 
-              {/* DELIVERY */}
+              {/* =============================================
+                  DELIVERY CHECK
+              ============================================= */}
 
               <div className="border-b border-[var(--color-border)] py-5">
                 <div className="flex gap-3">
@@ -1256,11 +1337,18 @@ export function ProductDetail({
                     strokeWidth={
                       1.4
                     }
-                    className="mt-0.5 shrink-0"
+                    className="mt-0.5 shrink-0 text-[var(--color-text-secondary)]"
                   />
 
                   <div className="min-w-0 flex-1">
-                    <p className="text-[9px] font-semibold uppercase tracking-[0.13em]">
+                    <p
+                      className="
+                        text-[9px]
+                        font-semibold
+                        uppercase
+                        tracking-[0.13em]
+                      "
+                    >
                       Check Delivery
                     </p>
 
@@ -1310,6 +1398,8 @@ export function ProductDetail({
                           px-3
                           text-[11px]
                           outline-none
+                          placeholder:text-[var(--color-text-muted)]
+                          focus:border-[var(--color-text)]
                         "
                       />
 
@@ -1339,6 +1429,7 @@ export function ProductDetail({
                         <Check
                           size={12}
                         />
+
                         Delivery available
                       </div>
                     )}
@@ -1346,7 +1437,9 @@ export function ProductDetail({
                 </div>
               </div>
 
-              {/* SERVICE FEATURES */}
+              {/* =============================================
+                  SERVICE FEATURES
+              ============================================= */}
 
               <div className="grid grid-cols-3">
                 <div className="border-r border-[var(--color-border)] px-2 py-4 text-center">
@@ -1355,7 +1448,7 @@ export function ProductDetail({
                     strokeWidth={
                       1.3
                     }
-                    className="mx-auto"
+                    className="mx-auto text-[var(--color-text-secondary)]"
                   />
 
                   <p className="mt-2 text-[8px] font-semibold uppercase tracking-[0.08em]">
@@ -1373,7 +1466,7 @@ export function ProductDetail({
                     strokeWidth={
                       1.3
                     }
-                    className="mx-auto"
+                    className="mx-auto text-[var(--color-text-secondary)]"
                   />
 
                   <p className="mt-2 text-[8px] font-semibold uppercase tracking-[0.08em]">
@@ -1391,7 +1484,7 @@ export function ProductDetail({
                     strokeWidth={
                       1.3
                     }
-                    className="mx-auto"
+                    className="mx-auto text-[var(--color-text-secondary)]"
                   />
 
                   <p className="mt-2 text-[8px] font-semibold uppercase tracking-[0.08em]">
@@ -1409,7 +1502,7 @@ export function ProductDetail({
       </section>
 
       {/* ======================================================
-          DETAILS
+          PRODUCT INFORMATION
       ====================================================== */}
 
       <section className="border-b border-[var(--color-border-light)] bg-[var(--color-surface)]">
@@ -1435,11 +1528,21 @@ export function ProductDetail({
               lg:gap-16
             "
           >
-            {/* DETAILS */}
+            {/* =================================================
+                ACCORDIONS
+            ================================================= */}
 
             <div className="min-w-0">
               <div className="mb-5">
-                <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
+                <p
+                  className="
+                    text-[9px]
+                    font-semibold
+                    uppercase
+                    tracking-[0.16em]
+                    text-[var(--color-text-muted)]
+                  "
+                >
                   Product Information
                 </p>
 
@@ -1447,10 +1550,11 @@ export function ProductDetail({
                   className="
                     mt-2
                     font-display
-                    text-[25px]
+                    text-[24px]
                     font-medium
                     tracking-[-0.02em]
                     text-[var(--color-text)]
+                    sm:text-[26px]
                   "
                 >
                   Product Details
@@ -1595,7 +1699,12 @@ export function ProductDetail({
                             key={
                               label
                             }
-                            className="border-b border-[var(--color-border-light)] py-3 pr-5"
+                            className="
+                              border-b
+                              border-[var(--color-border-light)]
+                              py-3
+                              pr-5
+                            "
                           >
                             <p className="text-[8px] font-semibold uppercase tracking-[0.12em] text-[var(--color-text-muted)]">
                               {label}
@@ -1708,7 +1817,9 @@ export function ProductDetail({
               </div>
             </div>
 
-            {/* DESKTOP SIDE CARD */}
+            {/* =================================================
+                AY E SHA STANDARD
+            ================================================= */}
 
             <aside className="hidden lg:block">
               <div
@@ -1719,7 +1830,15 @@ export function ProductDetail({
                   p-6
                 "
               >
-                <p className="text-[8px] font-semibold uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
+                <p
+                  className="
+                    text-[8px]
+                    font-semibold
+                    uppercase
+                    tracking-[0.16em]
+                    text-[var(--color-text-muted)]
+                  "
+                >
                   Ayesha Fashion
                 </p>
 
@@ -1737,7 +1856,14 @@ export function ProductDetail({
                   designed.
                 </h3>
 
-                <p className="mt-4 text-[11px] leading-6 text-[var(--color-text-secondary)]">
+                <p
+                  className="
+                    mt-4
+                    text-[11px]
+                    leading-6
+                    text-[var(--color-text-secondary)]
+                  "
+                >
                   Designed with an
                   emphasis on elegance,
                   comfort and timeless
@@ -1799,9 +1925,17 @@ export function ProductDetail({
               xl:px-12
             "
           >
-            <div className="mb-6 flex items-end justify-between">
+            <div className="mb-6 flex items-end justify-between gap-4">
               <div>
-                <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
+                <p
+                  className="
+                    text-[9px]
+                    font-semibold
+                    uppercase
+                    tracking-[0.16em]
+                    text-[var(--color-text-muted)]
+                  "
+                >
                   You may also like
                 </p>
 
@@ -1809,9 +1943,10 @@ export function ProductDetail({
                   className="
                     mt-2
                     font-display
-                    text-[25px]
+                    text-[24px]
                     font-medium
                     tracking-[-0.02em]
+                    sm:text-[26px]
                   "
                 >
                   More from this edit
@@ -1827,7 +1962,16 @@ export function ProductDetail({
                     )}`,
                   )
                 }
-                className="hidden text-[9px] font-semibold uppercase tracking-[0.13em] underline underline-offset-4 sm:block"
+                className="
+                  hidden
+                  text-[9px]
+                  font-semibold
+                  uppercase
+                  tracking-[0.13em]
+                  underline
+                  underline-offset-4
+                  sm:block
+                "
               >
                 View all
               </button>
@@ -1853,12 +1997,12 @@ export function ProductDetail({
                     )
                       ? item.media.find(
                           (
-                            media,
+                            mediaItem,
                           ) =>
-                            media?.type ===
+                            mediaItem?.type ===
                               "image" &&
                             Boolean(
-                              media?.src,
+                              mediaItem?.src,
                             ),
                         )
                       : null;
@@ -1874,7 +2018,11 @@ export function ProductDetail({
                           `/products/${item._id}`,
                         )
                       }
-                      className="group min-w-0 text-left"
+                      className="
+                        group
+                        min-w-0
+                        text-left
+                      "
                     >
                       <div
                         className="
@@ -1902,19 +2050,43 @@ export function ProductDetail({
                             "
                           />
                         ) : (
-                          <div className="flex h-full items-center justify-center text-[8px] uppercase tracking-[0.12em] text-[var(--color-text-muted)]">
+                          <div
+                            className="
+                              flex
+                              h-full
+                              items-center
+                              justify-center
+                              text-[8px]
+                              uppercase
+                              tracking-[0.12em]
+                              text-[var(--color-text-muted)]
+                            "
+                          >
                             No image
                           </div>
                         )}
                       </div>
 
-                      <p className="mt-3 line-clamp-2 text-[11px] font-medium leading-5">
-                        {
-                          item.name
-                        }
+                      <p
+                        className="
+                          mt-3
+                          line-clamp-2
+                          text-[11px]
+                          font-medium
+                          leading-5
+                          text-[var(--color-text)]
+                        "
+                      >
+                        {item.name}
                       </p>
 
-                      <p className="mt-1 text-[11px] text-[var(--color-text-secondary)]">
+                      <p
+                        className="
+                          mt-1
+                          text-[11px]
+                          text-[var(--color-text-secondary)]
+                        "
+                      >
                         {formatPrice(
                           item
                             .pricing
