@@ -10,29 +10,41 @@ interface ProductJsonLdProps {
   categoryName?: string;
 }
 
-function absoluteUrl(value: string): string {
+function absoluteUrl(
+  value: string,
+): string {
   try {
-    return new URL(value, siteConfig.url).toString();
+    return new URL(
+      value,
+      siteConfig.url,
+    ).toString();
   } catch {
     return value;
   }
 }
 
-function getAvailabilityUrl(product: Product): string {
-  const inventory = product.inventory ?? {
-    stock: 0,
-    reserved: 0,
-    lowStockThreshold: 2,
-  };
+function getAvailabilityUrl(
+  product: Product,
+): string {
+  const inventory =
+    product?.inventory ?? {
+      stock: 0,
+      reserved: 0,
+      lowStockThreshold: 2,
+    };
 
-  const availability = getProductAvailability({
-    inventory: {
-      stock: inventory.stock ?? 0,
-      reserved: inventory.reserved ?? 0,
-      lowStockThreshold:
-        inventory.lowStockThreshold ?? 2,
-    },
-  });
+  const availability =
+    getProductAvailability({
+      inventory: {
+        stock:
+          inventory.stock ?? 0,
+        reserved:
+          inventory.reserved ?? 0,
+        lowStockThreshold:
+          inventory.lowStockThreshold ??
+          2,
+      },
+    });
 
   if (availability.isSoldOut) {
     return "https://schema.org/OutOfStock";
@@ -45,10 +57,13 @@ function getAvailabilityUrl(product: Product): string {
   return "https://schema.org/InStock";
 }
 
-function getImages(product: Product): string[] {
-  const media = Array.isArray(product.media)
-    ? product.media
-    : [];
+function getImages(
+  product: Product,
+): string[] {
+  const media =
+    Array.isArray(product?.media)
+      ? product.media
+      : [];
 
   return Array.from(
     new Set(
@@ -70,34 +85,55 @@ function getImages(product: Product): string[] {
   );
 }
 
-function getDescription(product: Product): string {
+function getDescription(
+  product: Product,
+): string {
   return (
-    product.seo?.description ||
-    product.content?.description ||
-    `Discover ${product.name} from ${siteConfig.name}.`
+    product?.seo?.description ||
+    product?.content?.description ||
+    `Discover ${
+      product?.name ?? "this product"
+    } from ${siteConfig.name}.`
   );
 }
 
-function getOffer(product: Product) {
-  const pricing = product.pricing ?? {
-    mrp: 0,
-    sellingPrice: 0,
-    currency: "INR" as const,
-  };
+function getOffer(
+  product: Product,
+) {
+  const pricing =
+    product?.pricing ?? {
+      mrp: 0,
+      sellingPrice: 0,
+      currency: "INR" as const,
+    };
 
   const productId =
-    product._id ||
-    product.id;
+    product?._id ||
+    product?.id ||
+    "";
 
   return {
     "@type": "Offer",
+
     url: `${siteConfig.url}/products/${productId}`,
-    sku: product.id || product._id,
-    price: pricing.sellingPrice ?? 0,
-    priceCurrency: pricing.currency ?? "INR",
-    availability: getAvailabilityUrl(product),
+
+    sku:
+      product?.id ||
+      product?._id ||
+      "",
+
+    price:
+      pricing?.sellingPrice ?? 0,
+
+    priceCurrency:
+      pricing?.currency ?? "INR",
+
+    availability:
+      getAvailabilityUrl(product),
+
     itemCondition:
       "https://schema.org/NewCondition",
+
     seller: {
       "@type": "Organization",
       name: siteConfig.name,
@@ -110,31 +146,57 @@ export function ProductJsonLd({
   product,
   categoryName,
 }: ProductJsonLdProps) {
+  if (!product) {
+    return null;
+  }
+
   const productId =
     product._id ||
-    product.id;
+    product.id ||
+    "";
 
   const productUrl =
     `${siteConfig.url}/products/${productId}`;
 
-  const images = getImages(product);
+  const images =
+    getImages(product);
 
-  const availableStock = getAvailableStock(
-    product,
-  );
+  const availableStock =
+    getAvailableStock(product);
 
-  const productNode: Record<string, unknown> = {
+  const productNode: Record<
+    string,
+    unknown
+  > = {
     "@type": "Product",
-    "@id": `${productUrl}#product`,
-    name: product.name,
-    description: getDescription(product),
+
+    "@id":
+      `${productUrl}#product`,
+
+    name:
+      product.name ||
+      "Product",
+
+    description:
+      getDescription(product),
+
     url: productUrl,
-    image: images,
-    sku: product.id || product._id,
+
+    ...(images.length > 0
+      ? {
+          image: images,
+        }
+      : {}),
+
+    sku:
+      product.id ||
+      product._id ||
+      "",
 
     ...(categoryName
       ? {
-          category: categoryName,
+          category:
+            categoryName,
         }
       : {}),
 
@@ -143,26 +205,36 @@ export function ProductJsonLd({
       name: siteConfig.name,
     },
 
-    offers: getOffer(product),
+    offers:
+      getOffer(product),
   };
 
   if (availableStock >= 0) {
     productNode.inventoryLevel = {
-      "@type": "QuantitativeValue",
-      value: availableStock,
+      "@type":
+        "QuantitativeValue",
+      value:
+        availableStock,
     };
   }
 
   const jsonLd = {
-    "@context": "https://schema.org",
-    "@graph": [productNode],
+    "@context":
+      "https://schema.org",
+
+    "@graph": [
+      productNode,
+    ],
   };
 
   return (
     <script
       type="application/ld+json"
       dangerouslySetInnerHTML={{
-        __html: JSON.stringify(jsonLd),
+        __html:
+          JSON.stringify(
+            jsonLd,
+          ),
       }}
     />
   );

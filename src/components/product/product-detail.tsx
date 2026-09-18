@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import type { Product } from "@/types/product";
 import { getAvailableStock } from "@/types/product";
@@ -21,14 +21,177 @@ interface ProductDetailProps {
   recommendations?: Product[];
 }
 
+function normalizeProduct(product: Product): Product {
+  const safeProduct = product ?? ({} as Product);
+
+  return {
+    ...safeProduct,
+
+    _id:
+      safeProduct._id ??
+      safeProduct.id ??
+      "",
+
+    id:
+      safeProduct.id ??
+      safeProduct._id ??
+      "",
+
+    slug:
+      safeProduct.slug ??
+      "",
+
+    name:
+      safeProduct.name ??
+      "Product",
+
+    categoryId:
+      safeProduct.categoryId ??
+      "",
+
+    pricing: {
+      mrp:
+        safeProduct.pricing?.mrp ??
+        0,
+
+      sellingPrice:
+        safeProduct.pricing?.sellingPrice ??
+        0,
+
+      currency:
+        safeProduct.pricing?.currency ??
+        "INR",
+    },
+
+    inventory: {
+      stock:
+        safeProduct.inventory?.stock ??
+        0,
+
+      reserved:
+        safeProduct.inventory?.reserved ??
+        0,
+
+      lowStockThreshold:
+        safeProduct.inventory
+          ?.lowStockThreshold ??
+        2,
+    },
+
+    content: {
+      description:
+        safeProduct.content
+          ?.description ??
+        "",
+
+      descriptionFormat:
+        safeProduct.content
+          ?.descriptionFormat ??
+        "plain",
+
+      richContent:
+        safeProduct.content
+          ?.richContent,
+    },
+
+    media: Array.isArray(
+      safeProduct.media,
+    )
+      ? safeProduct.media
+      : [],
+
+    merchandising: {
+      isNew:
+        safeProduct.merchandising
+          ?.isNew ??
+        false,
+
+      isFeatured:
+        safeProduct.merchandising
+          ?.isFeatured ??
+        false,
+
+      isBestSeller:
+        safeProduct.merchandising
+          ?.isBestSeller ??
+        false,
+
+      badges:
+        Array.isArray(
+          safeProduct.merchandising
+            ?.badges,
+        )
+          ? safeProduct.merchandising
+              .badges
+          : [],
+
+      ranking:
+        safeProduct.merchandising
+          ?.ranking,
+    },
+
+    seo: safeProduct.seo
+      ? {
+          ...safeProduct.seo,
+          keywords:
+            Array.isArray(
+              safeProduct.seo
+                .keywords,
+            )
+              ? safeProduct.seo
+                  .keywords
+              : [],
+        }
+      : undefined,
+
+    status:
+      safeProduct.status ??
+      "draft",
+
+    publishedAt:
+      safeProduct.publishedAt,
+
+    createdAt:
+      safeProduct.createdAt ??
+      "",
+
+    updatedAt:
+      safeProduct.updatedAt ??
+      "",
+  };
+}
+
 export function ProductDetail({
   product,
   recommendations = [],
 }: ProductDetailProps) {
-  const [quantity, setQuantity] = useState(1);
-  const [categoryLabel, setCategoryLabel] = useState("");
+  const safeProduct = useMemo(
+    () => normalizeProduct(product),
+    [product],
+  );
 
-  const maxStock = getAvailableStock(product);
+  const safeRecommendations = useMemo(
+    () =>
+      Array.isArray(
+        recommendations,
+      )
+        ? recommendations
+            .filter(Boolean)
+            .map(normalizeProduct)
+        : [],
+    [recommendations],
+  );
+
+  const [quantity, setQuantity] =
+    useState(1);
+
+  const [categoryLabel, setCategoryLabel] =
+    useState("");
+
+  const maxStock =
+    getAvailableStock(
+      safeProduct,
+    );
 
   const safeQuantity = Math.min(
     Math.max(quantity, 1),
@@ -40,14 +203,22 @@ export function ProductDetail({
 
     async function loadCategory() {
       try {
-        const categories = await getCategories();
+        const categories =
+          await getCategories();
 
-        const category = categories.find(
-          (item) => item.id === product.categoryId,
-        );
+        const category =
+          Array.isArray(categories)
+            ? categories.find(
+                (item) =>
+                  item.id ===
+                  safeProduct.categoryId,
+              )
+            : undefined;
 
         if (!cancelled) {
-          setCategoryLabel(category?.name ?? "");
+          setCategoryLabel(
+            category?.name ?? "",
+          );
         }
       } catch (error) {
         console.error(
@@ -61,7 +232,7 @@ export function ProductDetail({
       }
     }
 
-    if (product.categoryId) {
+    if (safeProduct.categoryId) {
       loadCategory();
     } else {
       setCategoryLabel("");
@@ -70,7 +241,7 @@ export function ProductDetail({
     return () => {
       cancelled = true;
     };
-  }, [product.categoryId]);
+  }, [safeProduct.categoryId]);
 
   return (
     <main className="bg-[var(--color-bg)]">
@@ -101,8 +272,6 @@ export function ProductDetail({
             xl:px-12
           "
         >
-          {/* Editorial breadcrumb cue */}
-
           <div
             className="
               mb-6
@@ -145,19 +314,11 @@ export function ProductDetail({
               xl:gap-20
             "
           >
-            {/* =================================================
-                PRODUCT MEDIA
-            ================================================= */}
-
             <div className="min-w-0">
               <ProductMediaGallery
-                product={product}
+                product={safeProduct}
               />
             </div>
-
-            {/* =================================================
-                PRODUCT INFORMATION
-            ================================================= */}
 
             <div
               className="
@@ -167,13 +328,19 @@ export function ProductDetail({
               "
             >
               <ProductInfo
-                product={product}
+                product={safeProduct}
                 quantity={safeQuantity}
                 onQuantityChange={(value) =>
                   setQuantity(
                     Math.min(
-                      Math.max(value, 1),
-                      Math.max(maxStock, 1),
+                      Math.max(
+                        value,
+                        1,
+                      ),
+                      Math.max(
+                        maxStock,
+                        1,
+                      ),
                     ),
                   )
                 }
@@ -216,10 +383,6 @@ export function ProductDetail({
               xl:gap-28
             "
           >
-            {/* =================================================
-                ACCORDIONS
-            ================================================= */}
-
             <div className="min-w-0">
               <div className="mb-8">
                 <p className="eyebrow">
@@ -252,7 +415,7 @@ export function ProductDetail({
                 defaultOpen
               >
                 <ProductDescription
-                  product={product}
+                  product={safeProduct}
                 />
               </ProductAccordion>
 
@@ -269,7 +432,8 @@ export function ProductDetail({
                     text-[var(--color-text-secondary)]
                   "
                 >
-                  {product.content.description ? (
+                  {safeProduct.content
+                    ?.description ? (
                     <div
                       className="
                         prose
@@ -279,13 +443,15 @@ export function ProductDetail({
                       "
                       dangerouslySetInnerHTML={{
                         __html:
-                          product.content.description,
+                          safeProduct.content
+                            .description,
                       }}
                     />
                   ) : (
                     <p>
-                      Product care information
-                      will be updated soon.
+                      Product care
+                      information will
+                      be updated soon.
                     </p>
                   )}
                 </div>
@@ -304,10 +470,11 @@ export function ProductDetail({
                   "
                 >
                   <p>
-                    Please refer to the product
-                    description and available
-                    product information for sizing
-                    details.
+                    Please refer to the
+                    product description
+                    and available
+                    product information
+                    for sizing details.
                   </p>
                 </div>
               </ProductAccordion>
@@ -316,7 +483,7 @@ export function ProductDetail({
 
               <ProductAccordion title="Product Details">
                 <ProductSpecifications
-                  product={product}
+                  product={safeProduct}
                 />
               </ProductAccordion>
 
@@ -332,9 +499,11 @@ export function ProductDetail({
                     text-[var(--color-text-secondary)]
                   "
                 >
-                  Shipping and delivery information
-                  will be provided during checkout
-                  based on the delivery address.
+                  Shipping and delivery
+                  information will be
+                  provided during checkout
+                  based on the delivery
+                  address.
                 </p>
               </ProductAccordion>
 
@@ -350,15 +519,15 @@ export function ProductDetail({
                     text-[var(--color-text-secondary)]
                   "
                 >
-                  Please refer to the store return
-                  and exchange policy applicable to
-                  this product.
+                  Please refer to the
+                  store return and
+                  exchange policy
+                  applicable to this
+                  product.
                 </p>
               </ProductAccordion>
 
-              {/* =================================================
-                  REVIEWS
-              ================================================= */}
+              {/* REVIEWS */}
 
               <div
                 className="
@@ -373,14 +542,12 @@ export function ProductDetail({
                 </p>
 
                 <ProductReviews
-                  product={product}
+                  product={safeProduct}
                 />
               </div>
             </div>
 
-            {/* =================================================
-                THE AYESHA STANDARD
-            ================================================= */}
+            {/* THE AYESHA STANDARD */}
 
             <aside className="hidden lg:block">
               <div
@@ -422,10 +589,11 @@ export function ProductDetail({
                     text-[var(--color-text-secondary)]
                   "
                 >
-                  Every piece is thoughtfully
-                  designed with an emphasis on
-                  elegance, comfort and enduring
-                  style.
+                  Every piece is
+                  thoughtfully designed
+                  with an emphasis on
+                  elegance, comfort and
+                  enduring style.
                 </p>
 
                 <div className="my-7 h-px bg-[var(--color-border)]" />
@@ -445,9 +613,11 @@ export function ProductDetail({
                       "
                     >
                       ₹
-                      {product.pricing.sellingPrice.toLocaleString(
-                        "en-IN",
-                      )}
+                      {safeProduct.pricing
+                        ?.sellingPrice
+                        ?.toLocaleString(
+                          "en-IN",
+                        ) ?? "0"}
                     </p>
                   </div>
 
@@ -487,8 +657,8 @@ export function ProductDetail({
                       text-[var(--color-accent-dark)]
                     "
                   >
-                    Made for moments worth
-                    remembering.
+                    Made for moments
+                    worth remembering.
                   </p>
                 </div>
               </div>
@@ -502,8 +672,10 @@ export function ProductDetail({
       ===================================================== */}
 
       <ProductRecommendations
-        recommendations={recommendations}
-        product={product}
+        recommendations={
+          safeRecommendations
+        }
+        product={safeProduct}
       />
 
       {/* =====================================================
@@ -511,7 +683,7 @@ export function ProductDetail({
       ===================================================== */}
 
       <ProductStickyBuyBar
-        product={product}
+        product={safeProduct}
       />
     </main>
   );

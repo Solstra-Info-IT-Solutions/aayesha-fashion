@@ -20,6 +20,146 @@ interface ProductPageProps {
   }>;
 }
 
+function normalizeProduct(
+  product: Product,
+): Product {
+  const safeProduct =
+    product ?? ({} as Product);
+
+  return {
+    ...safeProduct,
+
+    _id:
+      safeProduct._id ??
+      safeProduct.id ??
+      "",
+
+    id:
+      safeProduct.id ??
+      safeProduct._id ??
+      "",
+
+    slug:
+      safeProduct.slug ?? "",
+
+    name:
+      safeProduct.name ??
+      "Product",
+
+    categoryId:
+      safeProduct.categoryId ??
+      "",
+
+    pricing: {
+      mrp:
+        safeProduct.pricing?.mrp ??
+        0,
+
+      sellingPrice:
+        safeProduct.pricing
+          ?.sellingPrice ??
+        0,
+
+      currency:
+        safeProduct.pricing
+          ?.currency ??
+        "INR",
+    },
+
+    inventory: {
+      stock:
+        safeProduct.inventory
+          ?.stock ?? 0,
+
+      reserved:
+        safeProduct.inventory
+          ?.reserved ?? 0,
+
+      lowStockThreshold:
+        safeProduct.inventory
+          ?.lowStockThreshold ??
+        2,
+    },
+
+    content: {
+      description:
+        safeProduct.content
+          ?.description ?? "",
+
+      descriptionFormat:
+        safeProduct.content
+          ?.descriptionFormat ??
+        "plain",
+
+      richContent:
+        safeProduct.content
+          ?.richContent,
+    },
+
+    media: Array.isArray(
+      safeProduct.media,
+    )
+      ? safeProduct.media
+      : [],
+
+    merchandising: {
+      isNew:
+        safeProduct.merchandising
+          ?.isNew ?? false,
+
+      isFeatured:
+        safeProduct.merchandising
+          ?.isFeatured ?? false,
+
+      isBestSeller:
+        safeProduct.merchandising
+          ?.isBestSeller ?? false,
+
+      badges:
+        Array.isArray(
+          safeProduct.merchandising
+            ?.badges,
+        )
+          ? safeProduct.merchandising
+              .badges
+          : [],
+
+      ranking:
+        safeProduct.merchandising
+          ?.ranking,
+    },
+
+    seo: safeProduct.seo
+      ? {
+          ...safeProduct.seo,
+          keywords:
+            Array.isArray(
+              safeProduct.seo
+                .keywords,
+            )
+              ? safeProduct.seo
+                  .keywords
+              : [],
+        }
+      : undefined,
+
+    status:
+      safeProduct.status ??
+      "draft",
+
+    publishedAt:
+      safeProduct.publishedAt,
+
+    createdAt:
+      safeProduct.createdAt ??
+      "",
+
+    updatedAt:
+      safeProduct.updatedAt ??
+      "",
+  };
+}
+
 /* ============================================================
    DYNAMIC PRODUCT METADATA
 ============================================================ */
@@ -30,7 +170,22 @@ export async function generateMetadata({
   const { id } = await params;
 
   try {
-    const product = await getProductById(id);
+    const response =
+      await getProductById(id);
+
+    if (!response) {
+      return {
+        title:
+          "Product Not Found",
+        robots: {
+          index: false,
+          follow: false,
+        },
+      };
+    }
+
+    const product =
+      normalizeProduct(response);
 
     const title =
       product.seo?.title ||
@@ -45,14 +200,20 @@ export async function generateMetadata({
       product.seo?.canonical ||
       `/products/${product._id}`;
 
+    const media =
+      Array.isArray(product.media)
+        ? product.media
+        : [];
+
     const primaryMedia =
-      product.media?.find(
-        (media) =>
-          media.isPrimary &&
-          media.type === "image",
+      media.find(
+        (item) =>
+          item?.isPrimary &&
+          item?.type === "image",
       ) ??
-      product.media?.find(
-        (media) => media.type === "image",
+      media.find(
+        (item) =>
+          item?.type === "image",
       );
 
     const primaryImage =
@@ -63,7 +224,8 @@ export async function generateMetadata({
       description,
 
       keywords:
-        product.seo?.keywords?.length
+        product.seo?.keywords
+          ?.length
           ? product.seo.keywords
           : undefined,
 
@@ -71,7 +233,8 @@ export async function generateMetadata({
         canonical,
       },
 
-      robots: product.seo?.noIndex
+      robots: product.seo
+        ?.noIndex
         ? {
             index: false,
             follow: false,
@@ -90,7 +253,8 @@ export async function generateMetadata({
         images: primaryImage
           ? [
               {
-                url: primaryImage,
+                url:
+                  primaryImage,
                 alt:
                   primaryMedia?.alt ||
                   product.name,
@@ -100,7 +264,9 @@ export async function generateMetadata({
       },
 
       twitter: {
-        card: "summary_large_image",
+        card:
+          "summary_large_image",
+
         title,
         description,
 
@@ -109,9 +275,15 @@ export async function generateMetadata({
           : undefined,
       },
     };
-  } catch {
+  } catch (error) {
+    console.error(
+      "Failed to generate product metadata:",
+      error,
+    );
+
     return {
-      title: "Product Not Found",
+      title:
+        "Product Not Found",
 
       description:
         "The requested product could not be found.",
@@ -133,33 +305,28 @@ export default async function ProductPage({
 }: ProductPageProps) {
   const { id } = await params;
 
-  /* ----------------------------------------------------------
-     VALIDATE ID
-  ---------------------------------------------------------- */
-
   if (!id) {
     notFound();
   }
 
-  /* ----------------------------------------------------------
-     LOAD PRODUCT BY MONGODB _ID
-  ---------------------------------------------------------- */
-
   let product: Product;
 
   try {
-    product =
+    const response =
       await getProductById(id);
+
+    if (!response) {
+      notFound();
+    }
+
+    product =
+      normalizeProduct(response);
   } catch (error) {
     console.error(
       "Failed to load product:",
       error,
     );
 
-    notFound();
-  }
-
-  if (!product) {
     notFound();
   }
 
@@ -175,15 +342,17 @@ export default async function ProductPage({
     const categories =
       await getCategories();
 
-    const category =
-      categories.find(
-        (item) =>
-          item.id ===
-          product.categoryId,
-      );
+    if (Array.isArray(categories)) {
+      const category =
+        categories.find(
+          (item) =>
+            item.id ===
+            product.categoryId,
+        );
 
-    categoryName =
-      category?.name;
+      categoryName =
+        category?.name;
+    }
   } catch (error) {
     console.error(
       "Failed to load product category:",
@@ -199,35 +368,39 @@ export default async function ProductPage({
     Product[] = [];
 
   try {
-    const categoryResponse =
-      await getProducts({
-        page: 1,
-        limit: 8,
-        categoryId:
-          product.categoryId,
-        status: "active",
-        sort: "featured",
-      });
+    if (product.categoryId) {
+      const categoryResponse =
+        await getProducts({
+          page: 1,
+          limit: 8,
+          categoryId:
+            product.categoryId,
+          status: "active",
+          sort: "featured",
+        });
 
-    const relatedProducts =
-      Array.isArray(
-        categoryResponse?.products,
-      )
-        ? categoryResponse.products
-        : [];
-
-    recommendations =
-      relatedProducts
-        .filter(
-          (item) =>
-            item._id !==
-              product._id &&
-            item.status ===
-              "active" &&
-            item.categoryId ===
-              product.categoryId,
+      const relatedProducts =
+        Array.isArray(
+          categoryResponse?.products,
         )
-        .slice(0, 4);
+          ? categoryResponse.products
+          : [];
+
+      recommendations =
+        relatedProducts
+          .filter(
+            (item) =>
+              item &&
+              item._id !==
+                product._id &&
+              item.status ===
+                "active" &&
+              item.categoryId ===
+                product.categoryId,
+          )
+          .slice(0, 4)
+          .map(normalizeProduct);
+    }
   } catch (error) {
     console.error(
       "Failed to load product recommendations:",
@@ -236,23 +409,17 @@ export default async function ProductPage({
   }
 
   /* ----------------------------------------------------------
-     RENDER PRODUCT PAGE
+     RENDER
   ---------------------------------------------------------- */
 
   return (
     <>
-      {/* ======================================================
-          PRODUCT STRUCTURED DATA
-      ====================================================== */}
-
       <ProductJsonLd
         product={product}
-        categoryName={categoryName}
+        categoryName={
+          categoryName
+        }
       />
-
-      {/* ======================================================
-          BREADCRUMB STRUCTURED DATA
-      ====================================================== */}
 
       <BreadcrumbJsonLd
         items={[
@@ -269,24 +436,26 @@ export default async function ProductPage({
           ...(categoryName
             ? [
                 {
-                  name: categoryName,
-                  url: `/shop?category=${encodeURIComponent(
-                    product.categoryId,
-                  )}`,
+                  name:
+                    categoryName,
+
+                  url:
+                    `/shop?category=${encodeURIComponent(
+                      product.categoryId,
+                    )}`,
                 },
               ]
             : []),
 
           {
-            name: product.name,
-            url: `/products/${product._id}`,
+            name:
+              product.name,
+
+            url:
+              `/products/${product._id}`,
           },
         ]}
       />
-
-      {/* ======================================================
-          PRODUCT DETAIL
-      ====================================================== */}
 
       <ProductDetail
         product={product}
