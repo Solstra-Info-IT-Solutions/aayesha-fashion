@@ -19,12 +19,18 @@ function absoluteUrl(value: string): string {
 }
 
 function getAvailabilityUrl(product: Product): string {
+  const inventory = product.inventory ?? {
+    stock: 0,
+    reserved: 0,
+    lowStockThreshold: 2,
+  };
+
   const availability = getProductAvailability({
     inventory: {
-      stock: product.inventory?.stock ?? 0,
-      reserved: product.inventory?.reserved ?? 0,
+      stock: inventory.stock ?? 0,
+      reserved: inventory.reserved ?? 0,
       lowStockThreshold:
-        product.inventory?.lowStockThreshold ?? 2,
+        inventory.lowStockThreshold ?? 2,
     },
   });
 
@@ -40,20 +46,25 @@ function getAvailabilityUrl(product: Product): string {
 }
 
 function getImages(product: Product): string[] {
+  const media = Array.isArray(product.media)
+    ? product.media
+    : [];
+
   return Array.from(
     new Set(
-      (product.media ?? [])
+      media
         .filter(
-          (media) =>
-            media.type === "image" &&
-            Boolean(media.src),
+          (item) =>
+            item?.type === "image" &&
+            Boolean(item?.src),
         )
         .sort(
           (a, b) =>
-            a.sortOrder - b.sortOrder,
+            (a?.sortOrder ?? 0) -
+            (b?.sortOrder ?? 0),
         )
-        .map((media) =>
-          absoluteUrl(media.src),
+        .map((item) =>
+          absoluteUrl(item.src),
         ),
     ),
   );
@@ -68,12 +79,22 @@ function getDescription(product: Product): string {
 }
 
 function getOffer(product: Product) {
+  const pricing = product.pricing ?? {
+    mrp: 0,
+    sellingPrice: 0,
+    currency: "INR" as const,
+  };
+
+  const productId =
+    product._id ||
+    product.id;
+
   return {
     "@type": "Offer",
-    url: `${siteConfig.url}/products/${product.slug}`,
-    sku: product.id,
-    price: product.pricing.sellingPrice,
-    priceCurrency: product.pricing.currency,
+    url: `${siteConfig.url}/products/${productId}`,
+    sku: product.id || product._id,
+    price: pricing.sellingPrice ?? 0,
+    priceCurrency: pricing.currency ?? "INR",
     availability: getAvailabilityUrl(product),
     itemCondition:
       "https://schema.org/NewCondition",
@@ -89,11 +110,18 @@ export function ProductJsonLd({
   product,
   categoryName,
 }: ProductJsonLdProps) {
+  const productId =
+    product._id ||
+    product.id;
+
   const productUrl =
-    `${siteConfig.url}/products/${product.slug}`;
+    `${siteConfig.url}/products/${productId}`;
 
   const images = getImages(product);
-  const availableStock = getAvailableStock(product);
+
+  const availableStock = getAvailableStock(
+    product,
+  );
 
   const productNode: Record<string, unknown> = {
     "@type": "Product",
@@ -102,7 +130,7 @@ export function ProductJsonLd({
     description: getDescription(product),
     url: productUrl,
     image: images,
-    sku: product.id,
+    sku: product.id || product._id,
 
     ...(categoryName
       ? {
