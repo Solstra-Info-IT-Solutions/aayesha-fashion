@@ -5,7 +5,11 @@ import { apiFetch } from "@/lib/api";
 ============================================================ */
 
 export interface CreateOrderItemPayload {
+  /**
+   * MongoDB Product _id
+   */
   productId: string;
+
   quantity: number;
 }
 
@@ -28,7 +32,7 @@ export interface CreateOrderAddressPayload {
 }
 
 /* ============================================================
-   CREATE ORDER
+   CREATE ORDER PAYLOAD
 ============================================================ */
 
 export interface CreateOrderPayload {
@@ -38,14 +42,16 @@ export interface CreateOrderPayload {
 
   shippingAddress: CreateOrderAddressPayload;
 
-  deliveryMethod:
-    | "standard"
-    | "express";
+  deliveryMethod: "standard" | "express";
 
   paymentMethod: "cod";
 
   couponCode?: string;
 
+  /**
+   * Product-only order items.
+   * Each product is an independent product.
+   */
   items: CreateOrderItemPayload[];
 }
 
@@ -78,8 +84,14 @@ export interface CreatedOrder {
 ============================================================ */
 
 export interface OrderItem {
+  /**
+   * MongoDB Product _id stored on the order item.
+   */
   productId: string;
 
+  /**
+   * Product snapshot fields stored at order time.
+   */
   name: string;
   sku: string;
 
@@ -136,9 +148,7 @@ export interface OrderDetails {
 
   shippingAddress: OrderAddress;
 
-  deliveryMethod:
-    | "standard"
-    | "express";
+  deliveryMethod: "standard" | "express";
 
   shippingAmount: number;
 
@@ -153,9 +163,7 @@ export interface OrderDetails {
 
   currency: "INR";
 
-  paymentMethod:
-    | "cod"
-    | "online";
+  paymentMethod: "cod" | "online";
 
   paymentStatus:
     | "pending"
@@ -176,6 +184,9 @@ export interface OrderDetails {
     | "returned"
     | "exchanged";
 
+  /**
+   * Product-only order items.
+   */
   items: OrderItem[];
 
   createdAt: string;
@@ -191,7 +202,7 @@ export interface OrderDetails {
    API RESPONSES
 ============================================================ */
 
-interface CreateOrderResponse {
+export interface CreateOrderResponse {
   order: CreatedOrder;
   publicAccessToken: string;
 }
@@ -208,11 +219,32 @@ interface GetCustomerOrdersResponse {
    CREATE ORDER
 ============================================================ */
 
+/**
+ * Creates a customer order.
+ *
+ * Endpoint:
+ * POST /api/orders
+ *
+ * Product ID:
+ * MongoDB Product._id
+ */
 export async function createOrder(
   payload: CreateOrderPayload,
   idempotencyKey: string,
   accessToken?: string | null,
-) {
+): Promise<CreateOrderResponse> {
+  if (!idempotencyKey.trim()) {
+    throw new Error(
+      "Idempotency key is required.",
+    );
+  }
+
+  if (!payload.items.length) {
+    throw new Error(
+      "Cannot create an order with an empty cart.",
+    );
+  }
+
   return apiFetch<CreateOrderResponse>(
     "/orders",
     {
@@ -220,7 +252,7 @@ export async function createOrder(
 
       headers: {
         "Idempotency-Key":
-          idempotencyKey,
+          idempotencyKey.trim(),
       },
 
       ...(accessToken
@@ -229,9 +261,7 @@ export async function createOrder(
           }
         : {}),
 
-      body: JSON.stringify(
-        payload,
-      ),
+      body: JSON.stringify(payload),
     },
   );
 }
@@ -240,13 +270,15 @@ export async function createOrder(
    GET CUSTOMER ORDERS
 ============================================================ */
 
-/*
- * Returns only orders belonging to the authenticated
- * customer.
+/**
+ * Returns only orders belonging to
+ * the authenticated customer.
+ *
+ * GET /api/orders/my-orders
  */
 export async function getCustomerOrders(
   accessToken: string,
-) {
+): Promise<GetCustomerOrdersResponse> {
   return apiFetch<GetCustomerOrdersResponse>(
     "/orders/my-orders",
     {
@@ -260,14 +292,16 @@ export async function getCustomerOrders(
    GET SINGLE ORDER — CUSTOMER / GUEST
 ============================================================ */
 
-/*
+/**
  * Customer-safe order lookup using the secure
  * publicAccessToken returned at order creation.
+ *
+ * GET /api/orders/:orderNumber?accessToken=...
  */
 export async function getOrder(
   orderNumber: string,
   accessToken: string,
-) {
+): Promise<GetOrderResponse> {
   const params = new URLSearchParams();
 
   params.set(
@@ -279,6 +313,9 @@ export async function getOrder(
     `/orders/${encodeURIComponent(
       orderNumber,
     )}?${params.toString()}`,
+    {
+      method: "GET",
+    },
   );
 }
 
@@ -286,10 +323,15 @@ export async function getOrder(
    GET CUSTOMER ORDER
 ============================================================ */
 
+/**
+ * Authenticated customer order lookup.
+ *
+ * GET /api/orders/my-orders/:orderNumber
+ */
 export async function getCustomerOrder(
   accessToken: string,
   orderNumber: string,
-) {
+): Promise<GetOrderResponse> {
   return apiFetch<GetOrderResponse>(
     `/orders/my-orders/${encodeURIComponent(
       orderNumber,

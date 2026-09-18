@@ -443,6 +443,26 @@ export function CheckoutPlaceOrder() {
       return false;
     }
 
+const hasInvalidProductId = items.some(
+  (item) =>
+    !item.productId ||
+    !/^[a-fA-F0-9]{24}$/.test(
+      item.productId,
+    ),
+);
+
+if (hasInvalidProductId) {
+  toast.error(
+    "One or more products in your cart are invalid. Please refresh your cart.",
+  );
+
+  return false;
+}
+
+
+
+    
+
     /*
      * Current backend supports COD only.
      */
