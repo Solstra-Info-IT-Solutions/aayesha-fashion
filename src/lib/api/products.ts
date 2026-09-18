@@ -175,12 +175,19 @@ export async function getProducts(
    GET PRODUCT BY ID
 ============================================================ */
 
+export interface ProductByIdResponse {
+  product: Product;
+}
+
 export async function getProductById(
   id: string,
 ): Promise<Product> {
-  return apiFetch<Product>(
-    `/products/${encodeURIComponent(id)}`,
-  );
+  const response =
+    await apiFetch<ProductByIdResponse>(
+      `/products/${encodeURIComponent(id)}`,
+    );
+
+  return response.product;
 }
 
 /* ============================================================
