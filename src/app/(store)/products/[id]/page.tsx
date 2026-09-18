@@ -55,7 +55,8 @@ export async function generateMetadata({
         (media) => media.type === "image",
       );
 
-    const primaryImage = primaryMedia?.src;
+    const primaryImage =
+      primaryMedia?.src;
 
     return {
       title,
@@ -111,6 +112,7 @@ export async function generateMetadata({
   } catch {
     return {
       title: "Product Not Found",
+
       description:
         "The requested product could not be found.",
 
@@ -146,7 +148,8 @@ export default async function ProductPage({
   let product: Product;
 
   try {
-    product = await getProductById(id);
+    product =
+      await getProductById(id);
   } catch (error) {
     console.error(
       "Failed to load product:",
@@ -164,16 +167,23 @@ export default async function ProductPage({
      LOAD CATEGORY
   ---------------------------------------------------------- */
 
-  let categoryName: string | undefined;
+  let categoryName:
+    | string
+    | undefined;
 
   try {
-    const categories = await getCategories();
+    const categories =
+      await getCategories();
 
-    const category = categories.find(
-      (item) => item.id === product.categoryId,
-    );
+    const category =
+      categories.find(
+        (item) =>
+          item.id ===
+          product.categoryId,
+      );
 
-    categoryName = category?.name;
+    categoryName =
+      category?.name;
   } catch (error) {
     console.error(
       "Failed to load product category:",
@@ -185,27 +195,39 @@ export default async function ProductPage({
      LOAD RELATED PRODUCTS
   ---------------------------------------------------------- */
 
-  let recommendations: Product[] = [];
+  let recommendations:
+    Product[] = [];
 
   try {
-    const categoryResponse = await getProducts({
-      page: 1,
-      limit: 8,
-      categoryId: product.categoryId,
-      status: "active",
-      sort: "featured",
-    });
+    const categoryResponse =
+      await getProducts({
+        page: 1,
+        limit: 8,
+        categoryId:
+          product.categoryId,
+        status: "active",
+        sort: "featured",
+      });
+
+    const relatedProducts =
+      Array.isArray(
+        categoryResponse?.products,
+      )
+        ? categoryResponse.products
+        : [];
 
     recommendations =
-  (categoryResponse?.products ?? [])
-    .filter(
-      (item) =>
-        item._id !== product._id &&
-        item.status === "active" &&
-        item.categoryId ===
-          product.categoryId,
-    )
-    .slice(0, 4);
+      relatedProducts
+        .filter(
+          (item) =>
+            item._id !==
+              product._id &&
+            item.status ===
+              "active" &&
+            item.categoryId ===
+              product.categoryId,
+        )
+        .slice(0, 4);
   } catch (error) {
     console.error(
       "Failed to load product recommendations:",
@@ -214,7 +236,7 @@ export default async function ProductPage({
   }
 
   /* ----------------------------------------------------------
-     PRODUCT PAGE
+     RENDER PRODUCT PAGE
   ---------------------------------------------------------- */
 
   return (
@@ -268,7 +290,9 @@ export default async function ProductPage({
 
       <ProductDetail
         product={product}
-        recommendations={recommendations}
+        recommendations={
+          recommendations
+        }
       />
     </>
   );

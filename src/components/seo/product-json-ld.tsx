@@ -35,7 +35,7 @@ function getAvailabilityUrl(product: Product): string {
 function getImages(product: Product): string[] {
   return Array.from(
     new Set(
-      product.media
+      (product.media ?? [])
         .filter(
           (media) =>
             media.type === "image" &&
