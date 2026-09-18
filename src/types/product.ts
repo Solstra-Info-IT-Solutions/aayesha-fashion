@@ -263,11 +263,10 @@ export interface ProductQuery {
 export function getAvailableStock(
   product: Product,
 ): number {
-  return Math.max(
-    0,
-    product.inventory.stock -
-      product.inventory.reserved,
-  );
+  const stock = product.inventory?.stock ?? 0;
+  const reserved = product.inventory?.reserved ?? 0;
+
+  return Math.max(0, stock - reserved);
 }
 
 /* ------------------------------------------------------------
