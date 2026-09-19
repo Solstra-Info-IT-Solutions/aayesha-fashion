@@ -1,9 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { shaderMaterial } from "@react-three/drei";
-import { extend } from "@react-three/fiber";
+import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
 /* =========================================================
@@ -13,6 +10,18 @@ import * as THREE from "three";
    sindoor-rust / aged-brass / kohl-umber gradient (no fabric
    texture asset exists in public/images, so this is procedural
    per the design bible's explicit fallback allowance).
+
+   Implemented with vanilla three.js (no @react-three/fiber /
+   react-reconciler) because this Next.js build resolves client
+   components against its own bundled React copy, which uses the
+   React 19 internals shape (__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN
+   _USERS_THEY_CANNOT_UPGRADE) instead of the pre-19 shape every
+   react-reconciler release still expects
+   (__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED) — react-
+   reconciler crashes at import time regardless of version. A
+   purely decorative, non-interactive scene like this one doesn't
+   need React's declarative scene-graph bridge, so driving three.js
+   directly sidesteps the incompatibility entirely.
 ========================================================= */
 
 const vertexShader = /* glsl */ `
@@ -74,115 +83,124 @@ const fragmentShader = /* glsl */ `
   }
 `;
 
-const FabricMaterial = shaderMaterial(
-  {
-    uTime: 0,
-    uPointer: new THREE.Vector2(0, 0),
-    uColorA: new THREE.Color("#b5472b"), // sindoor-rust
-    uColorB: new THREE.Color("#8a7b4e"), // aged-brass
-    uColorC: new THREE.Color("#1c1410"), // kohl-umber
-  },
-  vertexShader,
-  fragmentShader,
-);
+export function FabricDrapeScene() {
+  const containerRef = useRef<HTMLDivElement>(null);
 
-extend({ FabricMaterial });
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
 
-declare module "@react-three/fiber" {
-  interface ThreeElements {
-    fabricMaterial: JSX.IntrinsicElements["shaderMaterial"];
-  }
-}
+    let width = container.clientWidth;
+    let height = container.clientHeight;
 
-/* =========================================================
-   DRAPED PLANE
-========================================================= */
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+    camera.position.set(0, 0, 3.2);
 
-function DrapedPlane() {
-  const materialRef = useRef<THREE.ShaderMaterial & { uTime: number; uPointer: THREE.Vector2 }>(null);
-  const groupRef = useRef<THREE.Group>(null);
-  const { viewport } = useThree();
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setClearColor(0x000000, 0);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+    renderer.setSize(width, height);
+    container.appendChild(renderer.domElement);
 
-  const pointer = useRef({ x: 0, y: 0 });
+    const ambientLight = new THREE.AmbientLight(0xf2e9dc, 0.35);
+    scene.add(ambientLight);
 
-  useFrame((state, delta) => {
-    if (materialRef.current) {
-      materialRef.current.uTime += delta;
-      materialRef.current.uPointer.lerp(
-        new THREE.Vector2(pointer.current.x, pointer.current.y),
-        0.05,
-      );
-    }
+    const keyLight = new THREE.DirectionalLight(0xf2e9dc, 1.1);
+    keyLight.position.set(3, 4, 5);
+    scene.add(keyLight);
 
-    if (groupRef.current) {
+    const rimLight = new THREE.DirectionalLight(0xb5472b, 0.6);
+    rimLight.position.set(-4, -2, -3);
+    scene.add(rimLight);
+
+    const material = new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: { value: 0 },
+        uPointer: { value: new THREE.Vector2(0, 0) },
+        uColorA: { value: new THREE.Color("#b5472b") }, // sindoor-rust
+        uColorB: { value: new THREE.Color("#8a7b4e") }, // aged-brass
+        uColorC: { value: new THREE.Color("#1c1410") }, // kohl-umber
+      },
+      vertexShader,
+      fragmentShader,
+      transparent: true,
+    });
+
+    const viewportHeightAt = (distance: number) =>
+      2 * distance * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2);
+
+    const geometry = new THREE.PlaneGeometry(1, 1, 64, 64);
+    const mesh = new THREE.Mesh(geometry, material);
+
+    const group = new THREE.Group();
+    group.add(mesh);
+    scene.add(group);
+
+    const resize = () => {
+      width = container.clientWidth;
+      height = container.clientHeight;
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+
+      const viewportHeight = viewportHeightAt(camera.position.z);
+      const viewportWidth = viewportHeight * camera.aspect;
+      mesh.scale.set(viewportWidth * 0.9, viewportHeight * 0.9, 1);
+    };
+    resize();
+
+    const pointer = { x: 0, y: 0 };
+    const targetPointer = new THREE.Vector2(0, 0);
+
+    const handlePointerMove = (event: PointerEvent) => {
+      pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+      pointer.y = (event.clientY / window.innerHeight) * 2 - 1;
+    };
+    window.addEventListener("pointermove", handlePointerMove);
+
+    const resizeObserver = new ResizeObserver(resize);
+    resizeObserver.observe(container);
+
+    const clock = new THREE.Clock();
+    let frameId = 0;
+
+    const animate = () => {
+      frameId = requestAnimationFrame(animate);
+
+      const delta = clock.getDelta();
+      const t = clock.elapsedTime;
+
+      material.uniforms.uTime.value += delta;
+      targetPointer.lerp(new THREE.Vector2(pointer.x, pointer.y), 0.05);
+      material.uniforms.uPointer.value.copy(targetPointer);
+
       // Idle sway on an 8-12s cycle.
-      const t = state.clock.elapsedTime;
-      groupRef.current.rotation.z = Math.sin(t / 9) * 0.03;
-      groupRef.current.rotation.x = Math.sin(t / 11) * 0.02 - 0.1;
+      group.rotation.z = Math.sin(t / 9) * 0.03;
 
       // Mousemove-driven parallax tilt, max ~6 degrees.
       const maxTilt = THREE.MathUtils.degToRad(6);
-      const targetY = pointer.current.x * maxTilt;
-      const targetX = -0.1 + pointer.current.y * maxTilt * 0.5;
-      groupRef.current.rotation.y = THREE.MathUtils.lerp(
-        groupRef.current.rotation.y,
-        targetY,
-        0.04,
-      );
-      groupRef.current.rotation.x = THREE.MathUtils.lerp(
-        groupRef.current.rotation.x,
-        targetX,
-        0.04,
-      );
-    }
-  });
+      const targetY = pointer.x * maxTilt;
+      const targetX = -0.1 + pointer.y * maxTilt * 0.5;
+      group.rotation.y = THREE.MathUtils.lerp(group.rotation.y, targetY, 0.04);
+      group.rotation.x = THREE.MathUtils.lerp(group.rotation.x, targetX, 0.04);
 
-  function handlePointerMove(event: { clientX: number; clientY: number }) {
-    pointer.current.x = (event.clientX / window.innerWidth) * 2 - 1;
-    pointer.current.y = (event.clientY / window.innerHeight) * 2 - 1;
-  }
+      renderer.render(scene, camera);
+    };
+    animate();
 
-  return (
-    <group
-      ref={groupRef}
-      onPointerMove={handlePointerMove}
-    >
-      <mesh scale={[viewport.width * 0.9, viewport.height * 0.9, 1]}>
-        <planeGeometry args={[1, 1, 64, 64]} />
-        <fabricMaterial ref={materialRef} />
-      </mesh>
-    </group>
-  );
-}
+    return () => {
+      cancelAnimationFrame(frameId);
+      resizeObserver.disconnect();
+      window.removeEventListener("pointermove", handlePointerMove);
+      geometry.dispose();
+      material.dispose();
+      renderer.dispose();
+      container.removeChild(renderer.domElement);
+    };
+  }, []);
 
-/* =========================================================
-   SCENE — lighting + camera rig
-========================================================= */
-
-export function FabricDrapeScene() {
-  return (
-    <Canvas
-      camera={{ position: [0, 0, 3.2], fov: 45 }}
-      gl={{ antialias: true, alpha: true }}
-      dpr={[1, 1.75]}
-      onCreated={({ gl }) => {
-        gl.setClearColor(0x000000, 0);
-      }}
-    >
-      <ambientLight intensity={0.35} color="#f2e9dc" />
-      <directionalLight
-        position={[3, 4, 5]}
-        intensity={1.1}
-        color="#f2e9dc"
-      />
-      <directionalLight
-        position={[-4, -2, -3]}
-        intensity={0.6}
-        color="#b5472b"
-      />
-      <DrapedPlane />
-    </Canvas>
-  );
+  return <div ref={containerRef} className="h-full w-full" />;
 }
 
 export default FabricDrapeScene;
