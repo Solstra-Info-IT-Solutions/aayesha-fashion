@@ -3,20 +3,28 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
 import { getProducts } from "@/lib/api/products";
+import { getCategories } from "@/services/category.service";
 
 import { Container } from "@/components/shared/container";
-import { ProductCard } from "@/components/product/product-card";
+import { ResilientProductGrid } from "@/components/product/resilient-product-grid";
 
 export async function SignatureEdit() {
-  const response = await getProducts({
-    page: 1,
-    limit: 8,
-    isFeatured: true,
-    status: "active",
-    sort: "featured",
-  });
+  const [response, categories] = await Promise.all([
+    getProducts({
+      page: 1,
+      limit: 8,
+      isFeatured: true,
+      status: "active",
+      sort: "featured",
+    }),
+    getCategories().catch(() => []),
+  ]);
 
   const signatureProducts = response.products;
+
+  const categoryNames = Object.fromEntries(
+    categories.map((category) => [category.id, category.name]),
+  );
 
   return (
     <section className="bg-[var(--color-ivory)]">
@@ -69,14 +77,12 @@ export async function SignatureEdit() {
           ===================================================== */}
 
           {signatureProducts.length > 0 ? (
-            <div className="mt-14 grid grid-cols-1 gap-12 sm:grid-cols-2 sm:gap-x-7 sm:gap-y-14 lg:mt-20 lg:grid-cols-3 lg:gap-8 xl:gap-10">
-              {signatureProducts.map((product, index) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  priority={index === 0}
-                />
-              ))}
+            <div className="mt-14 lg:mt-20">
+              <ResilientProductGrid
+                products={signatureProducts}
+                categoryNames={categoryNames}
+                priorityFirst
+              />
             </div>
           ) : (
             <div className="mt-14 border-y border-[var(--color-border)] py-16 text-center lg:mt-20">

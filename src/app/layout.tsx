@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { SiteJsonLd } from "@/components/seo/site-json-ld";
 
 import {
-  Cormorant_Garamond,
-  Manrope,
+  Fraunces,
+  Inter,
 } from "next/font/google";
 
 import "./globals.css";
@@ -14,16 +14,23 @@ import { siteConfig } from "@/config/site";
 
 import { AuthProvider } from "@/components/auth/auth-provider";
 
-const manrope = Manrope({
+/*
+ * Variable names kept as --font-manrope / --font-cormorant so the rest
+ * of the codebase (button.tsx, product-content-renderer.tsx, globals.css)
+ * does not need to change — only the underlying typefaces are swapped
+ * to the redesign spec (Fraunces serif / Inter sans).
+ */
+const manrope = Inter({
   variable: "--font-manrope",
   subsets: ["latin"],
   display: "swap",
 });
 
-const cormorant = Cormorant_Garamond({
+const cormorant = Fraunces({
   variable: "--font-cormorant",
   subsets: ["latin"],
   display: "swap",
+  style: ["normal", "italic"],
   weight: [
     "400",
     "500",
@@ -270,16 +277,33 @@ export default function RootLayout({
             duration: 2200,
 
             style: {
-              background:
-                "#1b1d1d",
+              background: "#2b2521",
 
-              color: "#ffffff",
+              color: "#fbf6ef",
 
               borderRadius: "0",
+
+              borderLeft: "2px solid #b8924a",
 
               fontSize: "12px",
 
               fontWeight: "600",
+
+              boxShadow: "0 20px 40px -15px rgba(43,37,33,0.25)",
+            },
+
+            success: {
+              iconTheme: {
+                primary: "#6b7f5e",
+                secondary: "#fbf6ef",
+              },
+            },
+
+            error: {
+              iconTheme: {
+                primary: "#a23e3e",
+                secondary: "#fbf6ef",
+              },
             },
           }}
         />

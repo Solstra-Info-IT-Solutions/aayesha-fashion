@@ -27,6 +27,13 @@ import { useAuthStore } from "@/store/auth-store";
 type ProductCardProps = {
   product: Product;
   priority?: boolean;
+  /**
+   * Resolved category display name (e.g. "Sarees"), looked up from
+   * getCategories() by the parent grid. Falls back to a formatted
+   * version of the raw categoryId slug when not provided, so this
+   * stays backwards compatible with any existing call sites.
+   */
+  categoryName?: string;
 };
 
 /* =========================================================
@@ -60,6 +67,7 @@ function formatBadge(badge: string) {
 export function ProductCard({
   product,
   priority = false,
+  categoryName,
 }: ProductCardProps) {
   const [showLoginPopup, setShowLoginPopup] =
     useState(false);
@@ -205,7 +213,7 @@ export function ProductCard({
                 object-cover
                 object-center
                 transition-transform
-                duration-[var(--duration-luxury)]
+                duration-[var(--dur-fast)]
                 ease-[var(--ease-luxury)]
                 group-hover:scale-[1.025]
               "
@@ -234,7 +242,7 @@ export function ProductCard({
                   object-center
                   opacity-0
                   transition-all
-                  duration-[var(--duration-luxury)]
+                  duration-[var(--dur-fast)]
                   ease-[var(--ease-luxury)]
                   group-hover:scale-[1.025]
                   group-hover:opacity-100
@@ -382,13 +390,14 @@ export function ProductCard({
               font-semibold
               uppercase
               tracking-[0.18em]
-              text-[var(--color-accent)]
+              text-[var(--gold-metallic)]
               sm:text-[8px]
             "
           >
-            {formatCategory(
-              product.categoryId,
-            )}
+            {categoryName ??
+              formatCategory(
+                product.categoryId,
+              )}
           </p>
 
           {/* PRODUCT NAME */}

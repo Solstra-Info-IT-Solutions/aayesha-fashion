@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import Link from "next/link";
 
@@ -18,7 +18,8 @@ import {
   getInventoryStatus,
 } from "@/types/product";
 
-import { ProductCard } from "@/components/product/product-card";
+import { ResilientProductGrid } from "@/components/product/resilient-product-grid";
+import { getCategories } from "@/services/category.service";
 
 interface ShopProductGridProps {
   products: Product[];
@@ -79,6 +80,32 @@ export function ShopProductGrid({
   category,
   sort = "relevance",
 }: ShopProductGridProps) {
+  const [categoryNames, setCategoryNames] = useState<
+    Record<string, string>
+  >({});
+
+  useEffect(() => {
+    let cancelled = false;
+
+    getCategories()
+      .then((categories) => {
+        if (cancelled) return;
+
+        setCategoryNames(
+          Object.fromEntries(
+            categories.map((c) => [c.id, c.name]),
+          ),
+        );
+      })
+      .catch(() => {
+        /* category names are a display-only enhancement */
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const urlParams = useMemo(
     () => getUrlParams(),
     [products, category, sort],
@@ -467,34 +494,10 @@ export function ShopProductGrid({
            PRODUCT GRID
         =================================================== */
 
-        <div
-          className="
-            grid
-            grid-cols-2
-            gap-x-3
-            gap-y-10
-
-            sm:gap-x-5
-            sm:gap-y-12
-
-            md:grid-cols-3
-            md:gap-x-6
-            md:gap-y-14
-
-            xl:grid-cols-4
-            xl:gap-x-7
-            xl:gap-y-16
-          "
-        >
-          {filteredProducts.map(
-            (product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-              />
-            ),
-          )}
-        </div>
+        <ResilientProductGrid
+          products={filteredProducts}
+          categoryNames={categoryNames}
+        />
       )}
     </div>
   );

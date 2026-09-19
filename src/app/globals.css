@@ -48,6 +48,41 @@
   --color-error: #b94b4b;
   --color-warning: #9a6b35;
 
+  /* =======================================================
+     REDESIGN TOKENS — "Ayesha 2.0" palette
+     Additive: legacy --color-* vars above stay wired for
+     components not yet migrated.
+  ======================================================= */
+
+  --ivory-bg: #fbf6ef;
+  --ivory-bg-raised: #f5ede2;
+  --mauve-dust: #c9a3a0;
+  --rose-primary: #b5525c;
+  --charcoal-ink: #2b2521;
+  --charcoal-soft: #5c534c;
+  --maroon-deep: #6e1f2b;
+  --gold-metallic: #b8924a;
+  --gold-shimmer: #e8d9b5;
+  --success-quiet: #6b7f5e;
+  --error-quiet: #a23e3e;
+
+  /* Type scale */
+  --fs-display: 4.5rem/1.05;
+  --fs-h1: 3rem/1.1;
+  --fs-h2: 2rem/1.2;
+  --fs-h3: 1.5rem/1.3;
+  --fs-body-lg: 1.125rem/1.6;
+  --fs-body: 1rem/1.6;
+  --fs-caption: 0.8125rem/1.4;
+
+  /* Motion */
+  --ease-snap: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-instant: 120ms;
+  --dur-fast: 220ms;
+  --dur-medium: 420ms;
+  --dur-slow: 700ms;
+
 
   /* =======================================================
      TYPOGRAPHY
