@@ -202,13 +202,7 @@ export function ProductCard({
               }
               fill
               priority={priority}
-              sizes="
-                (max-width: 639px) 42vw,
-                (max-width: 767px) 42vw,
-                (max-width: 1023px) 29vw,
-                (max-width: 1279px) 23vw,
-                21vw
-              "
+              sizes="(max-width: 639px) 42vw, (max-width: 767px) 42vw, (max-width: 1023px) 29vw, (max-width: 1279px) 23vw, 21vw"
               className="
                 object-cover
                 object-center
@@ -229,13 +223,7 @@ export function ProductCard({
                   product.name
                 }
                 fill
-                sizes="
-                  (max-width: 639px) 42vw,
-                  (max-width: 767px) 42vw,
-                  (max-width: 1023px) 29vw,
-                  (max-width: 1279px) 23vw,
-                  21vw
-                "
+                sizes="(max-width: 639px) 42vw, (max-width: 767px) 42vw, (max-width: 1023px) 29vw, (max-width: 1279px) 23vw, 21vw"
                 className="
                   pointer-events-none
                   object-cover
