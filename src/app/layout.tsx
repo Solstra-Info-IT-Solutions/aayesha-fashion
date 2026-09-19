@@ -52,12 +52,7 @@ const fraunces = Fraunces({
   subsets: ["latin"],
   display: "swap",
   style: ["normal", "italic"],
-  weight: [
-    "300",
-    "400",
-    "500",
-    "600",
-  ],
+  weight: "variable",
   axes: ["opsz", "SOFT", "WONK"],
 });
 
