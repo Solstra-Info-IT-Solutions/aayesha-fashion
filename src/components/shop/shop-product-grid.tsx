@@ -18,7 +18,7 @@ import {
   getInventoryStatus,
 } from "@/types/product";
 
-import { ResilientProductGrid } from "@/components/product/resilient-product-grid";
+import { EditorialProductLayout } from "@/components/product/editorial-product-layout";
 import { getCategories } from "@/services/category.service";
 
 interface ShopProductGridProps {
@@ -494,7 +494,7 @@ export function ShopProductGrid({
            PRODUCT GRID
         =================================================== */
 
-        <ResilientProductGrid
+        <EditorialProductLayout
           products={filteredProducts}
           categoryNames={categoryNames}
         />

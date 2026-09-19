@@ -6,7 +6,7 @@ import { getProducts } from "@/lib/api/products";
 import { getCategories } from "@/services/category.service";
 
 import { Container } from "@/components/shared/container";
-import { ResilientProductGrid } from "@/components/product/resilient-product-grid";
+import { EditorialProductLayout } from "@/components/product/editorial-product-layout";
 
 export async function SignatureEdit() {
   const [response, categories] = await Promise.all([
@@ -78,10 +78,9 @@ export async function SignatureEdit() {
 
           {signatureProducts.length > 0 ? (
             <div className="mt-14 lg:mt-20">
-              <ResilientProductGrid
+              <EditorialProductLayout
                 products={signatureProducts}
                 categoryNames={categoryNames}
-                priorityFirst
               />
             </div>
           ) : (

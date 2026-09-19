@@ -1,7 +1,7 @@
 import { apiFetch } from "@/lib/api";
 import type { HomepageData } from "@/types/homepage";
 
-import { HeroSection } from "@/components/home/hero-section";
+import { HeroDrape } from "@/components/home/hero-drape";
 import { FeaturedCategories } from "@/components/home/featured-categories";
 import { NewArrivals } from "@/components/home/new-arrivals";
 import { BrandStory } from "@/components/home/brand-story";
@@ -57,7 +57,7 @@ export default async function HomePage() {
 
       {homepage.hero?.enabled &&
         homepage.hero.slides.length > 0 && (
-          <HeroSection
+          <HeroDrape
             slides={homepage.hero.slides}
           />
         )}

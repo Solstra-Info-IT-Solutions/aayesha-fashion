@@ -14,17 +14,13 @@ import {
   updateCartItem,
   type Cart,
 } from "@/services/cart.service";
+import { setCartUiCountFromCart } from "@/store/cart-ui-store";
+import { useAuthStore } from "@/store/auth-store";
 
 /*
- * Visual shell for a cart drawer — this UI does not exist yet (the current
- * cart experience is the full /cart page in cart-content.tsx). Cart
- * mutations here call the exact same cart.service functions cart-content.tsx
- * uses, so wiring this drawer's open/close state to the real header trigger
- * in the integration pass is the only remaining work.
- *
- * TODO (integration pass): wire `open`/`onClose` to the real header cart
- * button state (likely new local state or a small store), and decide
- * whether the drawer replaces or supplements the /cart page.
+ * Cart drawer that supplements the full /cart page (cart-content.tsx) for a
+ * quick-view opened from the nav bag icon. Mutations call the exact same
+ * cart.service functions as cart-content.tsx / product-purchase-panel.tsx.
  */
 
 type CartDrawerProps = {
@@ -32,16 +28,20 @@ type CartDrawerProps = {
   onClose: () => void;
 };
 
-const MOCK_FALLBACK_NOTE =
-  "Showing placeholder items — sign in to load your real bag.";
-
 export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const [cart, setCart] = useState<Cart | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [usingMockData, setUsingMockData] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
-    if (!open) return;
+    /*
+     * Backend cart requires authentication — matches the gate used
+     * everywhere else (product cards, purchase panel). Skip the request
+     * entirely instead of surfacing an auth error in the console; the
+     * "sign in" empty state below is derived straight from isAuthenticated.
+     */
+    if (!open || !isAuthenticated) return;
 
     let cancelled = false;
 
@@ -52,15 +52,12 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
         const response = await getCart();
         if (!cancelled) {
           setCart(response);
-          setUsingMockData(false);
+          setCartUiCountFromCart(response);
         }
       } catch (error) {
         console.error("LOAD CART ERROR:", error);
-        // TODO (integration pass): remove this mock fallback once the drawer
-        // is only ever mounted for authenticated sessions with a real cart.
         if (!cancelled) {
           setCart(null);
-          setUsingMockData(true);
         }
       } finally {
         if (!cancelled) setIsLoading(false);
@@ -72,7 +69,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
     return () => {
       cancelled = true;
     };
-  }, [open]);
+  }, [open, isAuthenticated]);
 
   const cartItems = cart?.items ?? [];
 
@@ -86,6 +83,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
     try {
       const response = await updateCartItem(productId, quantity);
       setCart(response);
+      setCartUiCountFromCart(response);
     } catch (error) {
       console.error("UPDATE CART ERROR:", error);
       toast.error(
@@ -98,6 +96,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
     try {
       const response = await removeFromCart(productId);
       setCart(response);
+      setCartUiCountFromCart(response);
       toast.success("Removed from bag.");
     } catch (error) {
       console.error("REMOVE FROM CART ERROR:", error);
@@ -149,15 +148,27 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
               </button>
             </div>
 
-            {usingMockData && (
-              <p className="drape-font-body px-6 pt-3 text-[9px] uppercase tracking-[0.14em] text-[var(--aged-brass)]">
-                {MOCK_FALLBACK_NOTE}
-              </p>
-            )}
-
             {/* ITEMS */}
             <div className="flex-1 overflow-y-auto px-6 py-5">
-              {isLoading ? (
+              {!isAuthenticated ? (
+                <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
+                  <ShoppingBag
+                    size={28}
+                    strokeWidth={1.1}
+                    className="text-[var(--aged-brass)]"
+                  />
+                  <p className="drape-font-body text-sm text-[var(--text-muted)]">
+                    Sign in to view your bag.
+                  </p>
+                  <Link
+                    href="/login"
+                    onClick={onClose}
+                    className="drape-font-body border-b border-[var(--aged-brass)] pb-1 text-[10px] uppercase tracking-[0.18em] text-[var(--unbleached-cotton)] hover:border-[var(--sindoor-rust)] hover:text-[var(--sindoor-rust)]"
+                  >
+                    Sign In
+                  </Link>
+                </div>
+              ) : isLoading ? (
                 <div className="space-y-6">
                   {[1, 2].map((item) => (
                     <div key={item} className="flex gap-4">
@@ -288,7 +299,10 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 <button
                   type="button"
                   onClick={() =>
-                    void clearCart().then((response) => setCart(response))
+                    void clearCart().then((response) => {
+                      setCart(response);
+                      setCartUiCountFromCart(response);
+                    })
                   }
                   className="mt-3 w-full drape-font-body text-[9px] uppercase tracking-[0.14em] text-[var(--text-muted)] underline underline-offset-4 hover:text-[var(--state-error)]"
                 >

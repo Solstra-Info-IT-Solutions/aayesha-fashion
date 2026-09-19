@@ -10,7 +10,8 @@ import { getCategories } from "@/services/category.service";
 
 import { ProductJsonLd } from "@/components/seo/product-json-ld";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-json-ld";
-import { ProductDetail } from "@/components/product/product-detail";
+import { ProductDetailDrape } from "@/components/product/product-detail-drape";
+import { ProductRecommendations } from "@/components/product/product-recommendations";
 
 import type { Product } from "@/types/product";
 
@@ -457,11 +458,14 @@ export default async function ProductPage({
         ]}
       />
 
-      <ProductDetail
+      <ProductDetailDrape
         product={product}
-        recommendations={
-          recommendations
-        }
+        categoryName={categoryName}
+      />
+
+      <ProductRecommendations
+        product={product}
+        recommendations={recommendations}
       />
     </>
   );

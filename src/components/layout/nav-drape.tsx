@@ -1,19 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Menu, Search, User, X } from "lucide-react";
 
 import { CartIconPulse, type CartIconPulseHandle } from "@/components/layout/cart-icon-pulse";
 import { CartDrawer } from "@/components/cart/cart-drawer";
 import { useWishlistStore } from "@/store/wishlist-store";
+import { useCartUiStore } from "@/store/cart-ui-store";
 
 /*
  * Visual shell for the redesigned dark nav. Wishlist count is read from the
- * real wishlist-store (existing logic, untouched); cart item count is a
- * TODO for the integration pass since there is no cart Zustand store today
- * (cart-content.tsx fetches getCart() directly) — wire it to whatever the
- * engineering pass decides (a new lightweight cart store, or a fetch here).
+ * real wishlist-store (existing logic, untouched). Cart item count + the
+ * icon's pulse are driven by the shared cart-ui-store, updated from
+ * cart-drawer.tsx and every real add-to-bag success path.
  */
 
 const NAV_LINKS = [
@@ -28,8 +28,25 @@ export function NavDrape() {
   const [cartOpen, setCartOpen] = useState(false);
 
   const cartIconRef = useRef<CartIconPulseHandle>(null);
+  const hasMountedPulse = useRef(false);
 
   const wishlistCount = useWishlistStore((state) => state.productIds.length);
+  const cartCount = useCartUiStore((state) => state.count);
+  const pulseTick = useCartUiStore((state) => state.pulseTick);
+  const refreshCartCount = useCartUiStore((state) => state.refreshCount);
+
+  useEffect(() => {
+    void refreshCartCount();
+  }, [refreshCartCount]);
+
+  useEffect(() => {
+    if (!hasMountedPulse.current) {
+      hasMountedPulse.current = true;
+      return;
+    }
+
+    cartIconRef.current?.pulse();
+  }, [pulseTick]);
 
   return (
     <>
@@ -93,7 +110,7 @@ export function NavDrape() {
               onClick={() => setCartOpen(true)}
               aria-label="Open bag"
             >
-              <CartIconPulse ref={cartIconRef} />
+              <CartIconPulse ref={cartIconRef} itemCount={cartCount} />
             </button>
           </div>
         </div>

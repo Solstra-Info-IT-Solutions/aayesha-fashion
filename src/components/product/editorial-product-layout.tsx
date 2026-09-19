@@ -18,30 +18,44 @@ import { ProductImageCursor } from "@/components/product/product-image-cursor";
 
 type EditorialProductLayoutProps = {
   products: Product[];
-  categoryName?: string;
+  /** Map of categoryId -> resolved category display name (same shape as
+   * ResilientProductGrid's `categoryNames`, reused here for parity). */
+  categoryNames?: Record<string, string>;
 };
+
+function categoryNameFor(
+  product: Product,
+  categoryNames?: Record<string, string>,
+) {
+  return categoryNames?.[product.categoryId];
+}
 
 export function EditorialProductLayout({
   products,
-  categoryName,
+  categoryNames,
 }: EditorialProductLayoutProps) {
   if (products.length === 0) {
     return null;
   }
 
   if (products.length === 1) {
-    return <SingleSpread product={products[0]} categoryName={categoryName} />;
+    return (
+      <SingleSpread
+        product={products[0]}
+        categoryName={categoryNameFor(products[0], categoryNames)}
+      />
+    );
   }
 
   if (products.length === 2) {
-    return <TwoUp products={products} categoryName={categoryName} />;
+    return <TwoUp products={products} categoryNames={categoryNames} />;
   }
 
   if (products.length === 3) {
-    return <ThreeUp products={products} categoryName={categoryName} />;
+    return <ThreeUp products={products} categoryNames={categoryNames} />;
   }
 
-  return <StaggeredFlow products={products} categoryName={categoryName} />;
+  return <StaggeredFlow products={products} categoryNames={categoryNames} />;
 }
 
 /* =========================================================
@@ -108,10 +122,10 @@ function SingleSpread({
 
 function TwoUp({
   products,
-  categoryName,
+  categoryNames,
 }: {
   products: Product[];
-  categoryName?: string;
+  categoryNames?: Record<string, string>;
 }) {
   return (
     <div className="relative flex w-full flex-col gap-16 sm:flex-row sm:items-start sm:gap-0">
@@ -119,7 +133,7 @@ function TwoUp({
         <EditorialProductCard
           product={products[0]}
           size="large"
-          categoryName={categoryName}
+          categoryName={categoryNameFor(products[0], categoryNames)}
         />
       </div>
 
@@ -127,7 +141,7 @@ function TwoUp({
         <EditorialProductCard
           product={products[1]}
           size="medium"
-          categoryName={categoryName}
+          categoryName={categoryNameFor(products[1], categoryNames)}
         />
       </div>
     </div>
@@ -142,10 +156,10 @@ function TwoUp({
 
 function ThreeUp({
   products,
-  categoryName,
+  categoryNames,
 }: {
   products: Product[];
-  categoryName?: string;
+  categoryNames?: Record<string, string>;
 }) {
   return (
     <div className="relative flex w-full flex-col gap-16 sm:flex-row sm:items-start sm:gap-0">
@@ -153,7 +167,7 @@ function ThreeUp({
         <EditorialProductCard
           product={products[0]}
           size="large"
-          categoryName={categoryName}
+          categoryName={categoryNameFor(products[0], categoryNames)}
         />
       </div>
 
@@ -161,7 +175,7 @@ function ThreeUp({
         <EditorialProductCard
           product={products[1]}
           size="medium"
-          categoryName={categoryName}
+          categoryName={categoryNameFor(products[1], categoryNames)}
         />
       </div>
 
@@ -170,7 +184,7 @@ function ThreeUp({
         <EditorialProductCard
           product={products[2]}
           size="detail"
-          categoryName={categoryName}
+          categoryName={categoryNameFor(products[2], categoryNames)}
         />
       </div>
     </div>
@@ -192,10 +206,10 @@ const OFFSET_RHYTHM = ["mt-0", "mt-16", "mt-8"];
 
 function StaggeredFlow({
   products,
-  categoryName,
+  categoryNames,
 }: {
   products: Product[];
-  categoryName?: string;
+  categoryNames?: Record<string, string>;
 }) {
   return (
     <div className="flex w-full flex-wrap items-start gap-x-6 gap-y-16">
@@ -215,7 +229,7 @@ function StaggeredFlow({
             <EditorialProductCard
               product={product}
               size={size}
-              categoryName={categoryName}
+              categoryName={categoryNameFor(product, categoryNames)}
             />
           </div>
         );

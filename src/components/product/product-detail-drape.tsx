@@ -6,6 +6,7 @@ import { useState } from "react";
 import type { Product } from "@/types/product";
 import { ProductPurchasePanelDrape } from "@/components/product/product-purchase-panel-drape";
 import { ProductImageCursor } from "@/components/product/product-image-cursor";
+import { useCartUiStore } from "@/store/cart-ui-store";
 
 /* =========================================================
    MOCK PRODUCT
@@ -69,12 +70,16 @@ const MOCK_PRODUCT: Product = {
 
 type ProductDetailDrapeProps = {
   product?: Product;
+  /** Resolved category display name, looked up by the parent page. */
+  categoryName?: string;
 };
 
 export function ProductDetailDrape({
   product = MOCK_PRODUCT,
+  categoryName,
 }: ProductDetailDrapeProps) {
   const [quantity, setQuantity] = useState(1);
+  const pulseCart = useCartUiStore((state) => state.pulse);
 
   const galleryMedia = product.media.filter((media) => media.type === "image");
   const [primaryImage, secondImage, ...restImages] = galleryMedia;
@@ -138,7 +143,7 @@ export function ProductDetailDrape({
                 approximated here via a negative top margin that pulls it
                 up over the gallery's bottom padding on wide screens. */}
             <p className="drape-font-body text-[10px] uppercase tracking-[0.24em] text-[var(--aged-brass)]">
-              {product.categoryId.replace(/-/g, " ")}
+              {categoryName ?? product.categoryId.replace(/-/g, " ")}
             </p>
 
             <h1 className="drape-font-display mt-3 text-[var(--fs-display-m)] leading-[1.02] tracking-[-0.01em] text-[var(--unbleached-cotton)] lg:-mt-2 lg:mb-2">
@@ -154,6 +159,7 @@ export function ProductDetailDrape({
                 product={product}
                 quantity={quantity}
                 onQuantityChange={setQuantity}
+                onAddedToBag={pulseCart}
               />
             </div>
           </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useTransform } from "framer-motion";
 
 import type { HomepageHeroSlide } from "@/types/homepage";
@@ -10,12 +10,11 @@ import { FabricSceneGate } from "@/components/three/fabric-scene-gate";
 import { useScrollVelocity } from "@/hooks/use-scroll-velocity";
 import { useHeroScrollPin } from "@/hooks/use-hero-scroll-pin";
 
+const AUTOPLAY_DELAY = 6000;
+
 /* =========================================================
-   MOCK DATA
-   TODO (integration pass): replace with the real active
-   HomepageHeroSlide from the homepage service — this shape
-   matches src/types/homepage.ts exactly so swapping the prop
-   is a drop-in.
+   MOCK DATA — fallback for standalone/preview use only. The
+   real homepage always passes the fetched `slides` array.
 ========================================================= */
 
 const MOCK_SLIDE: HomepageHeroSlide = {
@@ -95,13 +94,18 @@ const ctaVariants = {
 };
 
 type HeroDrapeProps = {
-  slide?: HomepageHeroSlide;
+  /** Real hero is a multi-slide carousel — active slide gets the new treatment. */
+  slides?: HomepageHeroSlide[];
 };
 
-export function HeroDrape({ slide = MOCK_SLIDE }: HeroDrapeProps) {
+export function HeroDrape({ slides = [MOCK_SLIDE] }: HeroDrapeProps) {
   const pinRef = useRef<HTMLElement>(null);
   const headlineRef = useRef<HTMLHeadingElement>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
+
+  const [activeIndex, setActiveIndex] = useState(0);
+  const totalSlides = slides.length;
+  const slide = slides[activeIndex] ?? slides[0];
 
   const scrollVelocity = useScrollVelocity();
   // Cloth-settling skew: proportional to scroll velocity, eases to 0 at rest.
@@ -109,7 +113,21 @@ export function HeroDrape({ slide = MOCK_SLIDE }: HeroDrapeProps) {
 
   useHeroScrollPin(pinRef, headlineRef, sceneRef);
 
-  const titleWords = slide.title.split(/\s+/);
+  // Basic autoplay, mirroring hero-section.tsx's cadence — no swipe/keyboard
+  // nav on this visual pass; scope decision, see integration report.
+  useEffect(() => {
+    if (totalSlides <= 1) return;
+
+    const interval = window.setInterval(() => {
+      setActiveIndex((current) => (current + 1) % totalSlides);
+    }, AUTOPLAY_DELAY);
+
+    return () => window.clearInterval(interval);
+  }, [totalSlides]);
+
+  if (!slide) {
+    return null;
+  }
 
   return (
     <section
@@ -166,6 +184,7 @@ export function HeroDrape({ slide = MOCK_SLIDE }: HeroDrapeProps) {
                 className="drape-font-display relative z-20 whitespace-pre text-[var(--fs-display-xl)] font-light leading-[0.92] tracking-[-0.02em] text-[var(--unbleached-cotton)] overflow-visible"
               >
                 <motion.span
+                  key={slide.id}
                   variants={wordContainerVariants}
                   initial="hidden"
                   animate="visible"
@@ -239,6 +258,34 @@ export function HeroDrape({ slide = MOCK_SLIDE }: HeroDrapeProps) {
             {slide.buttonLabel}
           </a>
         </motion.div>
+
+        {/* SLIDE INDICATORS — only rendered when the homepage has more
+            than one active hero slide. */}
+        {totalSlides > 1 && (
+          <div
+            aria-label="Slide navigation"
+            className="absolute bottom-8 right-6 z-30 flex items-center gap-1.5 lg:bottom-12 lg:right-14"
+          >
+            {slides.map((item, index) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setActiveIndex(index)}
+                aria-label={`Go to slide ${index + 1}`}
+                aria-current={index === activeIndex ? "true" : undefined}
+                className="flex h-5 items-center px-0.5"
+              >
+                <span
+                  className={`block h-px transition-all duration-500 ${
+                    index === activeIndex
+                      ? "w-8 bg-[var(--unbleached-cotton)]"
+                      : "w-4 bg-[var(--unbleached-cotton)]/40"
+                  }`}
+                />
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

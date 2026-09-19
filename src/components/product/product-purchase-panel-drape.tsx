@@ -10,6 +10,7 @@ import type { Product } from "@/types/product";
 import { getAvailableStock, getInventoryStatus } from "@/types/product";
 import { addToCart } from "@/services/cart.service";
 import { useAuthStore } from "@/store/auth-store";
+import { setCartUiCountFromCart } from "@/store/cart-ui-store";
 import { LoginRequiredPopup } from "@/components/product/login-required-popup";
 import { ProductDeliveryCheckerDrape } from "@/components/product/product-delivery-checker-drape";
 
@@ -68,7 +69,8 @@ export function ProductPurchasePanelDrape({
 
     try {
       setAddingToBag(true);
-      await addToCart(product._id, quantity);
+      const response = await addToCart(product._id, quantity);
+      setCartUiCountFromCart(response);
 
       toast.success(
         quantity > 1
@@ -106,7 +108,8 @@ export function ProductPurchasePanelDrape({
 
     try {
       setBuyingNow(true);
-      await addToCart(product._id, quantity);
+      const response = await addToCart(product._id, quantity);
+      setCartUiCountFromCart(response);
       router.push("/cart");
     } catch (error) {
       console.error("BUY NOW ERROR:", error);

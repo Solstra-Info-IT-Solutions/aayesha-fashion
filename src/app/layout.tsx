@@ -14,6 +14,7 @@ import { Toaster } from "react-hot-toast";
 import { siteConfig } from "@/config/site";
 
 import { AuthProvider } from "@/components/auth/auth-provider";
+import { PageTransitionThread } from "@/components/layout/page-transition-thread";
 
 /*
  * Variable names kept as --font-manrope / --font-cormorant so the rest
@@ -297,7 +298,7 @@ export default function RootLayout({
         className={`${manrope.variable} ${cormorant.variable} ${fraunces.variable} ${warmSans.variable} antialiased`}
       >
         <AuthProvider>
-          {children}
+          <PageTransitionThread>{children}</PageTransitionThread>
         </AuthProvider>
 
         <Toaster

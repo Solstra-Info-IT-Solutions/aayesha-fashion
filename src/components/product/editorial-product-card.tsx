@@ -14,6 +14,7 @@ import {
 
 import { addToCart } from "@/services/cart.service";
 import { useAuthStore } from "@/store/auth-store";
+import { useCartUiStore, setCartUiCountFromCart } from "@/store/cart-ui-store";
 import { WishlistButton } from "@/components/product/wishlist-button";
 import { LoginRequiredPopup } from "@/components/product/login-required-popup";
 import { ProductImageCursor } from "@/components/product/product-image-cursor";
@@ -68,6 +69,7 @@ export function EditorialProductCard({
 
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isInitialized = useAuthStore((state) => state.isInitialized);
+  const pulseCart = useCartUiStore((state) => state.pulse);
 
   const availability = getProductAvailability(product);
   const primaryMedia = getPrimaryProductMedia(product);
@@ -89,7 +91,9 @@ export function EditorialProductCard({
 
     try {
       setIsAdding(true);
-      await addToCart(product._id, 1);
+      const response = await addToCart(product._id, 1);
+      setCartUiCountFromCart(response);
+      pulseCart();
     } catch (error) {
       console.error("ADD TO CART ERROR:", error);
     } finally {
