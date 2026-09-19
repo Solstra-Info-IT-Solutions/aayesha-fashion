@@ -66,6 +66,42 @@
   --success-quiet: #6b7f5e;
   --error-quiet: #a23e3e;
 
+  /* =======================================================
+     "THE GARMENT MID-DRAPE" — 2026 relaunch palette
+     Dark, couture-editorial. Additive: does not replace the
+     tokens above. New components (hero, editorial product
+     layout, PDP shell, cart drawer, nav) read from these.
+  ======================================================= */
+
+  --kohl-umber: #1c1410;
+  --raw-silk: #2a2018;
+  --unbleached-cotton: #f2e9dc;
+  --sindoor-rust: #b5472b;
+  --aged-brass: #8a7b4e;
+  --bottle-moss: #4b5a45;
+
+  --text-primary-dark: rgba(242, 233, 220, 0.92);
+  --text-muted: #b8a990;
+  --text-on-light: #1c1410;
+  --state-success: #4b5a45;
+  --state-error: #8c3b2e;
+  --focus-ring: #8a7b4e;
+
+  /* Typography — display / body */
+  --font-fraunces: var(--font-fraunces), Georgia, serif;
+  --font-warm-sans: var(--font-warm-sans), Arial, sans-serif;
+
+  /* Type scale — "mid-drape" */
+  --fs-display-xl: 7.5rem;
+  --fs-display-l: 4.5rem;
+  --fs-display-m: 2.75rem;
+  --fs-body-l: 1.25rem;
+  --fs-body: 1rem;
+  --fs-micro: 0.75rem;
+
+  /* Motion easing shared by the redesign components */
+  --drape-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
   /* Type scale */
   --fs-display: 4.5rem/1.05;
   --fs-h1: 3rem/1.1;
@@ -467,4 +503,108 @@ button {
   .border-hairline {
     border-color: var(--color-border-light);
   }
+}
+
+/* =========================================================
+   "THE GARMENT MID-DRAPE" — REDESIGN UTILITIES
+   Scoped to the new dark, couture-editorial surfaces
+   (hero, editorial product layout, PDP shell, cart drawer).
+   Legacy utilities above are untouched.
+========================================================= */
+
+.drape-surface {
+  background: var(--kohl-umber);
+  color: var(--text-primary-dark);
+}
+
+.drape-panel {
+  background: var(--raw-silk);
+}
+
+.drape-font-display {
+  font-family: var(--font-fraunces);
+}
+
+.drape-font-body {
+  font-family: var(--font-warm-sans);
+}
+
+/* Off-grid italic price typesetting (signature detail #1) */
+.drape-price-tag {
+  font-family: var(--font-fraunces);
+  font-style: italic;
+  transform: rotate(-2deg);
+  display: inline-block;
+}
+
+/* Hairline divider used instead of card borders/boxes */
+.drape-hairline {
+  border-color: var(--aged-brass);
+  opacity: 0.35;
+}
+
+/* Custom "VIEW" cursor ring (signature detail #2) */
+.drape-cursor-zone {
+  cursor: none;
+}
+
+/* Reduced-motion / no-WebGL hero fallback gradient */
+@keyframes drape-gradient-drift {
+  0% {
+    background-position: 15% 25%;
+  }
+  50% {
+    background-position: 85% 60%;
+  }
+  100% {
+    background-position: 15% 25%;
+  }
+}
+
+.drape-fallback-gradient {
+  background: radial-gradient(
+      circle at 20% 30%,
+      var(--sindoor-rust) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      circle at 80% 70%,
+      var(--aged-brass) 0%,
+      transparent 60%
+    ),
+    var(--kohl-umber);
+  background-size: 180% 180%;
+  animation: drape-gradient-drift 14s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drape-fallback-gradient {
+    animation: none;
+  }
+}
+
+/* Page-transition thread line sweep (signature detail #3) */
+@keyframes drape-thread-sweep {
+  0% {
+    transform: scaleX(0);
+    transform-origin: left;
+    opacity: 1;
+  }
+  49% {
+    transform: scaleX(1);
+    transform-origin: left;
+    opacity: 1;
+  }
+  50% {
+    transform-origin: right;
+  }
+  100% {
+    transform: scaleX(0);
+    transform-origin: right;
+    opacity: 1;
+  }
+}
+
+.drape-thread-line {
+  animation: drape-thread-sweep 700ms var(--drape-ease) forwards;
 }

@@ -4,6 +4,7 @@ import { SiteJsonLd } from "@/components/seo/site-json-ld";
 import {
   Fraunces,
   Inter,
+  Plus_Jakarta_Sans,
 } from "next/font/google";
 
 import "./globals.css";
@@ -31,6 +32,39 @@ const cormorant = Fraunces({
   subsets: ["latin"],
   display: "swap",
   style: ["normal", "italic"],
+  weight: [
+    "400",
+    "500",
+    "600",
+    "700",
+  ],
+});
+
+/*
+ * 2026 relaunch tokens (see globals.css --font-fraunces / --font-warm-sans).
+ * "General Sans" is a Fontshare font, not available via next/font/google —
+ * Plus Jakarta Sans is used as the closest warm-grotesque substitute per
+ * the design bible's explicit fallback instruction. Inter stays in the
+ * stack's final fallback position via the CSS var default.
+ */
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  display: "swap",
+  style: ["normal", "italic"],
+  weight: [
+    "300",
+    "400",
+    "500",
+    "600",
+  ],
+  axes: ["opsz", "SOFT", "WONK"],
+});
+
+const warmSans = Plus_Jakarta_Sans({
+  variable: "--font-warm-sans",
+  subsets: ["latin"],
+  display: "swap",
   weight: [
     "400",
     "500",
@@ -265,7 +299,7 @@ export default function RootLayout({
     >
       <body
         suppressHydrationWarning
-        className={`${manrope.variable} ${cormorant.variable} antialiased`}
+        className={`${manrope.variable} ${cormorant.variable} ${fraunces.variable} ${warmSans.variable} antialiased`}
       >
         <AuthProvider>
           {children}
