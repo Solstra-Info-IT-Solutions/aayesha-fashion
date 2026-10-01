@@ -9,62 +9,84 @@
 
 :root {
   /* =======================================================
-     COLORS — LUXURY NEUTRAL PALETTE
+     COLORS — QUIET IVORY PALETTE
+     Ivory + espresso + clay, with rose / champagne accents.
+     Legacy --color-* names are kept (and remapped) so existing
+     components pick up the new palette without edits.
   ======================================================= */
 
-  --color-bg: #f7f3ee;
-  --color-bg-soft: #eee7de;
-  --color-bg-subtle: #f2ede7;
+  --color-bg: #f7f3ed;
+  --color-bg-soft: #efe8df;
+  --color-bg-subtle: #f3ede5;
 
-  --color-surface: #ffffff;
-  --color-surface-soft: #fbf9f6;
+  --color-surface: #fbf9f5;
+  --color-surface-soft: #faf7f2;
 
-  --color-text: #211f1d;
-  --color-text-secondary: #716b65;
-  --color-text-muted: #99918a;
+  --color-text: #3f2d2a;
+  --color-text-secondary: #70635d;
+  --color-text-muted: #958781;
   --color-text-inverse: #ffffff;
 
-  --color-border: #ddd6ce;
-  --color-border-light: #e9e3dc;
-  --color-border-dark: #cfc6bd;
+  --color-border: #d8cec5;
+  --color-border-light: #e6ddd4;
+  --color-border-dark: #b9aaa1;
 
-  /* Brand accent — use sparingly */
-  --color-accent: #9a7564;
-  --color-accent-dark: #79594c;
-  --color-accent-soft: #d9c3b8;
+  /* Brand accent — clay */
+  --color-accent: #7a5650;
+  --color-accent-dark: #543c38;
+  --color-accent-active: #654944;
+  --color-accent-soft: #d8c3bc;
+  --color-accent-light: #efe3df;
 
-  /* Legacy brand colors
-     Keep these temporarily so existing components
-     do not break during the UI migration. */
-  --color-charcoal: #211f1d;
-  --color-charcoal-soft: #302d2a;
+  /* Rose + champagne — accents only, never dominant */
+  --color-rose: #a98282;
+  --color-rose-dark: #8f6a6a;
+  --color-rose-light: #ebdddb;
+  --color-champagne: #b39a79;
 
-  --color-rose: #d9a0a5;
-  --color-rose-dark: #c7838a;
-  --color-rose-light: #f3e1e2;
+  /* Legacy brand colors (remapped to warm espresso) */
+  --color-charcoal: #3f2d2a;
+  --color-charcoal-soft: #543c38;
+
+  /* Aliases for names already used in components but never
+     defined (they previously resolved to nothing). */
+  --color-ivory: var(--color-bg);
+  --color-cream: var(--color-surface);
+  --color-ink: var(--color-text);
+  --color-secondary: var(--color-text-secondary);
+  --color-muted: var(--color-text-muted);
+  --color-warm-gray: var(--color-bg-soft);
 
   /* States */
-  --color-success: #3e7154;
-  --color-error: #b94b4b;
-  --color-warning: #9a6b35;
+  --color-success: #65745f;
+  --color-error: #955c56;
+  --color-warning: #8a6a48;
 
   /* =======================================================
-     REDESIGN TOKENS — "Ayesha 2.0" palette
-     Additive: legacy --color-* vars above stay wired for
-     components not yet migrated.
+     FORM CONTROLS + FOCUS
   ======================================================= */
 
-  --ivory-bg: #fbf6ef;
-  --ivory-bg-raised: #f5ede2;
-  --mauve-dust: #c9a3a0;
-  --rose-primary: #b5525c;
-  --charcoal-ink: #2b2521;
-  --charcoal-soft: #5c534c;
-  --maroon-deep: #6e1f2b;
-  --gold-metallic: #b8924a;
-  --gold-shimmer: #e8d9b5;
-  --success-quiet: #6b7f5e;
-  --error-quiet: #a23e3e;
+  --control-height: 3rem;        /* 48px */
+  --control-height-sm: 2.75rem;  /* 44px */
+  --control-height-lg: 3.125rem; /* 50px */
+  --control-px: 1rem;
+  --ring-focus: 0 0 0 3px rgba(122, 86, 80, 0.12);
+
+  /* =======================================================
+     REDESIGN TOKENS — "Ayesha 2.0" (remapped to ivory)
+  ======================================================= */
+
+  --ivory-bg: #f7f3ed;
+  --ivory-bg-raised: #efe8df;
+  --mauve-dust: #a98282;
+  --rose-primary: #7a5650;
+  --charcoal-ink: #3f2d2a;
+  --charcoal-soft: #70635d;
+  --maroon-deep: #543c38;
+  --gold-metallic: #b39a79;
+  --gold-shimmer: #e3d6c2;
+  --success-quiet: #65745f;
+  --error-quiet: #955c56;
 
   /* =======================================================
      "THE GARMENT MID-DRAPE" — 2026 relaunch palette
@@ -226,10 +248,10 @@
      SHADOWS
   ======================================================= */
 
-  --shadow-xs: 0 1px 2px rgba(33, 31, 29, 0.04);
-  --shadow-sm: 0 4px 18px rgba(33, 31, 29, 0.05);
-  --shadow-md: 0 12px 35px rgba(33, 31, 29, 0.07);
-  --shadow-lg: 0 20px 60px rgba(33, 31, 29, 0.09);
+  --shadow-xs: 0 1px 2px rgba(63, 45, 42, 0.04);
+  --shadow-sm: 0 4px 18px rgba(63, 45, 42, 0.05);
+  --shadow-md: 0 12px 35px rgba(63, 45, 42, 0.06);
+  --shadow-lg: 0 20px 60px rgba(63, 45, 42, 0.08);
 
 
   /* =======================================================
@@ -267,6 +289,7 @@
 
 html {
   scroll-behavior: smooth;
+  color-scheme: light;
 }
 
 body {
@@ -315,6 +338,63 @@ select {
 
 button {
   -webkit-tap-highlight-color: transparent;
+}
+
+
+/* =========================================================
+   FOCUS (accessibility)
+   Soft clay outline; components that draw their own focus
+   style (e.g. inputs) override this with utilities.
+========================================================= */
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+}
+
+
+/* =========================================================
+   FORM CONTROL BASELINE
+========================================================= */
+
+input,
+textarea,
+select {
+  caret-color: var(--color-accent);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.8;
+}
+
+input:disabled,
+textarea:disabled,
+select:disabled {
+  cursor: not-allowed;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--color-accent);
+}
+
+/* Browser autofill must not paint yellow/blue over the ivory UI */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: var(--color-text);
+  box-shadow: 0 0 0 1000px var(--color-surface) inset;
+  transition: background-color 9999s ease-out 0s;
 }
 
 
@@ -435,7 +515,7 @@ button {
     font-family: var(--font-body);
     font-size: var(--text-label);
     font-weight: var(--weight-medium);
-    letter-spacing: var(--tracking-luxury);
+    letter-spacing: 0.18em;
     text-transform: uppercase;
   }
 
@@ -607,4 +687,23 @@ button {
 
 .drape-thread-line {
   animation: drape-thread-sweep 700ms var(--drape-ease) forwards;
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

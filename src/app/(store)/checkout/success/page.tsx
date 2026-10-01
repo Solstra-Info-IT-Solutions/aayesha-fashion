@@ -401,13 +401,20 @@ function CheckoutSuccessContent() {
                   <h2 className="mt-1.5 text-base font-semibold text-[var(--color-text)]">
                     {isCod
                       ? "Cash on Delivery"
-                      : "Online Payment"}
+                      : order.paymentMethod === "bank_upi"
+                        ? "Bank Transfer / UPI Pay"
+                        : "Online Payment"}
                   </h2>
 
                   <p className="mt-2 max-w-xl text-xs leading-6 text-[var(--color-text-secondary)]">
                     {isCod
                       ? "Please keep the payable amount ready when your order is delivered."
-                      : "Your payment has been recorded successfully."}
+                      : order.paymentMethod === "bank_upi" &&
+                          order.paymentStatus !== "paid"
+                        ? "We have sent your bill with the UPI QR code and bank details on WhatsApp. Please complete the payment and share the screenshot there — your order is confirmed once we receive it."
+                        : order.paymentStatus === "paid"
+                          ? "Your payment has been recorded successfully."
+                          : "We are confirming your payment. This page will show it as paid shortly."}
                   </p>
                 </div>
               </div>
@@ -655,7 +662,9 @@ function CheckoutSuccessContent() {
                     <p className="mt-1.5 text-xs text-[var(--color-text-muted)]">
                       {isCod
                         ? "Payable on delivery"
-                        : "Paid securely"}
+                        : order.paymentStatus === "paid"
+                          ? "Paid securely"
+                          : "Payment pending"}
                     </p>
                   </div>
 

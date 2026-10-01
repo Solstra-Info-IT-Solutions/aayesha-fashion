@@ -272,7 +272,7 @@ export const metadata: Metadata = {
 
   other: {
     "theme-color":
-      "#fcfbf9",
+      "#f7f3ed",
 
     "color-scheme":
       "light",
@@ -307,32 +307,32 @@ export default function RootLayout({
             duration: 2200,
 
             style: {
-              background: "#2b2521",
+              background: "#3f2d2a",
 
-              color: "#fbf6ef",
+              color: "#f7f3ed",
 
               borderRadius: "0",
 
-              borderLeft: "2px solid #b8924a",
+              borderLeft: "2px solid #b39a79",
 
               fontSize: "12px",
 
               fontWeight: "600",
 
-              boxShadow: "0 20px 40px -15px rgba(43,37,33,0.25)",
+              boxShadow: "0 20px 40px -15px rgba(63,45,42,0.2)",
             },
 
             success: {
               iconTheme: {
-                primary: "#6b7f5e",
-                secondary: "#fbf6ef",
+                primary: "#8fa286",
+                secondary: "#3f2d2a",
               },
             },
 
             error: {
               iconTheme: {
-                primary: "#a23e3e",
-                secondary: "#fbf6ef",
+                primary: "#c98a83",
+                secondary: "#3f2d2a",
               },
             },
           }}
