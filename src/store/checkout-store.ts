@@ -22,8 +22,6 @@ interface CheckoutStore {
 
   payment: CheckoutPaymentMethod;
 
-  paymentWhatsapp: string;
-
   couponCode: string;
 
   couponDiscount: number;
@@ -52,10 +50,6 @@ interface CheckoutStore {
 
   setPayment: (
     payment: CheckoutPaymentMethod,
-  ) => void;
-
-  setPaymentWhatsapp: (
-    value: string,
   ) => void;
 
   setCouponCode: (
@@ -115,8 +109,6 @@ export const useCheckoutStore =
 
         payment: "cod",
 
-        paymentWhatsapp: "",
-
         couponCode: "",
 
         couponDiscount: 0,
@@ -167,16 +159,6 @@ export const useCheckoutStore =
         setPayment: (payment) =>
           set({
             payment,
-          }),
-
-        setPaymentWhatsapp: (
-          paymentWhatsapp,
-        ) =>
-          set({
-            paymentWhatsapp:
-              paymentWhatsapp
-                .replace(/[^\d+]/g, "")
-                .slice(0, 16),
           }),
 
         /* =====================================================
@@ -247,8 +229,6 @@ export const useCheckoutStore =
             delivery: "standard",
 
             payment: "cod",
-
-            paymentWhatsapp: "",
 
             couponCode: "",
 

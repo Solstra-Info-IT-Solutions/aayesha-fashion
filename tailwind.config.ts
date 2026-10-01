@@ -49,8 +49,8 @@ const config: Config = {
         },
       },
       boxShadow: {
-        'luxury': '0 20px 40px -15px rgba(63, 45, 42, 0.08)',
-        'luxury-hover': '0 30px 60px -20px rgba(63, 45, 42, 0.12)',
+        'luxury': '0 20px 40px -15px rgba(74, 14, 23, 0.1)',
+        'luxury-hover': '0 30px 60px -20px rgba(74, 14, 23, 0.15)',
       }
     },
   },

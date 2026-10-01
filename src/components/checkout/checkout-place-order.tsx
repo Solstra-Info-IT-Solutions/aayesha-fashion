@@ -17,21 +17,13 @@ import {
 import toast from "react-hot-toast";
 
 import {
-  finishCheckoutCart,
-  getCheckoutCart,
-} from "@/services/checkout-cart.service";
+  getCart,
+} from "@/services/cart.service";
 
 import {
   createOrder,
   type CreateOrderPayload,
 } from "@/lib/api/orders";
-
-import {
-  cancelUnpaidOrder,
-  createRazorpayOrder,
-  openRazorpayCheckout,
-  verifyRazorpayPayment,
-} from "@/lib/api/payments";
 
 import {
   createCustomerAddress,
@@ -101,10 +93,6 @@ export function CheckoutPlaceOrder() {
     (state) => state.payment,
   );
 
-  const paymentWhatsapp = useCheckoutStore(
-    (state) => state.paymentWhatsapp,
-  );
-
   const couponCode = useCheckoutStore(
     (state) => state.couponCode,
   );
@@ -161,7 +149,7 @@ export function CheckoutPlaceOrder() {
       setLoadingCart(true);
 
       try {
-        const cart = await getCheckoutCart();
+        const cart = await getCart();
 
         if (cancelled) {
           return;
@@ -475,14 +463,12 @@ if (hasInvalidProductId) {
 
     
 
-    if (
-      payment === "bank_upi" &&
-      !/^\+?\d{10,15}$/.test(
-        paymentWhatsapp.trim(),
-      )
-    ) {
+    /*
+     * Current backend supports COD only.
+     */
+    if (payment !== "cod") {
       toast.error(
-        "Please enter a valid WhatsApp number to receive your bill.",
+        "Online payment is not available yet. Please select Cash on Delivery.",
       );
 
       return false;
@@ -586,14 +572,7 @@ if (hasInvalidProductId) {
                 : "standard",
 
             paymentMethod:
-              payment,
-
-            ...(payment === "bank_upi"
-              ? {
-                  paymentWhatsapp:
-                    paymentWhatsapp.trim(),
-                }
-              : {}),
+              "cod",
 
             couponCode:
               normalizedCoupon ||
@@ -674,135 +653,52 @@ if (hasInvalidProductId) {
         }
 
         /* ----------------------------------------------------
-           ONLINE PAYMENT (RAZORPAY)
+           CLEAR BACKEND CART
         ---------------------------------------------------- */
 
-        const successUrl = `/checkout/success?orderNumber=${encodeURIComponent(
-          order.orderNumber,
-        )}`;
-
-        const completeCheckout =
-          async () => {
-            try {
-              await finishCheckoutCart();
-            } catch (cartError) {
-              console.error(
-                "Clear checkout cart error:",
-                cartError,
-              );
-            }
-
-            idempotencyKeyRef.current =
-              null;
-          };
-
-        if (payment === "online") {
-          const razorpayOrder =
-            await createRazorpayOrder(
-              order.orderNumber,
-              publicAccessToken,
-            ).catch(async (error) => {
-              await cancelUnpaidOrder(
-                order.orderNumber,
-                publicAccessToken,
-                "Payment could not be started.",
-              ).catch(() => undefined);
-
-              idempotencyKeyRef.current =
-                null;
-
-              throw error;
-            });
-
-          const result =
-            await openRazorpayCheckout(
-              razorpayOrder,
+        /*
+         * The cart is now stored in the backend.
+         * Do NOT use Zustand clearCart().
+         */
+        try {
+          const { clearCart } =
+            await import(
+              "@/services/cart.service"
             );
 
-          if (result.status !== "paid") {
-            await cancelUnpaidOrder(
-              order.orderNumber,
-              publicAccessToken,
-              result.status ===
-                "dismissed"
-                ? "Payment window was closed."
-                : "Payment failed.",
-            ).catch((cancelError) =>
-              console.error(
-                "Cancel unpaid order error:",
-                cancelError,
-              ),
-            );
-
-            idempotencyKeyRef.current =
-              null;
-
-            toast.error(
-              result.status ===
-                "dismissed"
-                ? "Payment was cancelled. Your order was not placed — your bag is unchanged."
-                : result.message,
-            );
-
-            return;
-          }
-
-          try {
-            await verifyRazorpayPayment({
-              orderNumber:
-                order.orderNumber,
-              accessToken:
-                publicAccessToken,
-              razorpayOrderId:
-                result.response
-                  .razorpay_order_id,
-              razorpayPaymentId:
-                result.response
-                  .razorpay_payment_id,
-              razorpaySignature:
-                result.response
-                  .razorpay_signature,
-            });
-          } catch (verifyError) {
-            /*
-             * The customer was charged but we could not
-             * confirm it yet. The Razorpay webhook will
-             * still mark the order as paid.
-             */
-            console.error(
-              "Payment verification error:",
-              verifyError,
-            );
-
-            toast.error(
-              "We received your payment and are confirming it. You will get an update shortly.",
-            );
-          }
-
-          await completeCheckout();
-
-          toast.success(
-            "Payment successful. Your order is confirmed.",
+          await clearCart();
+        } catch (cartError) {
+          /*
+           * Order is already created. Do not show
+           * the customer an order failure because
+           * cart cleanup failed.
+           */
+          console.error(
+            "Clear backend cart error:",
+            cartError,
           );
-
-          router.replace(successUrl);
-
-          return;
         }
 
+        idempotencyKeyRef.current =
+          null;
+
         /* ----------------------------------------------------
-           COD / BANK-UPI
+           SUCCESS MESSAGE
         ---------------------------------------------------- */
 
-        await completeCheckout();
-
         toast.success(
-          payment === "bank_upi"
-            ? "Order placed. We have sent your bill on WhatsApp."
-            : "Your order has been placed successfully.",
+          "Your order has been placed successfully.",
         );
 
-        router.replace(successUrl);
+        /* ----------------------------------------------------
+           REDIRECT
+        ---------------------------------------------------- */
+
+        router.replace(
+          `/checkout/success?orderNumber=${encodeURIComponent(
+            order.orderNumber,
+          )}`,
+        );
       } catch (error) {
         console.error(
           "Place order error:",
@@ -885,9 +781,7 @@ if (hasInvalidProductId) {
               <p className="mt-1 text-sm font-medium text-[var(--color-text)]">
                 {payment === "cod"
                   ? "Cash on Delivery"
-                  : payment === "bank_upi"
-                    ? "Bank Transfer / UPI Pay"
-                    : "Online Payment (Razorpay)"}
+                  : "Online Payment"}
               </p>
             </div>
 
@@ -995,7 +889,8 @@ if (hasInvalidProductId) {
           disabled={
             placingOrder ||
             loadingCart ||
-            !items.length
+            !items.length ||
+            payment !== "cod"
           }
           className="group flex min-h-[54px] w-full items-center justify-center gap-2 bg-[var(--color-text)] px-5 text-[10px] font-semibold uppercase tracking-[var(--tracking-luxury)] text-[var(--color-text-inverse)] transition-all duration-[var(--duration-base)] hover:bg-[var(--color-accent-dark)] disabled:cursor-not-allowed disabled:opacity-50"
         >
@@ -1012,13 +907,7 @@ if (hasInvalidProductId) {
                 ? `Place COD Order · ₹${total.toLocaleString(
                     "en-IN",
                   )}`
-                : payment === "online"
-                  ? `Pay Now · ₹${total.toLocaleString(
-                      "en-IN",
-                    )}`
-                  : `Place Order & Get Bill on WhatsApp · ₹${total.toLocaleString(
-                      "en-IN",
-                    )}`}
+                : "Online Payment Unavailable"}
         </button>
 
         {/* TERMS */}

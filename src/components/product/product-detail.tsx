@@ -1,10 +1,6 @@
 "use client";
 
 import {
-  BUY_NOW_CHECKOUT_URL,
-  setBuyNowSelection,
-} from "@/lib/buy-now";
-import {
   useEffect,
   useMemo,
   useState,
@@ -500,13 +496,13 @@ export function ProductDetail({
     try {
       setBuyingNow(true);
 
-      setBuyNowSelection({
-        productId: safeProduct._id,
+      await addToCart(
+        safeProduct._id,
         quantity,
-      });
+      );
 
       router.push(
-        BUY_NOW_CHECKOUT_URL,
+        "/checkout",
       );
     } catch (error) {
       console.error(
