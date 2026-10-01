@@ -9,7 +9,7 @@ export function EyebrowLabel({
 }) {
   return (
     <p
-      className={`font-body text-[0.75rem] leading-[1.4] font-semibold uppercase tracking-[0.18em] text-[var(--color-accent)] ${className}`}
+      className={`font-body text-[0.8125rem] leading-[1.4] font-semibold uppercase tracking-[0.2em] text-[var(--gold-metallic)] ${className}`}
     >
       {children}
     </p>

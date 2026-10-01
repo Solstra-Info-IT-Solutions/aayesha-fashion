@@ -1,10 +1,10 @@
 "use client";
 
-import { getCheckoutCart } from "@/services/checkout-cart.service";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
 import {
+  getCart,
   type CartItem,
 } from "@/services/cart.service";
 
@@ -48,7 +48,7 @@ export function CheckoutSummary() {
       setLoading(true);
 
       try {
-        const cart = await getCheckoutCart();
+        const cart = await getCart();
 
         if (cancelled) {
           return;

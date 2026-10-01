@@ -44,10 +44,7 @@ export interface CreateOrderPayload {
 
   deliveryMethod: "standard" | "express";
 
-  paymentMethod: "cod" | "online" | "bank_upi";
-
-  /** WhatsApp number that receives the bill (bank / UPI payments). */
-  paymentWhatsapp?: string;
+  paymentMethod: "cod";
 
   couponCode?: string;
 
@@ -166,7 +163,7 @@ export interface OrderDetails {
 
   currency: "INR";
 
-  paymentMethod: "cod" | "online" | "bank_upi";
+  paymentMethod: "cod" | "online";
 
   paymentStatus:
     | "pending"

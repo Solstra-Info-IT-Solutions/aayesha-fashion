@@ -1,12 +1,15 @@
 "use client";
 
-import { getCheckoutCart } from "@/services/checkout-cart.service";
 import {
   useEffect,
   useState,
 } from "react";
 
 import toast from "react-hot-toast";
+
+import {
+  getCart,
+} from "@/services/cart.service";
 
 import {
   validateCustomerCoupon,
@@ -106,7 +109,7 @@ export function CheckoutCoupon() {
       setLoadingCart(true);
 
       try {
-        const cart = await getCheckoutCart();
+        const cart = await getCart();
 
         if (cancelled) {
           return;

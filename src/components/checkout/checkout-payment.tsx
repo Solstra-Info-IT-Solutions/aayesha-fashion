@@ -4,7 +4,6 @@ import {
   Banknote,
   Check,
   CreditCard,
-  Smartphone,
 } from "lucide-react";
 
 import { useCheckoutStore } from "@/store/checkout-store";
@@ -17,16 +16,6 @@ export function CheckoutPayment() {
   const setPayment = useCheckoutStore(
     (state) => state.setPayment,
   );
-
-  const paymentWhatsapp = useCheckoutStore(
-    (state) => state.paymentWhatsapp,
-  );
-
-  const setPaymentWhatsapp =
-    useCheckoutStore(
-      (state) =>
-        state.setPaymentWhatsapp,
-    );
 
   return (
     <section className="overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface)]">
@@ -72,56 +61,13 @@ export function CheckoutPayment() {
         <PaymentOption
           id="online"
           label="Online Payment"
-          description="Pay securely with Razorpay — cards, UPI, netbanking and wallets"
+          description="Cards, UPI and supported payment methods"
           icon={<CreditCard size={18} />}
           active={selected === "online"}
           onClick={() =>
             setPayment("online")
           }
         />
-
-        <PaymentOption
-          id="bank_upi"
-          label="Bank Transfer / UPI Pay"
-          description="Get the bill with payment details on WhatsApp and pay from your own app"
-          icon={<Smartphone size={18} />}
-          active={selected === "bank_upi"}
-          onClick={() =>
-            setPayment("bank_upi")
-          }
-        />
-
-        {selected === "bank_upi" ? (
-          <div className="border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 sm:p-5">
-            <label
-              htmlFor="payment-whatsapp"
-              className="text-[10px] font-semibold uppercase tracking-[var(--tracking-wider)] text-[var(--color-text)]"
-            >
-              WhatsApp number for the bill
-            </label>
-
-            <input
-              id="payment-whatsapp"
-              type="tel"
-              inputMode="tel"
-              autoComplete="tel"
-              value={paymentWhatsapp}
-              onChange={(event) =>
-                setPaymentWhatsapp(
-                  event.target.value,
-                )
-              }
-              placeholder="e.g. 9876543210"
-              className="mt-2 h-11 w-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-accent)]"
-            />
-
-            <p className="mt-2 text-[11px] leading-5 text-[var(--color-text-secondary)]">
-              We will send your bill with the UPI QR code and bank
-              details to this number. Your order is confirmed
-              once the payment is received.
-            </p>
-          </div>
-        ) : null}
 
         {/* SECURITY NOTE */}
 
@@ -134,8 +80,8 @@ export function CheckoutPayment() {
             </p>
 
             <p className="mt-1 text-[11px] leading-5 text-[var(--color-text-secondary)]">
-              Online payments are processed by Razorpay. Card and
-              bank details never reach our servers.
+              Your selected payment method will be securely
+              processed when the order is placed.
             </p>
           </div>
         </div>

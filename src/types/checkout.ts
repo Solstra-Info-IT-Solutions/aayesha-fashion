@@ -4,8 +4,7 @@
 
 export type CheckoutPaymentMethod =
   | "cod"
-  | "online"
-  | "bank_upi";
+  | "online";
 
 export type CheckoutDeliveryMethod =
   | "standard"
